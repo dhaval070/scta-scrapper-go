@@ -77,12 +77,14 @@ func QueryInnerText(doc *html.Node, expr string) string {
 	return ""
 }
 
-func parseSchedules(doc *html.Node, today int) {
+func parseSchedules(doc *html.Node, today int) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
+
+	var result = [][]string{}
 
 	for _, node := range nodes {
 		id := getAttr(node, "id")
-		dt, _ := parseId(id)
+		dt, ymd := parseId(id)
 
 		if dt < today {
 			continue
@@ -104,8 +106,10 @@ func parseSchedules(doc *html.Node, today int) {
 			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location := QueryInnerText(item, `//div[@class="location remote"]`)
 			log.Println(timeval, division, homeTeam, " vs ", guestTeam, " @ ", location)
+			result = append(result, []string{ymd + " " + timeval, division, homeTeam, guestTeam, location})
 		}
 	}
+	return result
 }
 
 func main() {
