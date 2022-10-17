@@ -2,11 +2,16 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+
+	"flag"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -60,9 +65,29 @@ func parseId(id string) (int, string) {
 }
 
 func parseTime(content string) string {
-	reg := regexp.MustCompile("[0-9]{1,2}:[0-9]{1,2} (AM|PM)")
+	reg := regexp.MustCompile("([0-9]{1,2}):([0-9]{1,2}) (AM|PM)")
 
-	return reg.FindString(content)
+	parts := reg.FindStringSubmatch(content)
+
+	if parts == nil {
+		log.Fatal("failed to parse time")
+	}
+
+	h, err := strconv.Atoi(parts[1])
+	if err != nil {
+		log.Fatal("failed to convert hour")
+	}
+
+	m, err := strconv.Atoi(parts[2])
+	if err != nil {
+		log.Fatal("failed to convert minutes")
+	}
+
+	if parts[3] == "PM" {
+		h += 12
+	}
+
+	return fmt.Sprintf("%02d:%02d", h, m)
 }
 
 func queryInnerText(doc *html.Node, expr string) string {
@@ -105,18 +130,64 @@ func parseSchedules(doc *html.Node, today int) [][]string {
 			ch := subjectText.FirstChild
 			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location := queryInnerText(item, `//div[@class="location remote"]`)
-			log.Println(timeval, division, homeTeam, " vs ", guestTeam, " @ ", location)
 			result = append(result, []string{ymd + " " + timeval, division, homeTeam, guestTeam, location})
 		}
 	}
 	return result
 }
 
-func main() {
-	doc, err := htmlquery.LoadDoc("testdata/scta.html")
+func writeCsv(filename string, data [][]string) {
+	fh, err := os.Create(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	parseSchedules(doc, 20221017)
+	csv := csv.NewWriter(fh)
+
+	csv.Write([]string{"date", "division", "home team", "guest team", "location"})
+
+	for _, row := range data {
+		csv.Write(row)
+	}
+	fh.Close()
+}
+
+func main() {
+	ymd := time.Now().Format("20060102")
+
+	infile := flag.String("infile", "", "local html filename")
+	today := flag.String("today", ymd, "parse from date(yyyymmdd)")
+	outfile := flag.String("outfile", "", "output filename")
+
+	flag.Parse()
+
+	log.Println(*today)
+	log.Println(*infile)
+
+	var doc *html.Node
+	var err error
+
+	if *infile != "" {
+		doc, err = htmlquery.LoadDoc("testdata/scta.html")
+	} else {
+		doc, err = htmlquery.LoadURL("https://sctahockey.com/Calendar/")
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	intdt, err := strconv.Atoi(*today)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	result := parseSchedules(doc, intdt)
+
+	if *outfile != "" {
+		writeCsv(*outfile, result)
+	} else {
+		log.Println(result)
+	}
+
 }
