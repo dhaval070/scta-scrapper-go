@@ -65,7 +65,7 @@ func parseTime(content string) string {
 	return reg.FindString(content)
 }
 
-func QueryInnerText(doc *html.Node, expr string) string {
+func queryInnerText(doc *html.Node, expr string) string {
 
 	node, err := htmlquery.Query(doc, expr)
 	if err != nil {
@@ -95,8 +95,8 @@ func parseSchedules(doc *html.Node, today int) [][]string {
 		for _, item := range listItems {
 			content := htmlquery.OutputHTML(item, true)
 			timeval := parseTime(content)
-			division := QueryInnerText(item, `//div[@class="subject-group"]`)
-			homeTeam := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
+			division := queryInnerText(item, `//div[@class="subject-group"]`)
+			homeTeam := queryInnerText(item, `//div[contains(@class, "subject-owner")]`)
 			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
 			if err != nil {
 				log.Fatal(err)
@@ -104,7 +104,7 @@ func parseSchedules(doc *html.Node, today int) [][]string {
 
 			ch := subjectText.FirstChild
 			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
-			location := QueryInnerText(item, `//div[@class="location remote"]`)
+			location := queryInnerText(item, `//div[@class="location remote"]`)
 			log.Println(timeval, division, homeTeam, " vs ", guestTeam, " @ ", location)
 			result = append(result, []string{ymd + " " + timeval, division, homeTeam, guestTeam, location})
 		}
