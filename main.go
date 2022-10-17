@@ -2,9 +2,9 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -38,7 +38,7 @@ const (
 	Dec
 )
 
-func parseId(id string) int {
+func parseId(id string) (int, string) {
 	parts := strings.Split(id, "-")
 
 	if len(parts) != 4 {
@@ -55,7 +55,26 @@ func parseId(id string) int {
 		log.Fatal(err)
 	}
 
-	return dt
+	return dt, fmt.Sprintf("%s-%02d-%s", parts[3], mm, parts[2])
+
+}
+
+func parseTime(content string) string {
+	reg := regexp.MustCompile("[0-9]{1,2}:[0-9]{1,2} (AM|PM)")
+
+	return reg.FindString(content)
+}
+
+func QueryInnerText(doc *html.Node, expr string) string {
+
+	node, err := htmlquery.Query(doc, expr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if node != nil {
+		return htmlquery.InnerText(node)
+	}
+	return ""
 }
 
 func parseSchedules(doc *html.Node, today int) {
@@ -63,8 +82,7 @@ func parseSchedules(doc *html.Node, today int) {
 
 	for _, node := range nodes {
 		id := getAttr(node, "id")
-
-		dt := parseId(id)
+		dt, _ := parseId(id)
 
 		if dt < today {
 			continue
@@ -73,13 +91,20 @@ func parseSchedules(doc *html.Node, today int) {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div/div[2]`)
 
 		for _, item := range listItems {
-			writer := bytes.NewBufferString("")
-			html.Render(writer, item)
+			content := htmlquery.OutputHTML(item, true)
+			timeval := parseTime(content)
+			division := QueryInnerText(item, `//div[@class="subject-group"]`)
+			homeTeam := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
+			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-			log.Println(writer.String())
-
+			ch := subjectText.FirstChild
+			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			location := QueryInnerText(item, `//div[@class="location remote"]`)
+			log.Println(timeval, division, homeTeam, " vs ", guestTeam, " @ ", location)
 		}
-
 	}
 }
 
