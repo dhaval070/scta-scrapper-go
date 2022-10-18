@@ -83,7 +83,7 @@ func parseTime(content string) string {
 		log.Fatal("failed to convert minutes")
 	}
 
-	if parts[3] == "PM" {
+	if parts[3] == "PM" && h < 12 {
 		h += 12
 	}
 
@@ -121,14 +121,14 @@ func parseSchedules(doc *html.Node, today int) [][]string {
 			content := htmlquery.OutputHTML(item, true)
 			timeval := parseTime(content)
 			division := queryInnerText(item, `//div[@class="subject-group"]`)
-			homeTeam := queryInnerText(item, `//div[contains(@class, "subject-owner")]`)
+			guestTeam := queryInnerText(item, `//div[contains(@class, "subject-owner")]`)
 			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location := queryInnerText(item, `//div[@class="location remote"]`)
 			result = append(result, []string{ymd + " " + timeval, division, homeTeam, guestTeam, location})
 		}
