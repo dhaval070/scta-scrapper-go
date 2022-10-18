@@ -1,8 +1,8 @@
-//go:generate enumer -type=Month
 package main
 
 import (
-	"encoding/csv"
+	"calendar-scrapper/pkg/month"
+	"calendar-scrapper/pkg/writer"
 	"fmt"
 	"log"
 	"os"
@@ -26,30 +26,13 @@ func getAttr(node *html.Node, key string) string {
 	return ""
 }
 
-type Month int
-
-const (
-	Jan Month = iota + 1
-	Feb
-	Mar
-	Apr
-	May
-	Jun
-	Jul
-	Aug
-	Sep
-	Oct
-	Nov
-	Dec
-)
-
 func parseId(id string) (int, string) {
 	parts := strings.Split(id, "-")
 
 	if len(parts) != 4 {
 		log.Fatal("len not 4")
 	}
-	mm, err := MonthString(parts[1])
+	mm, err := month.MonthString(parts[1])
 
 	if err != nil {
 		log.Fatal(err)
@@ -136,22 +119,6 @@ func parseSchedules(doc *html.Node, today int) [][]string {
 	return result
 }
 
-func writeCsv(filename string, data [][]string) {
-	fh, err := os.Create(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	csv := csv.NewWriter(fh)
-
-	csv.Write([]string{"date", "division", "home team", "guest team", "location"})
-
-	for _, row := range data {
-		csv.Write(row)
-	}
-	fh.Close()
-}
-
 func main() {
 	ymd := time.Now().Format("20060102")
 
@@ -185,7 +152,11 @@ func main() {
 	result := parseSchedules(doc, intdt)
 
 	if *outfile != "" {
-		writeCsv(*outfile, result)
+		fh, err := os.Create(*outfile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		writer.WriteCsv(fh, result)
 	} else {
 		log.Println(result)
 	}

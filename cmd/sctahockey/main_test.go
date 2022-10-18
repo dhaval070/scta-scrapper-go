@@ -18,7 +18,7 @@ func TestParseTime(t *testing.T) {
 }
 
 func TestParseSchedules(t *testing.T) {
-	doc, err := htmlquery.LoadDoc("/home/dhaval/scta.html")
+	doc, err := htmlquery.LoadDoc("../../testdata/scta.html")
 
 	if err != nil {
 		log.Fatal(err)
@@ -28,22 +28,22 @@ func TestParseSchedules(t *testing.T) {
 		{
 			"2022-10-17 19:15",
 			"U10",
-			"Hamilton Jr Bulldogs",
 			"Halton Hurricanes",
+			"Hamilton Jr Bulldogs",
 			"Sherwood (1)",
 		},
 		{
 			"2022-10-17 19:30",
 			"U14",
-			"Southern Tier Admirals",
 			"Burlington Eagles",
+			"Southern Tier Admirals",
 			"Appleby (1)",
 		},
 		{
 			"2022-10-17 19:40",
 			"U14",
-			"Credit River Capitals",
 			"Hamilton Jr Bulldogs",
+			"Credit River Capitals",
 			"Mohawk (Tim Horton's)",
 		},
 	}
