@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"log"
@@ -12,7 +12,7 @@ func TestParseTime(t *testing.T) {
 	html := `  <div class="cell small-2 text-center">
       <div class="time-primary">5:30 PM</div>
    </div>`
-	result := parseTime(html)
+	result := ParseTime(html)
 
 	assert.Equal(t, "17:30", result)
 }
@@ -48,8 +48,27 @@ func TestParseSchedules(t *testing.T) {
 		},
 	}
 
-	result := parseSchedules(doc, 20221017)
+	result := ParseSchedules(doc, 20221017)
 
 	assert.Equal(t, expected, result[:3])
 
+	doc, err = htmlquery.LoadDoc("../../testdata/etahockey/U11.html")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	result = ParseSchedules(doc, 20221017)
+	log.Println(result)
+	expected = [][]string{
+		{
+			"2022-10-19 19:00",
+			"",
+			"Kingston Jr Gaels",
+			"Quinte Red Devils",
+			"INVISTA (Desjardins)",
+		},
+	}
+
+	assert.Equal(t, expected, result[:1])
 }
