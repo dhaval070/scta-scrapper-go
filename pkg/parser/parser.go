@@ -75,7 +75,7 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 			ch := subjectText.FirstChild
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location := QueryInnerText(item, `//div[@class="location remote"]`)
-			result = append(result, []string{ymd + " " + timeval, division, homeTeam, guestTeam, location})
+			result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division})
 		}
 	}
 	return result

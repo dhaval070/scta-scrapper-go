@@ -17,7 +17,7 @@ import (
 func main() {
 	ymd := time.Now().Format("20060102")
 
-	infile := flag.String("infile", "testdata/scta.html", "local html filename")
+	infile := flag.String("infile", "", "local html filename")
 	today := flag.String("today", ymd, "parse from date(yyyymmdd)")
 	outfile := flag.String("outfile", "", "output filename")
 
