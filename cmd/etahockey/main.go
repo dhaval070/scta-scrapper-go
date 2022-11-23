@@ -65,11 +65,9 @@ func fetchSchedules(url string, groups map[string]string, intdt int) [][]string 
 
 		result := parser.ParseSchedules(doc, intdt)
 
-		for i, row := range result {
-			f := row[2:]
-			result[i] = []string{row[0], division}
-			result[i] = append(result[i], f...)
-			schedules = append(schedules, result[i])
+		for _, row := range result {
+			row[5] = division
+			schedules = append(schedules, row)
 		}
 	}
 
