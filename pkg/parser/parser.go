@@ -27,7 +27,7 @@ func ParseTime(content string) string {
 	parts := reg.FindStringSubmatch(content)
 
 	if parts == nil {
-		log.Fatal("failed to parse time")
+		log.Fatal("failed to parse time: " + content)
 	}
 
 	h, err := strconv.Atoi(parts[1])
@@ -64,6 +64,10 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 
 		for _, item := range listItems {
 			content := htmlquery.OutputHTML(item, true)
+
+			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
+				continue
+			}
 			timeval := ParseTime(content)
 			division := QueryInnerText(item, `//div[@class="subject-group"]`)
 			guestTeam := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
