@@ -18,20 +18,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-type ByDate [][]string
-
-func (a ByDate) Len() int {
-	return len(a)
-}
-
-func (a ByDate) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
-
-func (a ByDate) Less(i, j int) bool {
-	return a[i][0] < a[j][0]
-}
-
 func parseGroups(doc *html.Node) map[string]string {
 	links := htmlquery.Find(doc, `//div[@class="site-list"]/div/a`)
 
@@ -71,7 +57,7 @@ func fetchSchedules(url string, groups map[string]string, intdt int) [][]string 
 		}
 	}
 
-	sort.Sort(ByDate(schedules))
+	sort.Sort(parser.ByDate(schedules))
 	return schedules
 }
 

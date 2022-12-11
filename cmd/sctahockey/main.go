@@ -5,6 +5,7 @@ import (
 	"calendar-scrapper/pkg/writer"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 
@@ -45,6 +46,7 @@ func main() {
 	}
 
 	result := parser.ParseSchedules(doc, intdt)
+	sort.Sort(parser.ByDate(result))
 
 	if *outfile != "" {
 		fh, err := os.Create(*outfile)

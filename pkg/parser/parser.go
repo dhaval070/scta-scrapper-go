@@ -12,6 +12,20 @@ import (
 	"golang.org/x/net/html"
 )
 
+type ByDate [][]string
+
+func (a ByDate) Len() int {
+	return len(a)
+}
+
+func (a ByDate) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a ByDate) Less(i, j int) bool {
+	return a[i][0] < a[j][0]
+}
+
 func GetAttr(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == key {
@@ -69,32 +83,41 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 				continue
 			}
 			timeval := ParseTime(content)
-			division := QueryInnerText(item, `//div[@class="subject-group"]`)
-			guestTeam := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
-			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+			division, err := QueryInnerText(item, `//div[@class="subject-group"]`)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
+				continue
+			}
+			guestTeam, err := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+
+			if err != nil {
+				log.Println(err)
+				continue
 			}
 
 			ch := subjectText.FirstChild
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
-			location := QueryInnerText(item, `//div[@class="location remote"]`)
+			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
 			result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division})
 		}
 	}
 	return result
 }
 
-func QueryInnerText(doc *html.Node, expr string) string {
-
+func QueryInnerText(doc *html.Node, expr string) (string, error) {
 	node, err := htmlquery.Query(doc, expr)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	if node != nil {
-		return htmlquery.InnerText(node)
+		return htmlquery.InnerText(node), nil
 	}
-	return ""
+	return "", fmt.Errorf("node not found %v", expr)
 }
 
 func ParseId(id string) (int, string) {
