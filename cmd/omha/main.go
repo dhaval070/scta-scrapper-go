@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"sync"
@@ -48,6 +49,8 @@ func main() {
 	var wg sync.WaitGroup
 	var m = sync.Mutex{}
 
+	re := regexp.MustCompile(`^(\w+).*$`)
+
 	for _, s := range sites {
 		wg.Add(1)
 
@@ -61,6 +64,9 @@ func main() {
 			result := parser.ParseSchedules(doc, intdt)
 			log.Println("done ", s, len(result))
 
+			for _, r := range result {
+				r[5] = re.ReplaceAllString(r[5], "$1")
+			}
 			m.Lock()
 			results = append(results, result...)
 			m.Unlock()
