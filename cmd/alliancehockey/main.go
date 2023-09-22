@@ -18,21 +18,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-type Month int
-
-const (
-	_ Month = iota
-	Jan
-	Feb
-	Mar
-	Apr
-	May
-)
-
-func (m Month) String() string {
-	return [...]string{"", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}[m]
-}
-
 func main() {
 	infile := flag.String("infile", "", "local html filename")
 	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
