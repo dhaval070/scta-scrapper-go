@@ -14,7 +14,7 @@ type Rendition struct {
 	Width     int32  `gorm:"column:width;not null" json:"width"`
 	Height    int32  `gorm:"column:height;not null" json:"height"`
 	Ratio     string `gorm:"column:ratio;not null" json:"ratio"`
-	Bitrate   int32  `gorm:"column:bitrate;not null" json:"bitrate"`
+	Bitrate   int64  `gorm:"column:bitrate;not null" json:"bitrate"`
 }
 
 // TableName Rendition's table name

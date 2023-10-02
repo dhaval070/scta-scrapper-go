@@ -8,8 +8,8 @@ const TableNameSurfaceFeedMode = "surface_feed_modes"
 
 // SurfaceFeedMode mapped from table <surface_feed_modes>
 type SurfaceFeedMode struct {
-	SurfaceID  int32 `gorm:"column:surface_id;not null" json:"surface_id"`
-	FeedModeID int32 `gorm:"column:feed_mode_id;not null" json:"feed_mode_id"`
+	SurfaceID  int32 `gorm:"column:surface_id;primaryKey" json:"surface_id"`
+	FeedModeID int32 `gorm:"column:feed_mode_id;primaryKey" json:"feed_mode_id"`
 }
 
 // TableName SurfaceFeedMode's table name

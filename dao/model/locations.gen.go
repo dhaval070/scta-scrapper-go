@@ -10,6 +10,7 @@ const TableNameLocation = "locations"
 type Location struct {
 	ID                  int32   `gorm:"column:id;primaryKey" json:"id"`
 	Address1            string  `gorm:"column:address1" json:"address1"`
+	Address2            string  `gorm:"column:address2;not null" json:"address2"`
 	City                string  `gorm:"column:city" json:"city"`
 	Name                string  `gorm:"column:name" json:"name"`
 	UUID                string  `gorm:"column:uuid" json:"uuid"`
