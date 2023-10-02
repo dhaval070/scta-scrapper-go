@@ -24,8 +24,6 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Rendition:       newRendition(db, opts...),
 		Surface:         newSurface(db, opts...),
 		SurfaceFeedMode: newSurfaceFeedMode(db, opts...),
-		VenueStatus:     newVenueStatus(db, opts...),
-		Zone:            newZone(db, opts...),
 	}
 }
 
@@ -38,8 +36,6 @@ type Query struct {
 	Rendition       rendition
 	Surface         surface
 	SurfaceFeedMode surfaceFeedMode
-	VenueStatus     venueStatus
-	Zone            zone
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -53,8 +49,6 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Rendition:       q.Rendition.clone(db),
 		Surface:         q.Surface.clone(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.clone(db),
-		VenueStatus:     q.VenueStatus.clone(db),
-		Zone:            q.Zone.clone(db),
 	}
 }
 
@@ -75,8 +69,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Rendition:       q.Rendition.replaceDB(db),
 		Surface:         q.Surface.replaceDB(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.replaceDB(db),
-		VenueStatus:     q.VenueStatus.replaceDB(db),
-		Zone:            q.Zone.replaceDB(db),
 	}
 }
 
@@ -87,8 +79,6 @@ type queryCtx struct {
 	Rendition       *renditionDo
 	Surface         *surfaceDo
 	SurfaceFeedMode *surfaceFeedModeDo
-	VenueStatus     *venueStatusDo
-	Zone            *zoneDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -99,8 +89,6 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Rendition:       q.Rendition.WithContext(ctx),
 		Surface:         q.Surface.WithContext(ctx),
 		SurfaceFeedMode: q.SurfaceFeedMode.WithContext(ctx),
-		VenueStatus:     q.VenueStatus.WithContext(ctx),
-		Zone:            q.Zone.WithContext(ctx),
 	}
 }
 

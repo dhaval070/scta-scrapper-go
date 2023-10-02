@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io"
+	"log"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -56,6 +57,7 @@ func main() {
 
 	db.Transaction(func(tx *gorm.DB) (err error) {
 		for _, loc := range js {
+			log.Println(loc.ID)
 			err = importLoc(tx, loc)
 			if err != nil {
 				return err
@@ -147,13 +149,17 @@ func importSurface(db *gorm.DB, locId int32, surface jsonSurface) (err error) {
 			return err
 		}
 
-		if err = db.Save(&model.SurfaceFeedMode{
+		db.Save(&model.SurfaceFeedMode{
 			SurfaceID:  surface.ID,
 			FeedModeID: fm.ID,
-		}).Error; err != nil {
-			return err
-		}
+		})
 	}
+
+	s.FirstMediaDate = surface.FirstMedia.FirstMediaDate
+	if err = db.Save(&s).Error; err != nil {
+		return err
+	}
+
 	for _, rendition := range surface.Renditions {
 		if err = db.Save(&model.Rendition{
 			ID:        int32(rendition.ID),
@@ -168,8 +174,6 @@ func importSurface(db *gorm.DB, locId int32, surface jsonSurface) (err error) {
 		}
 	}
 
-	s.FirstMediaDate = surface.FirstMedia.FirstMediaDate
-	err = db.Save(&s).Error
 	return err
 }
 
