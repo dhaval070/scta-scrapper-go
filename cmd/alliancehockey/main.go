@@ -1,7 +1,9 @@
 package main
 
 import (
+	"calendar-scrapper/config"
 	"calendar-scrapper/pkg/parser"
+	"calendar-scrapper/pkg/repository"
 	"calendar-scrapper/pkg/writer"
 	"fmt"
 	"log"
@@ -18,10 +20,13 @@ import (
 	"golang.org/x/net/html"
 )
 
+const SITE = "alliancehockey"
+
 func main() {
 	infile := flag.String("infile", "", "local html filename")
 	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
 	outfile := flag.String("outfile", "", "output filename")
+	importLocations := flag.Bool("import-locations", false, "import site locations")
 
 	flag.Parse()
 
@@ -50,6 +55,20 @@ func main() {
 	}
 
 	result := ParseSchedules(doc, mm, yyyy)
+
+	if *importLocations {
+		config.Init("config", ".")
+		cfg := config.MustReadConfig()
+
+		var locations []string
+		for _, r := range result {
+			locations = append(locations, r[4])
+		}
+
+		repo := repository.NewRepository(cfg).Site(SITE)
+		repo.ImportLocations(locations)
+	}
+
 	sort.Sort(parser.ByDate(result))
 
 	if *outfile != "" {

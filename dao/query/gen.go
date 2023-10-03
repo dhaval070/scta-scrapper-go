@@ -22,6 +22,8 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Location:        newLocation(db, opts...),
 		Province:        newProvince(db, opts...),
 		Rendition:       newRendition(db, opts...),
+		Site:            newSite(db, opts...),
+		SitesLocation:   newSitesLocation(db, opts...),
 		Surface:         newSurface(db, opts...),
 		SurfaceFeedMode: newSurfaceFeedMode(db, opts...),
 	}
@@ -34,6 +36,8 @@ type Query struct {
 	Location        location
 	Province        province
 	Rendition       rendition
+	Site            site
+	SitesLocation   sitesLocation
 	Surface         surface
 	SurfaceFeedMode surfaceFeedMode
 }
@@ -47,6 +51,8 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Location:        q.Location.clone(db),
 		Province:        q.Province.clone(db),
 		Rendition:       q.Rendition.clone(db),
+		Site:            q.Site.clone(db),
+		SitesLocation:   q.SitesLocation.clone(db),
 		Surface:         q.Surface.clone(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.clone(db),
 	}
@@ -67,6 +73,8 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Location:        q.Location.replaceDB(db),
 		Province:        q.Province.replaceDB(db),
 		Rendition:       q.Rendition.replaceDB(db),
+		Site:            q.Site.replaceDB(db),
+		SitesLocation:   q.SitesLocation.replaceDB(db),
 		Surface:         q.Surface.replaceDB(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.replaceDB(db),
 	}
@@ -77,6 +85,8 @@ type queryCtx struct {
 	Location        *locationDo
 	Province        *provinceDo
 	Rendition       *renditionDo
+	Site            *siteDo
+	SitesLocation   *sitesLocationDo
 	Surface         *surfaceDo
 	SurfaceFeedMode *surfaceFeedModeDo
 }
@@ -87,6 +97,8 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Location:        q.Location.WithContext(ctx),
 		Province:        q.Province.WithContext(ctx),
 		Rendition:       q.Rendition.WithContext(ctx),
+		Site:            q.Site.WithContext(ctx),
+		SitesLocation:   q.SitesLocation.WithContext(ctx),
 		Surface:         q.Surface.WithContext(ctx),
 		SurfaceFeedMode: q.SurfaceFeedMode.WithContext(ctx),
 	}
