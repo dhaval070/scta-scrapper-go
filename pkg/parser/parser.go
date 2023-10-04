@@ -83,7 +83,7 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 				continue
 			}
 			timeval := ParseTime(content)
-			division, err := QueryInnerText(item, `//div[@class="subject-group"]`)
+			division, err := QueryInnerText(item, `//span[@class="game_no"]`)
 			if err != nil {
 				log.Println(err)
 				continue
