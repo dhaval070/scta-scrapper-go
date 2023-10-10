@@ -27,24 +27,27 @@ func TestParseSchedules(t *testing.T) {
 	expected := [][]string{
 		{
 			"2022-10-17 19:15",
-			"U10",
+			"",
 			"Halton Hurricanes",
 			"Hamilton Jr Bulldogs",
 			"Sherwood (1)",
+			"U10-116",
 		},
 		{
 			"2022-10-17 19:30",
-			"U14",
+			"",
 			"Burlington Eagles",
 			"Southern Tier Admirals",
 			"Appleby (1)",
+			"U14-18",
 		},
 		{
 			"2022-10-17 19:40",
-			"U14",
+			"",
 			"Hamilton Jr Bulldogs",
 			"Credit River Capitals",
 			"Mohawk (Tim Horton's)",
+			"U14-19",
 		},
 	}
 
@@ -67,6 +70,7 @@ func TestParseSchedules(t *testing.T) {
 			"Kingston Jr Gaels",
 			"Quinte Red Devils",
 			"INVISTA (Desjardins)",
+			"U11 - 052",
 		},
 	}
 
