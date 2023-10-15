@@ -20,10 +20,10 @@ import (
 	"golang.org/x/net/html"
 )
 
-const SITE = "lakeshorehockey"
+const SITE = "tcmhl"
 
 func parseGroups(doc *html.Node) map[string]string {
-	links := htmlquery.Find(doc, `//div[@class="site-list"]/div/div/div/a`)
+	links := htmlquery.Find(doc, `//div[@class="site-list"]/div/div/div/div/div/a`)
 
 	var groups = make(map[string]string)
 
@@ -78,7 +78,7 @@ func main() {
 	var doc *html.Node
 	var err error
 
-	doc, err = htmlquery.LoadURL("https://lakeshorehockeyleague.net/Seasons/Current/")
+	doc, err = htmlquery.LoadURL("https://tcmhl.ca/Seasons/Current/")
 
 	intdt, err := strconv.Atoi(*today)
 	if err != nil {
@@ -88,7 +88,7 @@ func main() {
 	groups := parseGroups(doc)
 	log.Println(groups)
 
-	var result = fetchSchedules("https://lakeshorehockeyleague.net/Groups/%s/Calendar/", groups, intdt)
+	var result = fetchSchedules("https://tcmhl.ca/Groups/%s/Calendar/", groups, intdt)
 
 	if *importLocations {
 		config.Init("config", ".")
