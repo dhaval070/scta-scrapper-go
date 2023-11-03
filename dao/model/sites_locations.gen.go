@@ -11,6 +11,9 @@ type SitesLocation struct {
 	Site       string `gorm:"column:site;primaryKey" json:"site"`
 	Location   string `gorm:"column:location;primaryKey" json:"location"`
 	LocationID int32  `gorm:"column:location_id" json:"location_id"`
+	Loc        string `gorm:"column:loc" json:"loc"`
+	Surface    string `gorm:"column:surface" json:"surface"`
+	Address    string `gorm:"column:address" json:"address"`
 }
 
 // TableName SitesLocation's table name

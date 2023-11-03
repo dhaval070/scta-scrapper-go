@@ -30,6 +30,9 @@ func newSitesLocation(db *gorm.DB, opts ...gen.DOOption) sitesLocation {
 	_sitesLocation.Site = field.NewString(tableName, "site")
 	_sitesLocation.Location = field.NewString(tableName, "location")
 	_sitesLocation.LocationID = field.NewInt32(tableName, "location_id")
+	_sitesLocation.Loc = field.NewString(tableName, "loc")
+	_sitesLocation.Surface = field.NewString(tableName, "surface")
+	_sitesLocation.Address = field.NewString(tableName, "address")
 
 	_sitesLocation.fillFieldMap()
 
@@ -43,6 +46,9 @@ type sitesLocation struct {
 	Site       field.String
 	Location   field.String
 	LocationID field.Int32
+	Loc        field.String
+	Surface    field.String
+	Address    field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -62,6 +68,9 @@ func (s *sitesLocation) updateTableName(table string) *sitesLocation {
 	s.Site = field.NewString(table, "site")
 	s.Location = field.NewString(table, "location")
 	s.LocationID = field.NewInt32(table, "location_id")
+	s.Loc = field.NewString(table, "loc")
+	s.Surface = field.NewString(table, "surface")
+	s.Address = field.NewString(table, "address")
 
 	s.fillFieldMap()
 
@@ -90,10 +99,13 @@ func (s *sitesLocation) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (s *sitesLocation) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 3)
+	s.fieldMap = make(map[string]field.Expr, 6)
 	s.fieldMap["site"] = s.Site
 	s.fieldMap["location"] = s.Location
 	s.fieldMap["location_id"] = s.LocationID
+	s.fieldMap["loc"] = s.Loc
+	s.fieldMap["surface"] = s.Surface
+	s.fieldMap["address"] = s.Address
 }
 
 func (s sitesLocation) clone(db *gorm.DB) sitesLocation {

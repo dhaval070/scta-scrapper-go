@@ -66,3 +66,29 @@ func (r *SiteRepository) ImportLocations(locations []string) error {
 
 	return nil
 }
+
+func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
+	var rows = []model.SitesLocation{}
+
+	r.db.Where("site = ?", r.site).Find(&rows)
+
+	var m = map[string]model.SitesLocation{}
+	for _, r := range rows {
+		m[r.Location] = r
+	}
+
+	for _, l := range locations {
+		_, ok := m[l.Location]
+
+		if ok {
+			continue
+		}
+
+		l.Site = r.site
+		if err := r.db.Save(&l).Error; err != nil {
+			return fmt.Errorf("save "+l.Location+"%w", err)
+		}
+	}
+
+	return nil
+}
