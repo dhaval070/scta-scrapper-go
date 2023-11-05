@@ -42,6 +42,10 @@ func (r *Repository) MasterImportLoc(db *gorm.DB, l entity.JsonLocation) error {
 
 	province := model.Province{ID: l.Province.ID}
 
+	if l.Province.Name != "Ontario" {
+		return nil
+	}
+
 	if err = db.First(&province).Error; err != nil {
 		province.ProvinceName = l.Province.Name
 		if err = db.Save(&province).Error; err != nil {
@@ -84,6 +88,11 @@ func (r *Repository) MasterImportSurface(db *gorm.DB, locId int32, surface entit
 		s.Sports = surface.Sports[0]["name"].(string)
 	}
 
+	s.FirstMediaDate = surface.FirstMedia.FirstMediaDate
+	if err = db.Save(&s).Error; err != nil {
+		return err
+	}
+
 	for _, fm := range surface.FeedModes {
 		if err = db.Save(&model.FeedMode{
 			ID:       fm.ID,
@@ -96,11 +105,6 @@ func (r *Repository) MasterImportSurface(db *gorm.DB, locId int32, surface entit
 			SurfaceID:  surface.ID,
 			FeedModeID: fm.ID,
 		})
-	}
-
-	s.FirstMediaDate = surface.FirstMedia.FirstMediaDate
-	if err = db.Save(&s).Error; err != nil {
-		return err
 	}
 
 	for _, rendition := range surface.Renditions {
