@@ -16,14 +16,12 @@ from
     join surfaces s on s.location_id=b.id;
 
 
-
-select a.site,a.location as site_location,b.id,b.name master_location,s.id as surface_id,s.name as surface_name
+select a.site,a.location as site_location,a.surface as site_location_surface, b.id as location_master_id,b.name master_location,s.id as surface_id,s.name as surface_name
     from
         sites_locations a left join
-        locations b on position(a.loc in b.name)
-        left join surfaces s on s.location_id=b.id;
-
-
+        locations b on a.loc_id_1 = b.id left join
+        surfaces s on s.location_id=b.id and position(a.surface in s.name)<>0 where a.site="omha-aaa" order by a.site, a.location;
+--
 update sites_locations set loc_id_by_zip=0;
 update sites_locations a, locations b set a.loc_id_by_zip=b.id where position(replace(b.postal_code, " ","") in replace(a.address," ","")) and b.postal_code<>"";
 
