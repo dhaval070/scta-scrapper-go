@@ -12,6 +12,7 @@ import (
 	"flag"
 
 	"calendar-scrapper/config"
+	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/repository"
 	"calendar-scrapper/pkg/writer"
@@ -93,13 +94,19 @@ func main() {
 		config.Init("config", ".")
 		cfg := config.MustReadConfig()
 
-		var locations []string
+		var locations = make([]model.SitesLocation, 0, len(result))
 		for _, r := range result {
-			locations = append(locations, r[4])
+			log.Printf("%+v\n", r)
+
+			l := model.SitesLocation{
+				Location: r[4],
+				Address:  r[6],
+			}
+			locations = append(locations, l)
 		}
 
 		repo := repository.NewRepository(cfg).Site(SITE)
-		repo.ImportLocations(locations)
+		repo.ImportLoc(locations)
 	}
 	if *outfile != "" {
 		fh, err := os.Create(*outfile)

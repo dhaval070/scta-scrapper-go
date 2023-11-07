@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -66,6 +67,9 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 
 	var result = [][]string{}
 
+	var lock = &sync.Mutex{}
+	var wg = &sync.WaitGroup{}
+
 	for _, node := range nodes {
 		id := GetAttr(node, "id")
 		dt, ymd := ParseId(id)
@@ -74,9 +78,11 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 			continue
 		}
 		log.Println("dt: ", dt)
-		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div/div[2]`)
+		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`) // `div[2]`)
 
-		for _, item := range listItems {
+		for _, parent := range listItems {
+			items := htmlquery.Find(parent, `div[2]`)
+			item := items[0]
 			content := htmlquery.OutputHTML(item, true)
 
 			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
@@ -103,9 +109,33 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 			ch := subjectText.FirstChild
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
-			result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division})
+
+			item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
+			var url string
+			var address string
+
+			for _, attr := range item.Attr {
+				if attr.Key == "href" {
+					url = attr.Val
+					break
+				}
+			}
+
+			if url != "" {
+				wg.Add(1)
+				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
+					defer wg.Done()
+					address = getVenueAddress(url)
+					lock.Lock()
+					result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+					lock.Unlock()
+				}(url, wg, lock)
+			} else {
+				result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+			}
 		}
 	}
+	wg.Wait()
 	return result
 }
 
@@ -139,4 +169,38 @@ func ParseId(id string) (int, string) {
 
 	return dt, fmt.Sprintf("%s-%02d-%s", parts[3], mm, parts[2])
 
+}
+
+func GetVenueAddress(url string) string {
+	doc, err := htmlquery.LoadURL(url)
+	if err != nil {
+		log.Println("error getting "+url, err)
+		return ""
+	}
+
+	item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
+	if item == nil {
+		log.Println("address node not found")
+		return ""
+	}
+	address := htmlquery.InnerText(item)
+	log.Println(url + ":" + address)
+	return address
+}
+
+func getVenueAddress(url string) string {
+	doc, err := htmlquery.LoadURL(url)
+	if err != nil {
+		log.Println("error getting "+url, err)
+		return ""
+	}
+
+	item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
+	if item == nil {
+		log.Println("address node not found")
+		return ""
+	}
+	address := htmlquery.InnerText(item)
+	log.Println(url + ":" + address)
+	return address
 }
