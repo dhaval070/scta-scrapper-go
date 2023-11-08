@@ -14,6 +14,9 @@ type SitesLocation struct {
 	Loc        string `gorm:"column:loc" json:"loc"`
 	Surface    string `gorm:"column:surface" json:"surface"`
 	Address    string `gorm:"column:address" json:"address"`
+	MatchType  string `gorm:"column:match_type" json:"match_type"`
+	LocId1     int32  `gorm:"column:loc_id_1" json:"loc_id_1"`
+	SurfaceID  int32  `gorm:"column:surface_id;not null" json:"surface_id"`
 }
 
 // TableName SitesLocation's table name

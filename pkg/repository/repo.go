@@ -4,6 +4,7 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"fmt"
+	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -23,6 +24,29 @@ func NewRepository(cfg config.Config) *Repository {
 	return &Repository{
 		db: db,
 	}
+}
+
+// return surface from given site and location
+func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
+	var siteLoc model.SitesLocation
+
+	err := r.db.Raw("select * from sites_locations where site=? and location=?", site, loc).Scan(&siteLoc).Error
+
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	if siteLoc.SurfaceID == 0 {
+		return nil
+	}
+
+	var surface model.Surface
+	if err = r.db.First(&surface, siteLoc.SurfaceID).Error; err != nil {
+		log.Panicln(err)
+		return nil
+	}
+	return &surface
 }
 
 type SiteRepository struct {
