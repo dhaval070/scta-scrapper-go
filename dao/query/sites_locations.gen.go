@@ -34,7 +34,6 @@ func newSitesLocation(db *gorm.DB, opts ...gen.DOOption) sitesLocation {
 	_sitesLocation.Surface = field.NewString(tableName, "surface")
 	_sitesLocation.Address = field.NewString(tableName, "address")
 	_sitesLocation.MatchType = field.NewString(tableName, "match_type")
-	_sitesLocation.LocId1 = field.NewInt32(tableName, "loc_id_1")
 	_sitesLocation.SurfaceID = field.NewInt32(tableName, "surface_id")
 
 	_sitesLocation.fillFieldMap()
@@ -53,7 +52,6 @@ type sitesLocation struct {
 	Surface    field.String
 	Address    field.String
 	MatchType  field.String
-	LocId1     field.Int32
 	SurfaceID  field.Int32
 
 	fieldMap map[string]field.Expr
@@ -78,7 +76,6 @@ func (s *sitesLocation) updateTableName(table string) *sitesLocation {
 	s.Surface = field.NewString(table, "surface")
 	s.Address = field.NewString(table, "address")
 	s.MatchType = field.NewString(table, "match_type")
-	s.LocId1 = field.NewInt32(table, "loc_id_1")
 	s.SurfaceID = field.NewInt32(table, "surface_id")
 
 	s.fillFieldMap()
@@ -108,7 +105,7 @@ func (s *sitesLocation) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (s *sitesLocation) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 9)
+	s.fieldMap = make(map[string]field.Expr, 8)
 	s.fieldMap["site"] = s.Site
 	s.fieldMap["location"] = s.Location
 	s.fieldMap["location_id"] = s.LocationID
@@ -116,7 +113,6 @@ func (s *sitesLocation) fillFieldMap() {
 	s.fieldMap["surface"] = s.Surface
 	s.fieldMap["address"] = s.Address
 	s.fieldMap["match_type"] = s.MatchType
-	s.fieldMap["loc_id_1"] = s.LocId1
 	s.fieldMap["surface_id"] = s.SurfaceID
 }
 
