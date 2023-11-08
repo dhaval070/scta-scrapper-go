@@ -49,6 +49,16 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 	return &surface
 }
 
+func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, error) {
+	var m model.SitesLocation
+
+	err := r.db.First(&m, "site=? and location=?", site, loc).Error
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 type SiteRepository struct {
 	site string
 	Repository
