@@ -5,11 +5,13 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"flag"
 
 	"calendar-scrapper/config"
+	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/repository"
 	"calendar-scrapper/pkg/writer"
@@ -33,9 +35,11 @@ func main() {
 	var doc *html.Node
 	var err error
 
-	mm := (*today)[0:4]
-	yyyy := (*today)[4:]
+	mm := (*today)[4:6]
+	yyyy := (*today)[:4]
 	url := fmt.Sprintf("https://heoaaaleague.ca/Schedule/?Month=%s&Year=%s", mm, yyyy)
+
+	log.Println(url)
 
 	doc, err = htmlquery.LoadURL(url)
 	if err != nil {
@@ -48,13 +52,21 @@ func main() {
 		config.Init("config", ".")
 		cfg := config.MustReadConfig()
 
-		var locations []string
+		var locations = make([]model.SitesLocation, 0, len(result))
 		for _, r := range result {
-			locations = append(locations, r[4])
+			log.Printf("%+v\n", r)
+
+			l := model.SitesLocation{
+				Location: r[4],
+				Address:  r[6],
+			}
+			locations = append(locations, l)
 		}
 
 		repo := repository.NewRepository(cfg).Site(SITE)
-		repo.ImportLocations(locations)
+		if err = repo.ImportLoc(locations); err != nil {
+			log.Fatal(err)
+		}
 	}
 	if *outfile != "" {
 		fh, err := os.Create(*outfile)
@@ -72,9 +84,14 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 
 	var result = [][]string{}
 
+	var lock = &sync.Mutex{}
+	var wg = &sync.WaitGroup{}
+
 	for _, node := range nodes {
-		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div/div[2]`)
-		for _, item := range listItems {
+		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
+		for _, parent := range listItems {
+			items := htmlquery.Find(parent, `div[2]`)
+			item := items[0]
 			content := htmlquery.OutputHTML(item, true)
 
 			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
@@ -88,10 +105,10 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 				log.Println(err)
 				continue
 			}
-			fmt.Sscanf("\w+ %d")
-			dom := txt[-2:]
+			// var dom string
+			dom := txt[4:]
 
-			ymd := fmt.Sprintf("%s-%s-%s", today[:4], today[4:]) //, timeval)
+			ymd := fmt.Sprintf("%s-%s-%s", today[:4], today[4:], dom) //, timeval)
 
 			division, err := parser.QueryInnerText(item, `//span[@class="game_no"]`)
 			if err != nil {
@@ -113,8 +130,31 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 			ch := subjectText.FirstChild
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location, err := parser.QueryInnerText(item, `//div[@class="location remote"]`)
-			result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division})
+
+			item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
+			var url string
+			var address string
+
+			for _, attr := range item.Attr {
+				if attr.Key == "href" {
+					url = attr.Val
+					break
+				}
+			}
+			if url != "" {
+				wg.Add(1)
+				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
+					defer wg.Done()
+					address = parser.GetVenueAddress(url)
+					lock.Lock()
+					result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+					lock.Unlock()
+				}(url, wg, lock)
+			} else {
+				result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+			}
 		}
 	}
+	wg.Wait()
 	return result
 }

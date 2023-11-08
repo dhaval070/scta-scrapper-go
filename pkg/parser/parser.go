@@ -109,6 +109,10 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 			ch := subjectText.FirstChild
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
+			if err != nil {
+				log.Println("failed to parse location")
+				continue
+			}
 
 			item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
 			var url string
@@ -125,7 +129,7 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 				wg.Add(1)
 				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address = getVenueAddress(url)
+					address = GetVenueAddress(url)
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
@@ -172,23 +176,6 @@ func ParseId(id string) (int, string) {
 }
 
 func GetVenueAddress(url string) string {
-	doc, err := htmlquery.LoadURL(url)
-	if err != nil {
-		log.Println("error getting "+url, err)
-		return ""
-	}
-
-	item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
-	if item == nil {
-		log.Println("address node not found")
-		return ""
-	}
-	address := htmlquery.InnerText(item)
-	log.Println(url + ":" + address)
-	return address
-}
-
-func getVenueAddress(url string) string {
 	doc, err := htmlquery.LoadURL(url)
 	if err != nil {
 		log.Println("error getting "+url, err)

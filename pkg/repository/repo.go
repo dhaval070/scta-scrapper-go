@@ -114,5 +114,26 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 		}
 	}
 
-	return nil
+	return r.RunMatchLocations()
+}
+
+func (r *SiteRepository) RunMatchLocations() error {
+	var queries = []string{
+		"update sites_locations set location_id = null, match_type = null where site=?",
+
+		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='postal code' where l.postal_code<>'' and position(left(l.postal_code, 3) in s.address) and s.site=?",
+
+		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='address' where position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and s.location_id is null and s.site=?",
+
+		"update sites_locations a,locations b set a.location_id=b.id,match_type='name' where position(a.loc in b.name) and a.location_id is null and a.site=?",
+	}
+
+	return r.db.Transaction(func(db *gorm.DB) error {
+		for _, q := range queries {
+			if err := r.db.Exec(q, r.site).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
