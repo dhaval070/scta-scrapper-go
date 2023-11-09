@@ -1,4 +1,4 @@
-update sites_locations set loc = null where loc = "" and site="tcmhl";
+update sites_locations set loc = null where loc = "";
 update sites_locations set surface = null where surface = "";
 
 update sites_locations set loc= regexp_replace(location, ' \\(.+\\)','') where loc is null;
@@ -26,17 +26,15 @@ select a.site,a.location as site_location,a.surface as site_location_surface, b.
 update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and position(a.surface in s.name)<>0 and s.id is not null and a.surface<>"" and a.site in("alliancehockey", "omha-aaa", "tcmhl");
 
 --
-update sites_locations set loc_id_by_zip=0;
-update sites_locations a, locations b set a.loc_id_by_zip=b.id where position(replace(b.postal_code, " ","") in replace(a.address," ","")) and b.postal_code<>"";
 
 ============
-update sites_locations set location_id = null, match_type = null where site="tcmhl";
+update sites_locations set location_id = null, match_type = null where site="beechey";
 
-update sites_locations s, locations l set s.location_id = l.id, s.match_type="postal code" where l.postal_code<>"" and position(left(l.postal_code, 3) in s.address) and s.site="tcmhl";
+update sites_locations s, locations l set s.location_id = l.id, s.match_type="postal code" where l.postal_code<>"" and position(left(l.postal_code, 3) in s.address) and s.site="beechey";
 
 
 update sites_locations s, locations l set s.location_id = l.id, s.match_type="address" where
-position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and s.location_id is null and s.site="tcmhl";
+position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and s.location_id is null and s.site="beechey";
 
 update sites_locations a,locations b set a.location_id=b.id,match_type="name" where position(a.loc in b.name) and a.location_id is null and a.site="tcmhl";
 =============
