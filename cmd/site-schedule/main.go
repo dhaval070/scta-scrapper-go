@@ -36,9 +36,9 @@ func processCsv(site string, r io.Reader) [][]string {
 			log.Println(err)
 			continue
 		}
-		if sl.LocationID != 0 {
+		if sl.SurfaceID != 0 {
 			// log.Println(sl.Location, sl.LocationID)
-			r = append(r, fmt.Sprint(sl.LocationID))
+			r = append(r, fmt.Sprint(sl.SurfaceID))
 			result = append(result, r)
 		} else {
 			log.Println("skipped site: ", site, ", location: ", sl.Location)

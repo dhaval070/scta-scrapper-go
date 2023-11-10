@@ -59,6 +59,16 @@ func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, e
 	return &m, nil
 }
 
+func (r *Repository) GetLocation(id int) (*model.Location, error) {
+	var m model.Location
+
+	err := r.db.First(&m, "id=?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 type SiteRepository struct {
 	site string
 	Repository
@@ -131,7 +141,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 	var queries = []string{
 		"update sites_locations set loc= regexp_replace(location, ' (.+)','') where site=?",
 		"update sites_locations set location_id = null, match_type = null where site=?",
-		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='postal code' where l.postal_code<>'' and position(left(l.postal_code, 3) in s.address) and s.site=?",
+		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='postal code' where l.postal_code<>'' and position(l.postal_code in s.address) and s.site=?",
 		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='address' where position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and s.location_id is null and s.site=?",
 		"update sites_locations a,locations b set a.location_id=b.id,match_type='name' where position(a.loc in b.name) and a.location_id is null and a.site=?",
 	}
