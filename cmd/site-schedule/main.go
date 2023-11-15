@@ -27,7 +27,7 @@ func processCsv(site string, r io.Reader) [][]string {
 			break
 		}
 
-		if len(r) != 7 {
+		if len(r) != 6 {
 			log.Fatalf("invalid columns %+v\n", r)
 		}
 
