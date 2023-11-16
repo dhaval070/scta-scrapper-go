@@ -62,7 +62,7 @@ func ParseTime(content string) string {
 	return fmt.Sprintf("%02d:%02d", h, m)
 }
 
-func ParseSchedules(doc *html.Node, today int) [][]string {
+func ParseSchedules(site string, doc *html.Node, today int) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 
 	var result = [][]string{}
@@ -131,11 +131,11 @@ func ParseSchedules(doc *html.Node, today int) [][]string {
 					defer wg.Done()
 					address = GetVenueAddress(url)
 					lock.Lock()
-					result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+					result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
 				}(url, wg, lock)
 			} else {
-				result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 			}
 		}
 	}

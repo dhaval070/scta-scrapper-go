@@ -1,13 +1,12 @@
 #!/bin/bash
 
-dir="var/16112023"
+dir="var/"`date +%d%m%Y`
 d1="$dir/with-surface"
 
 mkdir -p $d1
 
 for site in `ls cmd/sites/`; do
     echo "$site"
-    #mysql --port=5506 -uapp -h 172.17.0.1 -papp schedules -e "insert into sites(site, url) values('$site','')"
 
     go run ./cmd/sites/$site/ --import-locations --outfile /tmp/$site.csv
     if [ $? -ne 0 ]; then
@@ -15,7 +14,7 @@ for site in `ls cmd/sites/`; do
     fi
 
     f="$dir/$site.csv"
-    cat /tmp/$site.csv | cut -d',' -f1,2,3,4,5,6 > $f
+    cat /tmp/$site.csv | cut -d',' -f1-6 > $f
     if [ $? -ne 0 ]; then
         echo "failed $site"
         exit

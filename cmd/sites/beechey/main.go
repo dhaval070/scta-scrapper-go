@@ -54,9 +54,10 @@ func fetchSchedules(url string, groups map[string]string, intdt int) [][]string 
 			log.Fatal("load calendar url", err)
 		}
 
-		result := parser.ParseSchedules(doc, intdt)
+		result := parser.ParseSchedules(SITE, doc, intdt)
 
 		for _, row := range result {
+			row[1] = SITE
 			row[5] = division
 			schedules = append(schedules, row)
 		}

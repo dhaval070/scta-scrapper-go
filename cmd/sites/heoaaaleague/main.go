@@ -147,11 +147,11 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 					defer wg.Done()
 					address = parser.GetVenueAddress(url)
 					lock.Lock()
-					result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+					result = append(result, []string{ymd + " " + timeval, SITE, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
 				}(url, wg, lock)
 			} else {
-				result = append(result, []string{ymd + " " + timeval, "", homeTeam, guestTeam, location, division, address})
+				result = append(result, []string{ymd + " " + timeval, SITE, homeTeam, guestTeam, location, division, address})
 			}
 		}
 	}
