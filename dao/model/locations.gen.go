@@ -23,6 +23,7 @@ type Location struct {
 	ProvinceID          int32   `gorm:"column:province_id;not null" json:"province_id"`
 	VenueStatus         string  `gorm:"column:venue_status;not null" json:"venue_status"`
 	Zone                string  `gorm:"column:zone;not null" json:"zone"`
+	TotalSurfaces       int32   `gorm:"column:total_surfaces;not null" json:"total_surfaces"`
 }
 
 // TableName Location's table name

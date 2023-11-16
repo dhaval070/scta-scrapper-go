@@ -36,6 +36,7 @@ func (r *Repository) MasterImportLoc(db *gorm.DB, l entity.JsonLocation) error {
 		AllSheetsCount:      l.AllSheetsCount,
 		Longitude:           l.Longitude,
 		Latitude:            l.Latitude,
+		TotalSurfaces:       int32(len(l.Surfaces)),
 	}
 	b, _ := json.Marshal(l.LogoURL)
 	loc.LogoURL = string(b)

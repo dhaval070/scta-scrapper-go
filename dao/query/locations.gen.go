@@ -42,6 +42,7 @@ func newLocation(db *gorm.DB, opts ...gen.DOOption) location {
 	_location.ProvinceID = field.NewInt32(tableName, "province_id")
 	_location.VenueStatus = field.NewString(tableName, "venue_status")
 	_location.Zone = field.NewString(tableName, "zone")
+	_location.TotalSurfaces = field.NewInt32(tableName, "total_surfaces")
 
 	_location.fillFieldMap()
 
@@ -67,6 +68,7 @@ type location struct {
 	ProvinceID          field.Int32
 	VenueStatus         field.String
 	Zone                field.String
+	TotalSurfaces       field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -98,6 +100,7 @@ func (l *location) updateTableName(table string) *location {
 	l.ProvinceID = field.NewInt32(table, "province_id")
 	l.VenueStatus = field.NewString(table, "venue_status")
 	l.Zone = field.NewString(table, "zone")
+	l.TotalSurfaces = field.NewInt32(table, "total_surfaces")
 
 	l.fillFieldMap()
 
@@ -122,7 +125,7 @@ func (l *location) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (l *location) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 15)
+	l.fieldMap = make(map[string]field.Expr, 16)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["address1"] = l.Address1
 	l.fieldMap["address2"] = l.Address2
@@ -138,6 +141,7 @@ func (l *location) fillFieldMap() {
 	l.fieldMap["province_id"] = l.ProvinceID
 	l.fieldMap["venue_status"] = l.VenueStatus
 	l.fieldMap["zone"] = l.Zone
+	l.fieldMap["total_surfaces"] = l.TotalSurfaces
 }
 
 func (l location) clone(db *gorm.DB) location {
