@@ -108,7 +108,7 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 			// var dom string
 			dom := txt[4:]
 
-			ymd := fmt.Sprintf("%s-%s-%s", today[:4], today[4:], dom) //, timeval)
+			ymd := fmt.Sprintf("%s-%s-%s", today[:4], today[4:6], dom) //, timeval)
 
 			division, err := parser.QueryInnerText(item, `//span[@class="game_no"]`)
 			if err != nil {
