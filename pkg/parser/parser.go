@@ -4,14 +4,30 @@ import (
 	"calendar-scrapper/pkg/month"
 	"fmt"
 	"log"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 )
+
+var client = &http.Client{}
+
+func init() {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.MaxIdleConns = 100
+	t.MaxConnsPerHost = 100
+	t.MaxIdleConnsPerHost = 100
+
+	client = &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: t,
+	}
+}
 
 type ByDate [][]string
 
@@ -176,7 +192,15 @@ func ParseId(id string) (int, string) {
 }
 
 func GetVenueAddress(url string) string {
-	doc, err := htmlquery.LoadURL(url)
+	resp, err := client.Get(url)
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	doc, err := htmlquery.Parse(resp.Body)
 	if err != nil {
 		log.Println("error getting "+url, err)
 		return ""

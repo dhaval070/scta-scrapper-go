@@ -8,6 +8,7 @@ import (
 	"calendar-scrapper/pkg/writer"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"sort"
@@ -23,6 +24,20 @@ import (
 )
 
 const SITE = "alliancehockey"
+
+var client = &http.Client{}
+
+func init() {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.MaxIdleConns = 100
+	t.MaxConnsPerHost = 100
+	t.MaxIdleConnsPerHost = 100
+
+	client = &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: t,
+	}
+}
 
 func main() {
 	infile := flag.String("infile", "", "local html filename")
@@ -203,7 +218,15 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 }
 
 func getVenueAddress(url string) string {
-	doc, err := htmlquery.LoadURL(url)
+	resp, err := client.Get(url)
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	doc, err := htmlquery.Parse(resp.Body)
 	if err != nil {
 		log.Println("error getting "+url, err)
 		return ""
