@@ -1,5 +1,4 @@
 #!/bin/bash
-ulimit -n 50000
 dir="var/"`date +%Y%m%d`
 d1="$dir/with-surface"
 
