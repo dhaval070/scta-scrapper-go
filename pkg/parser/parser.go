@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -78,7 +79,7 @@ func ParseTime(content string) string {
 	return fmt.Sprintf("%02d:%02d", h, m)
 }
 
-func ParseSchedules(site string, doc *html.Node, today int) [][]string {
+func ParseSchedules(site string, doc *html.Node) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 
 	var result = [][]string{}
@@ -90,9 +91,6 @@ func ParseSchedules(site string, doc *html.Node, today int) [][]string {
 		id := GetAttr(node, "id")
 		dt, ymd := ParseId(id)
 
-		if dt < today {
-			continue
-		}
 		log.Println("dt: ", dt)
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`) // `div[2]`)
 
@@ -214,4 +212,46 @@ func GetVenueAddress(url string) string {
 	address := htmlquery.InnerText(item)
 	log.Println(url + ":" + address)
 	return address
+}
+
+func ParseMonthYear(dt string) (int, int) {
+	re := regexp.MustCompile(`^[0-9]{6}$`)
+
+	if !re.Match([]byte(dt)) {
+		panic("invalid format mmyyyy input")
+	}
+
+	mm, err := strconv.Atoi(dt[:2])
+	if err != nil {
+		panic(err)
+	}
+
+	yyyy, err := strconv.Atoi(dt[2:])
+	if err != nil {
+		panic(err)
+	}
+	return mm, yyyy
+}
+
+func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) [][]string {
+
+	var schedules = make([][]string, 0)
+
+	for division, id := range groups {
+		url := fmt.Sprintf(url, id, mm, yyyy)
+		doc, err := htmlquery.LoadURL(url)
+		if err != nil {
+			log.Fatal("load calendar url", err)
+		}
+
+		result := ParseSchedules(site, doc)
+
+		for _, row := range result {
+			row[5] = division
+			schedules = append(schedules, row)
+		}
+	}
+
+	sort.Sort(ByDate(schedules))
+	return schedules
 }

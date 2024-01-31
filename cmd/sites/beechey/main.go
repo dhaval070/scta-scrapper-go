@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"regexp"
-	"sort"
 	"strconv"
 	"time"
 
@@ -43,54 +41,29 @@ func parseGroups(doc *html.Node) map[string]string {
 	return groups
 }
 
-func fetchSchedules(url string, groups map[string]string, intdt int) [][]string {
-
-	var schedules = make([][]string, 0)
-
-	for division, id := range groups {
-		url := fmt.Sprintf(url, id)
-		doc, err := htmlquery.LoadURL(url)
-		if err != nil {
-			log.Fatal("load calendar url", err)
-		}
-
-		result := parser.ParseSchedules(SITE, doc, intdt)
-
-		for _, row := range result {
-			row[1] = SITE
-			row[5] = division
-			schedules = append(schedules, row)
-		}
-	}
-
-	sort.Sort(parser.ByDate(schedules))
-	return schedules
-}
-
 func main() {
-	ymd := time.Now().Format("20060102")
-
-	today := flag.String("today", ymd, "parse from date(yyyymmdd)")
+	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
 	outfile := flag.String("outfile", "", "output filename")
 	importLocations := flag.Bool("import-locations", false, "import site locations")
 
 	flag.Parse()
-	log.Println(*today)
 
 	var doc *html.Node
 	var err error
+	today := time.Now()
+	mm := int(today.Month())
+	yyyy := int(today.Year())
+
+	if *date != "" {
+		mm, yyyy = parser.ParseMonthYear(*date)
+	}
 
 	doc, err = htmlquery.LoadURL("https://beechey.ca/Seasons/Current/")
-
-	intdt, err := strconv.Atoi(*today)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	groups := parseGroups(doc)
 	log.Println(groups)
 
-	var result = fetchSchedules("https://beechey.ca/Groups/%s/Calendar/", groups, intdt)
+	var result = parser.FetchSchedules(SITE, "https://beechey.ca/Groups/%s/Calendar/?Month=%d&Year=%d", groups, mm, yyyy)
 
 	if *importLocations {
 		config.Init("config", ".")
@@ -121,4 +94,22 @@ func main() {
 	} else {
 		log.Println(result)
 	}
+}
+func parseMonthYear(dt string) (int, int) {
+	re := regexp.MustCompile(`^[0-9]{6}$`)
+
+	if !re.Match([]byte(dt)) {
+		panic("invalid format mmyyyy input")
+	}
+
+	mm, err := strconv.Atoi(dt[:2])
+	if err != nil {
+		panic(err)
+	}
+
+	yyyy, err := strconv.Atoi(dt[2:])
+	if err != nil {
+		panic(err)
+	}
+	return mm, yyyy
 }

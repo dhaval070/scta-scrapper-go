@@ -12,7 +12,6 @@ import (
 	"os"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -59,7 +58,7 @@ func main() {
 		doc, err = htmlquery.LoadDoc(*infile)
 	} else {
 		if *date != "" {
-			mm, yyyy = parseMonthYear(*date)
+			mm, yyyy = parser.ParseMonthYear(*date)
 		}
 
 		url := fmt.Sprintf("https://alliancehockey.com/Schedule/?Month=%d&Year=%d", mm, yyyy)
@@ -104,25 +103,6 @@ func main() {
 		log.Println(result)
 	}
 
-}
-
-func parseMonthYear(dt string) (int, int) {
-	re := regexp.MustCompile(`^[0-9]{6}$`)
-
-	if !re.Match([]byte(dt)) {
-		panic("invalid format mmyyyy input")
-	}
-
-	mm, err := strconv.Atoi(dt[:2])
-	if err != nil {
-		panic(err)
-	}
-
-	yyyy, err := strconv.Atoi(dt[2:])
-	if err != nil {
-		panic(err)
-	}
-	return mm, yyyy
 }
 
 func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {

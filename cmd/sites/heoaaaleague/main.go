@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -23,30 +24,32 @@ import (
 const SITE = "heoaaaleague"
 
 func main() {
-	ymd := time.Now().Format("20060102")
-
-	today := flag.String("today", ymd, "parse from date(yyyymmdd)")
+	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
 	outfile := flag.String("outfile", "", "output filename")
 	importLocations := flag.Bool("import-locations", false, "import site locations")
 
 	flag.Parse()
-	log.Println(*today)
+
+	today := time.Now()
+	mm := int(today.Month())
+	yyyy := int(today.Year())
+
+	if *date != "" {
+		mm, yyyy = parser.ParseMonthYear(*date)
+	}
 
 	var doc *html.Node
 	var err error
 
-	mm := (*today)[4:6]
-	yyyy := (*today)[:4]
-	url := fmt.Sprintf("https://heoaaaleague.ca/Schedule/?Month=%s&Year=%s", mm, yyyy)
-
-	log.Println(url)
+	url := fmt.Sprintf("https://heoaaaleague.ca/Schedule/?Month=%d&Year=%d", mm, yyyy)
 
 	doc, err = htmlquery.LoadURL(url)
 	if err != nil {
 		log.Fatal("load calendar url", err)
 	}
 
-	result := parseSchedules(doc, *today)
+	result := parseSchedules(doc, mm, yyyy)
+	sort.Sort(parser.ByDate(result))
 
 	if *importLocations {
 		config.Init("config", ".")
@@ -79,7 +82,7 @@ func main() {
 	}
 }
 
-func parseSchedules(doc *html.Node, today string) [][]string {
+func parseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 
 	var result = [][]string{}
@@ -108,7 +111,7 @@ func parseSchedules(doc *html.Node, today string) [][]string {
 			// var dom string
 			dom := txt[4:]
 
-			ymd := fmt.Sprintf("%s-%s-%s", today[:4], today[4:6], dom) //, timeval)
+			ymd := fmt.Sprintf("%d-%d-%s", yyyy, mm, dom) //, timeval)
 
 			division, err := parser.QueryInnerText(item, `//span[@class="game_no"]`)
 			if err != nil {
