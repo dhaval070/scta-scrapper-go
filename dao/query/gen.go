@@ -18,6 +18,7 @@ import (
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:              db,
+		Event:           newEvent(db, opts...),
 		FeedMode:        newFeedMode(db, opts...),
 		Location:        newLocation(db, opts...),
 		Province:        newProvince(db, opts...),
@@ -32,6 +33,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	Event           event
 	FeedMode        feedMode
 	Location        location
 	Province        province
@@ -47,6 +49,7 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:              db,
+		Event:           q.Event.clone(db),
 		FeedMode:        q.FeedMode.clone(db),
 		Location:        q.Location.clone(db),
 		Province:        q.Province.clone(db),
@@ -69,6 +72,7 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:              db,
+		Event:           q.Event.replaceDB(db),
 		FeedMode:        q.FeedMode.replaceDB(db),
 		Location:        q.Location.replaceDB(db),
 		Province:        q.Province.replaceDB(db),
@@ -81,6 +85,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 }
 
 type queryCtx struct {
+	Event           *eventDo
 	FeedMode        *feedModeDo
 	Location        *locationDo
 	Province        *provinceDo
@@ -93,6 +98,7 @@ type queryCtx struct {
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		Event:           q.Event.WithContext(ctx),
 		FeedMode:        q.FeedMode.WithContext(ctx),
 		Location:        q.Location.WithContext(ctx),
 		Province:        q.Province.WithContext(ctx),

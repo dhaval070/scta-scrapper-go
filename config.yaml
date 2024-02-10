@@ -1,1 +1,1 @@
-DB_DSN: app:app@(172.17.0.1:5506)/schedules
+DB_DSN: app:app@(172.17.0.1:5506)/schedules?parseTime=true
