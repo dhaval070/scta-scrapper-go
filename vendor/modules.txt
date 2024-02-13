@@ -81,6 +81,9 @@ github.com/stretchr/testify/assert
 # github.com/subosito/gotenv v1.4.2
 ## explicit; go 1.18
 github.com/subosito/gotenv
+# github.com/thedatashed/xlsxreader v1.2.5
+## explicit; go 1.15
+github.com/thedatashed/xlsxreader
 # golang.org/x/mod v0.8.0
 ## explicit; go 1.17
 golang.org/x/mod/internal/lazyregexp
