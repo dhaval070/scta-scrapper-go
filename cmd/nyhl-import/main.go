@@ -64,7 +64,7 @@ func importEvents(xl *xlsxreader.XlsxFileCloser, cutOffDate time.Time) error {
 	m := []*model.Event{}
 
 	ch := xl.ReadRows(xl.Sheets[0])
-	<-ch
+
 	for rec := range ch {
 		if rec.Error != nil {
 			return err
@@ -106,7 +106,7 @@ func importEvents(xl *xlsxreader.XlsxFileCloser, cutOffDate time.Time) error {
 }
 
 func parseDate(date, t string) (tt time.Time, err error) {
-	t1, err := time.Parse("2006-01-02T15:04:05Z", t)
+	t1, err := time.Parse("3:04 PM", t)
 	if err != nil {
 		return tt, fmt.Errorf("failed to parse time:%s %w", t, err)
 	}
