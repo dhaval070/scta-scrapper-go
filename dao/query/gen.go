@@ -20,13 +20,18 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		db:              db,
 		Event:           newEvent(db, opts...),
 		FeedMode:        newFeedMode(db, opts...),
+		GthlMapping:     newGthlMapping(db, opts...),
 		Location:        newLocation(db, opts...),
+		NyhlMapping:     newNyhlMapping(db, opts...),
+		OhfTeam:         newOhfTeam(db, opts...),
 		Province:        newProvince(db, opts...),
 		Rendition:       newRendition(db, opts...),
+		SchemaMigration: newSchemaMigration(db, opts...),
 		Site:            newSite(db, opts...),
 		SitesLocation:   newSitesLocation(db, opts...),
 		Surface:         newSurface(db, opts...),
 		SurfaceFeedMode: newSurfaceFeedMode(db, opts...),
+		TodbSurface:     newTodbSurface(db, opts...),
 	}
 }
 
@@ -35,13 +40,18 @@ type Query struct {
 
 	Event           event
 	FeedMode        feedMode
+	GthlMapping     gthlMapping
 	Location        location
+	NyhlMapping     nyhlMapping
+	OhfTeam         ohfTeam
 	Province        province
 	Rendition       rendition
+	SchemaMigration schemaMigration
 	Site            site
 	SitesLocation   sitesLocation
 	Surface         surface
 	SurfaceFeedMode surfaceFeedMode
+	TodbSurface     todbSurface
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -51,13 +61,18 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		db:              db,
 		Event:           q.Event.clone(db),
 		FeedMode:        q.FeedMode.clone(db),
+		GthlMapping:     q.GthlMapping.clone(db),
 		Location:        q.Location.clone(db),
+		NyhlMapping:     q.NyhlMapping.clone(db),
+		OhfTeam:         q.OhfTeam.clone(db),
 		Province:        q.Province.clone(db),
 		Rendition:       q.Rendition.clone(db),
+		SchemaMigration: q.SchemaMigration.clone(db),
 		Site:            q.Site.clone(db),
 		SitesLocation:   q.SitesLocation.clone(db),
 		Surface:         q.Surface.clone(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.clone(db),
+		TodbSurface:     q.TodbSurface.clone(db),
 	}
 }
 
@@ -74,39 +89,54 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		db:              db,
 		Event:           q.Event.replaceDB(db),
 		FeedMode:        q.FeedMode.replaceDB(db),
+		GthlMapping:     q.GthlMapping.replaceDB(db),
 		Location:        q.Location.replaceDB(db),
+		NyhlMapping:     q.NyhlMapping.replaceDB(db),
+		OhfTeam:         q.OhfTeam.replaceDB(db),
 		Province:        q.Province.replaceDB(db),
 		Rendition:       q.Rendition.replaceDB(db),
+		SchemaMigration: q.SchemaMigration.replaceDB(db),
 		Site:            q.Site.replaceDB(db),
 		SitesLocation:   q.SitesLocation.replaceDB(db),
 		Surface:         q.Surface.replaceDB(db),
 		SurfaceFeedMode: q.SurfaceFeedMode.replaceDB(db),
+		TodbSurface:     q.TodbSurface.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
 	Event           *eventDo
 	FeedMode        *feedModeDo
+	GthlMapping     *gthlMappingDo
 	Location        *locationDo
+	NyhlMapping     *nyhlMappingDo
+	OhfTeam         *ohfTeamDo
 	Province        *provinceDo
 	Rendition       *renditionDo
+	SchemaMigration *schemaMigrationDo
 	Site            *siteDo
 	SitesLocation   *sitesLocationDo
 	Surface         *surfaceDo
 	SurfaceFeedMode *surfaceFeedModeDo
+	TodbSurface     *todbSurfaceDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
 		Event:           q.Event.WithContext(ctx),
 		FeedMode:        q.FeedMode.WithContext(ctx),
+		GthlMapping:     q.GthlMapping.WithContext(ctx),
 		Location:        q.Location.WithContext(ctx),
+		NyhlMapping:     q.NyhlMapping.WithContext(ctx),
+		OhfTeam:         q.OhfTeam.WithContext(ctx),
 		Province:        q.Province.WithContext(ctx),
 		Rendition:       q.Rendition.WithContext(ctx),
+		SchemaMigration: q.SchemaMigration.WithContext(ctx),
 		Site:            q.Site.WithContext(ctx),
 		SitesLocation:   q.SitesLocation.WithContext(ctx),
 		Surface:         q.Surface.WithContext(ctx),
 		SurfaceFeedMode: q.SurfaceFeedMode.WithContext(ctx),
+		TodbSurface:     q.TodbSurface.WithContext(ctx),
 	}
 }
 

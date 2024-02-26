@@ -1,17 +1,17 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 	"log"
-	"strconv"
+	"os"
 	"time"
 
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
-
-	"github.com/thedatashed/xlsxreader"
 )
 
 var repo *repository.Repository
@@ -45,40 +45,46 @@ func main() {
 		log.Fatal("infle is required")
 	}
 
-	xl, err := xlsxreader.OpenFile(*infile)
+	f, err := os.Open(*infile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = importEvents(xl, cdate)
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	m, err := repo.GetNyhlMappings()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = importEvents(r, cdate, m)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 // delete the two group columns before import
-//format required: GameID	League	Season	Division	Tier	Home Team	Tier	Visitor Team	Location	Date	Time	LB Surface ID
-func importEvents(xl *xlsxreader.XlsxFileCloser, cutOffDate time.Time) error {
+//format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
+func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
 	var SourceType = "file"
 
 	m := []*model.Event{}
 
-	ch := xl.ReadRows(xl.Sheets[0])
-
-	for rec := range ch {
-		if rec.Error != nil {
-			return err
+	for i := 1; ; i += 1 {
+		cols, err := ff.Read()
+		if err == io.EOF {
+			break
 		}
-
-		if rec.Cells[11].Type != xlsxreader.TypeNumerical {
-			return fmt.Errorf("invalid type for surface id %v %s", rec.Cells[11].Type, rec.Cells[13].Value)
-		}
-		sid, err := strconv.Atoi(rec.Cells[11].Value)
 		if err != nil {
-			return fmt.Errorf("failed to parse surfaceid %s", rec.Cells[11].Value)
+			log.Fatal(fmt.Errorf("error at row %d, %w", i, err))
 		}
 
-		dt, err := parseDate(rec.Cells[9].Value, rec.Cells[10].Value)
+		sid, ok := mapping[cols[10]]
+		if !ok {
+			log.Printf("failed to map surfaceid %s\n", cols[10])
+		}
+
+		dt, err := parseDate(cols[11], cols[12])
 		if err != nil {
 			return err
 		}
@@ -91,10 +97,10 @@ func importEvents(xl *xlsxreader.XlsxFileCloser, cutOffDate time.Time) error {
 			Site:        "nyhl",
 			SourceType:  SourceType,
 			Datetime:    dt,
-			HomeTeam:    rec.Cells[6].Value,
-			GuestTeam:   rec.Cells[8].Value,
-			Location:    rec.Cells[8].Value,
-			Division:    rec.Cells[3].Value,
+			HomeTeam:    cols[6],
+			GuestTeam:   cols[9],
+			Location:    cols[10],
+			Division:    cols[3],
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
 		})

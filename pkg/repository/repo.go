@@ -70,6 +70,38 @@ func (r *Repository) GetLocation(id int) (*model.Location, error) {
 	return &m, nil
 }
 
+func (r *Repository) GetGthlMappings() (map[string]int, error) {
+	res := []model.GthlMapping{}
+
+	err := r.db.Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var m = map[string]int{}
+
+	for _, r := range res {
+		m[r.Location] = int(r.SurfaceID)
+	}
+	return m, nil
+}
+
+func (r *Repository) GetNyhlMappings() (map[string]int, error) {
+	res := []model.NyhlMapping{}
+
+	err := r.db.Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var m = map[string]int{}
+
+	for _, r := range res {
+		m[r.Location] = int(r.SurfaceID)
+	}
+	return m, nil
+}
+
 type SiteRepository struct {
 	site string
 	Repository
@@ -174,7 +206,6 @@ func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDat
 		}
 		var err error
 		for _, rec := range records {
-			log.Printf("rec %+v\n", rec)
 			if err = db.Create(rec).Error; err != nil {
 				return err
 			}
