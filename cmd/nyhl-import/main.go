@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/csv"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -12,57 +11,68 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
+
+	"github.com/spf13/cobra"
 )
 
-var repo *repository.Repository
+var cmd = &cobra.Command{
+	Use:   "nyhl-import",
+	Short: "Import nyhl schedule",
+	RunE: func(c *cobra.Command, args []string) error {
+		return runNyhl()
+	},
+}
 
-func main() {
+var (
+	cfg    config.Config
+	repo   *repository.Repository
+	infile *string
+	sdate  *string
+)
+
+func init() {
 	config.Init("config", ".")
-
-	var cfg = config.MustReadConfig()
+	cfg = config.MustReadConfig()
 	repo = repository.NewRepository(cfg)
 
-	infile := flag.String("infile", "", "schedule csv file")
+	infile = cmd.Flags().StringP("file", "f", "", "CSV file path (required)")
+	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
 
-	var sdate string
-	flag.StringVar(&sdate, "cutoffdate", "", "-cutoffdate 2024-01-01")
+	cmd.MarkFlagRequired("file")
+	cmd.MarkFlagRequired("cutoffdate")
+}
 
-	flag.Parse()
+func main() {
+	cmd.Execute()
+}
 
-	if sdate == "" {
-		log.Fatal("cutoff date is required to import")
-	}
-
+func runNyhl() error {
 	var cdate time.Time
 	var err error
-	cdate, err = time.Parse("2006-01-02", sdate)
+	cdate, err = time.Parse("2006-01-02", *sdate)
 
 	if err != nil {
-		log.Fatal("failed to parse cutoff date", err)
-	}
-
-	if *infile == "" {
-		log.Fatal("infle is required")
+		return fmt.Errorf("failed to parse cutoff date %w", err)
 	}
 
 	f, err := os.Open(*infile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer f.Close()
 
 	r := csv.NewReader(f)
 	m, err := repo.GetNyhlMappings()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	err = importEvents(r, cdate, m)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-// delete the two group columns before import
 //format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
 func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
