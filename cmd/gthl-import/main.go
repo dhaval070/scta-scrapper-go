@@ -13,6 +13,7 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
+	"calendar-scrapper/pkg/writer"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/spf13/cobra"
@@ -82,7 +83,7 @@ func runGthl() error {
 		return fmt.Errorf("failed to read file %s, %w", *infile, err)
 	}
 
-	fmt.Println(detectContentCharset(bytes.NewReader(b)))
+	// fmt.Println(detectContentCharset(bytes.NewReader(b)))
 	// convert utf16 to utf8
 	data, _, _ := transform.Bytes(unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder(), b)
 
@@ -93,15 +94,15 @@ func runGthl() error {
 		return fmt.Errorf("failed to read file %s, %w", *infile, err)
 	}
 
-	err = importEvents(doc, cdate, m)
+	events, err := importEvents(doc, cdate, m)
 	if err != nil {
 		return err
 	}
-	return nil
+	return writer.WriteEvents(os.Stdout, events)
 }
 
 // Game_id	Rink	StartTime	StartDate	Division	Category	Visitor	VisitorTeamID	Home	HomeTeamID	GameType
-func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int) error {
+func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int) ([]*model.Event, error) {
 	var err error
 	var SourceType = "file"
 
@@ -109,19 +110,18 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 
 	rows, err := htmlquery.QueryAll(root, "//table/tbody/tr")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Println("len", htmlquery.OutputHTML(rows[0], true))
 
 	for _, row := range rows[1:] {
 		cols, err := htmlquery.QueryAll(row, "//td")
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		dt, err := parseDate(htmlquery.InnerText(cols[3]), htmlquery.InnerText(cols[2]))
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if dt.Before(cutOffDate) {
@@ -131,6 +131,7 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 		sid, ok := mapping[htmlquery.InnerText(cols[1])]
 		if !ok {
 			log.Printf("failed to map surfaceid %s\n", htmlquery.InnerText(cols[1]))
+			continue
 		}
 
 		m = append(m, &model.Event{
@@ -150,7 +151,7 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("gthl", m, cutOffDate)
-	return err
+	return m, err
 }
 
 func parseDate(date, t string) (tt time.Time, err error) {

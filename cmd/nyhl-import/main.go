@@ -11,6 +11,7 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
+	"calendar-scrapper/pkg/writer"
 
 	"github.com/spf13/cobra"
 )
@@ -37,7 +38,6 @@ func init() {
 
 	infile = cmd.Flags().StringP("file", "f", "", "CSV file path (required)")
 	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
-
 	cmd.MarkFlagRequired("file")
 	cmd.MarkFlagRequired("cutoffdate")
 }
@@ -66,15 +66,16 @@ func runNyhl() error {
 	if err != nil {
 		return err
 	}
-	err = importEvents(r, cdate, m)
+	result, err := importEvents(r, cdate, m)
 	if err != nil {
 		return err
 	}
-	return nil
+
+	return writer.WriteEvents(os.Stdout, result)
 }
 
 //format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
-func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) error {
+func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) ([]*model.Event, error) {
 	var err error
 	var SourceType = "file"
 
@@ -86,17 +87,18 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 			break
 		}
 		if err != nil {
-			log.Fatal(fmt.Errorf("error at row %d, %w", i, err))
+			return nil, fmt.Errorf("error at row %d, %w", i, err)
 		}
 
 		sid, ok := mapping[cols[10]]
 		if !ok {
 			log.Printf("failed to map surfaceid %s\n", cols[10])
+			continue
 		}
 
 		dt, err := parseDate(cols[11], cols[12])
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if dt.Before(cutOffDate) {
@@ -118,7 +120,7 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("nyhl", m, cutOffDate)
-	return err
+	return m, err
 }
 
 func parseDate(date, t string) (tt time.Time, err error) {
