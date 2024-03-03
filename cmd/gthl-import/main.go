@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -13,7 +14,6 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
-	"calendar-scrapper/pkg/writer"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/spf13/cobra"
@@ -94,15 +94,12 @@ func runGthl() error {
 		return fmt.Errorf("failed to read file %s, %w", *infile, err)
 	}
 
-	events, err := importEvents(doc, cdate, m)
-	if err != nil {
-		return err
-	}
-	return writer.WriteEvents(os.Stdout, events)
+	err = importEvents(doc, cdate, m)
+	return err
 }
 
 // Game_id	Rink	StartTime	StartDate	Division	Category	Visitor	VisitorTeamID	Home	HomeTeamID	GameType
-func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int) ([]*model.Event, error) {
+func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
 	var SourceType = "file"
 
@@ -110,18 +107,22 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 
 	rows, err := htmlquery.QueryAll(root, "//table/tbody/tr")
 	if err != nil {
-		return nil, err
+		return err
 	}
+
+	ww := csv.NewWriter(os.Stdout)
+
+	var r = make([]string, 11)
 
 	for _, row := range rows[1:] {
 		cols, err := htmlquery.QueryAll(row, "//td")
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		dt, err := parseDate(htmlquery.InnerText(cols[3]), htmlquery.InnerText(cols[2]))
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if dt.Before(cutOffDate) {
@@ -147,11 +148,18 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
 		})
+
+		for i := 0; i < 10; i += 1 {
+			r[i] = htmlquery.InnerText(cols[i])
+		}
+		r[10] = fmt.Sprint(sid)
+
+		ww.Write(r)
 	}
 
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("gthl", m, cutOffDate)
-	return m, err
+	return err
 }
 
 func parseDate(date, t string) (tt time.Time, err error) {

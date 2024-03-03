@@ -11,7 +11,6 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/repository"
-	"calendar-scrapper/pkg/writer"
 
 	"github.com/spf13/cobra"
 )
@@ -66,20 +65,21 @@ func runNyhl() error {
 	if err != nil {
 		return err
 	}
-	result, err := importEvents(r, cdate, m)
-	if err != nil {
-		return err
-	}
+	err = importEvents(r, cdate, m)
+	return err
 
-	return writer.WriteEvents(os.Stdout, result)
 }
 
 //format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
-func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) ([]*model.Event, error) {
+func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
 	var SourceType = "file"
 
 	m := []*model.Event{}
+
+	ww := csv.NewWriter(os.Stdout)
+
+	var r = make([]string, 14)
 
 	for i := 1; ; i += 1 {
 		cols, err := ff.Read()
@@ -87,7 +87,7 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("error at row %d, %w", i, err)
+			return fmt.Errorf("error at row %d, %w", i, err)
 		}
 
 		sid, ok := mapping[cols[10]]
@@ -98,7 +98,7 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 
 		dt, err := parseDate(cols[11], cols[12])
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if dt.Before(cutOffDate) {
@@ -116,11 +116,18 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
 		})
+
+		for i := 0; i < 13; i += 1 {
+			r[i] = cols[i]
+		}
+		r[13] = fmt.Sprint(sid)
+
+		ww.Write(r)
 	}
 
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("nyhl", m, cutOffDate)
-	return m, err
+	return err
 }
 
 func parseDate(date, t string) (tt time.Time, err error) {
