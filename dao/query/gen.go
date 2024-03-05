@@ -22,6 +22,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		FeedMode:        newFeedMode(db, opts...),
 		GthlMapping:     newGthlMapping(db, opts...),
 		Location:        newLocation(db, opts...),
+		MhlMapping:      newMhlMapping(db, opts...),
 		NyhlMapping:     newNyhlMapping(db, opts...),
 		OhfTeam:         newOhfTeam(db, opts...),
 		Province:        newProvince(db, opts...),
@@ -42,6 +43,7 @@ type Query struct {
 	FeedMode        feedMode
 	GthlMapping     gthlMapping
 	Location        location
+	MhlMapping      mhlMapping
 	NyhlMapping     nyhlMapping
 	OhfTeam         ohfTeam
 	Province        province
@@ -63,6 +65,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		FeedMode:        q.FeedMode.clone(db),
 		GthlMapping:     q.GthlMapping.clone(db),
 		Location:        q.Location.clone(db),
+		MhlMapping:      q.MhlMapping.clone(db),
 		NyhlMapping:     q.NyhlMapping.clone(db),
 		OhfTeam:         q.OhfTeam.clone(db),
 		Province:        q.Province.clone(db),
@@ -91,6 +94,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		FeedMode:        q.FeedMode.replaceDB(db),
 		GthlMapping:     q.GthlMapping.replaceDB(db),
 		Location:        q.Location.replaceDB(db),
+		MhlMapping:      q.MhlMapping.replaceDB(db),
 		NyhlMapping:     q.NyhlMapping.replaceDB(db),
 		OhfTeam:         q.OhfTeam.replaceDB(db),
 		Province:        q.Province.replaceDB(db),
@@ -109,6 +113,7 @@ type queryCtx struct {
 	FeedMode        *feedModeDo
 	GthlMapping     *gthlMappingDo
 	Location        *locationDo
+	MhlMapping      *mhlMappingDo
 	NyhlMapping     *nyhlMappingDo
 	OhfTeam         *ohfTeamDo
 	Province        *provinceDo
@@ -127,6 +132,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		FeedMode:        q.FeedMode.WithContext(ctx),
 		GthlMapping:     q.GthlMapping.WithContext(ctx),
 		Location:        q.Location.WithContext(ctx),
+		MhlMapping:      q.MhlMapping.WithContext(ctx),
 		NyhlMapping:     q.NyhlMapping.WithContext(ctx),
 		OhfTeam:         q.OhfTeam.WithContext(ctx),
 		Province:        q.Province.WithContext(ctx),

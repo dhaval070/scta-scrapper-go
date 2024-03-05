@@ -102,6 +102,22 @@ func (r *Repository) GetNyhlMappings() (map[string]int, error) {
 	return m, nil
 }
 
+func (r *Repository) GetMhlMappings() (map[string]int, error) {
+	res := []model.MhlMapping{}
+
+	err := r.db.Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var m = map[string]int{}
+
+	for _, r := range res {
+		m[r.Location] = int(r.SurfaceID)
+	}
+	return m, nil
+}
+
 type SiteRepository struct {
 	site string
 	Repository
