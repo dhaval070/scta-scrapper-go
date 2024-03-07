@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"calendar-scrapper/config"
@@ -168,12 +167,11 @@ func parseDate(date, t string) (tt time.Time, err error) {
 		return tt, fmt.Errorf("failed to parse time:%s %w", t, err)
 	}
 
-	// split 2/22/2024 12:00:00 AM
-	p := strings.Split(date, " ")
-	dt, err := time.Parse("1/2/2006 15:04:05", p[0]+" "+t1.Format("15:04:05"))
+	// 01-Oct-2023
+	dt, err := time.Parse("02-Jan-2006 15:04:05", date+" "+t1.Format("15:04:05"))
 
 	if err != nil {
-		return tt, fmt.Errorf("failed to parse date:%s time:%s %w", date, t, err)
+		return tt, fmt.Errorf("failed to parse date:%s time:%s :%w", date, t, err)
 	}
 	return dt, nil
 }
