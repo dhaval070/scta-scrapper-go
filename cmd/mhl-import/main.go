@@ -151,6 +151,7 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 		for i := 0; i < 10; i += 1 {
 			r[i] = htmlquery.InnerText(cols[i])
 		}
+		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
 
 		ww.Write(r)
