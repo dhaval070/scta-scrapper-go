@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"calendar-scrapper/config"
@@ -151,6 +152,8 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 		for i := 0; i < 10; i += 1 {
 			r[i] = htmlquery.InnerText(cols[i])
 		}
+		r[7] = strings.Replace(r[7], "HC ", "", -1)
+		r[9] = strings.Replace(r[9], "HC ", "", -1)
 		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
 
