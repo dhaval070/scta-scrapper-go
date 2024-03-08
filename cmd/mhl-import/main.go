@@ -160,6 +160,7 @@ func importEvents(root *html.Node, cutOffDate time.Time, mapping map[string]int)
 		ww.Write(r)
 	}
 
+	ww.Flush()
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("mhl", m, cutOffDate)
 	return err

@@ -125,6 +125,7 @@ func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) 
 		ww.Write(r)
 	}
 
+	ww.Flush()
 	log.Println("total events ", len(m))
 	err = repo.ImportEvents("nyhl", m, cutOffDate)
 	return err
