@@ -15,9 +15,10 @@ import (
 
 func TestRun(t *testing.T) {
 	c := &MockClient{}
+	site = new(string)
 
 	type Rec struct {
-		VendorId        int    `json:vendorId`
+		VendorId        int    `json:"vendorId"`
 		GameIdInternal  int    `json:"gameIdInternal"`
 		LinkStreamVideo string `json:"linkStreamVideo"`
 		VideoStatus     bool   `json:"videoStatus"`

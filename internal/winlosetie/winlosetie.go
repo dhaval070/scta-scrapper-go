@@ -1,8 +1,6 @@
 package winlosetie
 
 import (
-	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,14 +17,11 @@ var Cmd = &cobra.Command{
 		var r io.ReadCloser
 		var err error
 
-		if *infile == "" {
-			r = os.Stdin
-		} else {
-			r, err = os.Open(*infile)
-			if err != nil {
-				return err
-			}
+		r, err = os.Open(*infile)
+		if err != nil {
+			return err
 		}
+
 		defer r.Close()
 
 		return run(r)
@@ -39,34 +34,28 @@ type Client interface {
 
 var (
 	infile *string
+	site   *string
 	client Client
 	apiUrl = "http://admin.winloseortie.com/api/v1/vendor/game"
 )
 
 func InitCmd() {
-	infile = Cmd.Flags().StringP("file", "f", "", "XLS file path (required)")
+	infile = Cmd.Flags().StringP("file", "f", "", "input file path (required)")
+	site = Cmd.Flags().StringP("site", "s", "", "site name(e.g. nyhl)")
 	client = &http.Client{}
+	Cmd.MarkFlagRequired("file")
 }
 
 func run(r io.Reader) error {
 	var ids = make([]string, 0)
+	var records []DataRec
+	var err error
 
-	csvr := csv.NewReader(r)
+	records, err = formatInput(r, *site)
 
-	for {
-		rec, err := csvr.Read()
-		// id, date, time, surface id
-		// 793537,2023-11-11,14:10,3876
-		if errors.Is(err, io.EOF) {
-			break
-		}
-
-		if err != nil {
-			return err
-		}
-
-		url := fmt.Sprintf("https://livebarn.com/en/video/%s/%s/%s", rec[3], rec[1], rec[2])
-		s := fmt.Sprintf(`{"vendorId":75,"gameIdInternal":%s,"linkStreamVideo":"%s","videoStatus":true}`, rec[0], url)
+	for _, rec := range records {
+		url := fmt.Sprintf("https://livebarn.com/en/video/%s/%s/%s", rec.SurfaceID, rec.Date, rec.Time)
+		s := fmt.Sprintf(`{"vendorId":75,"gameIdInternal":%d,"linkStreamVideo":"%s","videoStatus":true}`, rec.Id, url)
 
 		ids = append(ids, s)
 	}
