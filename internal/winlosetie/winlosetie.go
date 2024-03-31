@@ -72,6 +72,7 @@ func run(r io.Reader) error {
 		return fmt.Errorf("servier returned error %w", err)
 	}
 
+	fmt.Println("Total records sent:", len(ids))
 	fmt.Println(resp.StatusCode, resp.Status)
 	return nil
 }
