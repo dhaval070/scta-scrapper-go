@@ -59,6 +59,9 @@ func main() {
 	}
 
 	doc, err = htmlquery.LoadURL("https://ucmhl.ca/Seasons/Current/")
+	if err != nil {
+		panic(err)
+	}
 
 	groups := parseGroups(doc)
 	log.Println(groups)

@@ -1,34 +1,23 @@
 package parser
 
 import (
+	"calendar-scrapper/internal/client"
 	"calendar-scrapper/pkg/month"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 )
 
-var client = &http.Client{}
-
-func init() {
-	t := http.DefaultTransport.(*http.Transport).Clone()
-	t.MaxIdleConns = 100
-	t.MaxConnsPerHost = 100
-	t.MaxIdleConnsPerHost = 100
-
-	client = &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: t,
-	}
-}
+var Client = client.GetClient(os.Getenv("HTTP_PROXY"))
 
 type ByDate [][]string
 
@@ -190,7 +179,8 @@ func ParseId(id string) (int, string) {
 }
 
 func GetVenueAddress(url string) string {
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	resp, err := Client.Do(req)
 
 	if err != nil {
 		log.Println(err)
@@ -206,7 +196,7 @@ func GetVenueAddress(url string) string {
 
 	item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
 	if item == nil {
-		log.Println("address node not found")
+		log.Println("address node not found, url:", url)
 		return ""
 	}
 	address := htmlquery.InnerText(item)
