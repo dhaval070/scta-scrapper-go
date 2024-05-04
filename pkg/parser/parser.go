@@ -3,6 +3,7 @@ package parser
 import (
 	"calendar-scrapper/internal/client"
 	"calendar-scrapper/pkg/month"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,30 +43,30 @@ func GetAttr(node *html.Node, key string) string {
 	return ""
 }
 
-func ParseTime(content string) string {
+func ParseTime(content string) (string, error) {
 	reg := regexp.MustCompile("([0-9]{1,2}):([0-9]{1,2}) (AM|PM)")
 
 	parts := reg.FindStringSubmatch(content)
 
 	if parts == nil {
-		log.Fatal("failed to parse time: " + content)
+		return "", errors.New("failed to parse time")
 	}
 
 	h, err := strconv.Atoi(parts[1])
 	if err != nil {
-		log.Fatal("failed to convert hour")
+		return "", errors.New("failed to convert hour")
 	}
 
 	m, err := strconv.Atoi(parts[2])
 	if err != nil {
-		log.Fatal("failed to convert minutes")
+		return "", errors.New("failed to convert minutes")
 	}
 
 	if parts[3] == "PM" && h < 12 {
 		h += 12
 	}
 
-	return fmt.Sprintf("%02d:%02d", h, m)
+	return fmt.Sprintf("%02d:%02d", h, m), nil
 }
 
 func ParseSchedules(site string, doc *html.Node) [][]string {
@@ -78,20 +79,23 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 
 	for _, node := range nodes {
 		id := GetAttr(node, "id")
-		dt, ymd := ParseId(id)
+		ymd := ParseId(id)
 
-		log.Println("dt: ", dt)
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`) // `div[2]`)
 
 		for _, parent := range listItems {
-			items := htmlquery.Find(parent, `div[2]`)
-			item := items[0]
+			item := htmlquery.FindOne(parent, `div[2]`)
 			content := htmlquery.OutputHTML(item, true)
 
 			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
 				continue
 			}
-			timeval := ParseTime(content)
+			timeval, err := ParseTime(content)
+			if err != nil {
+				log.Fatal(err, content)
+				continue
+			}
+
 			division, err := QueryInnerText(item, `//span[@class="game_no"]`)
 			if err != nil {
 				log.Println(err)
@@ -157,7 +161,7 @@ func QueryInnerText(doc *html.Node, expr string) (string, error) {
 	return "", fmt.Errorf("node not found %v", expr)
 }
 
-func ParseId(id string) (int, string) {
+func ParseId(id string) string {
 	parts := strings.Split(id, "-")
 
 	if len(parts) != 4 {
@@ -169,13 +173,7 @@ func ParseId(id string) (int, string) {
 		log.Fatal(err)
 	}
 
-	dt, err := strconv.Atoi(fmt.Sprintf("%s%02d%s", parts[3], mm, parts[2]))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return dt, fmt.Sprintf("%s-%02d-%s", parts[3], mm, parts[2])
-
+	return fmt.Sprintf("%s-%02d-%s", parts[3], mm, parts[2])
 }
 
 func GetVenueAddress(url string) string {

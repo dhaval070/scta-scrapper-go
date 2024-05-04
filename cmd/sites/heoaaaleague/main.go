@@ -101,7 +101,11 @@ func parseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 				continue
 			}
 
-			timeval := parser.ParseTime(content)
+			timeval, err := parser.ParseTime(content)
+			if err != nil {
+				log.Fatal(err)
+				continue
+			}
 
 			txt, err := parser.QueryInnerText(item, `//div[@class="day_of_month"]`)
 			if err != nil {
