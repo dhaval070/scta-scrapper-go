@@ -138,21 +138,25 @@ func parseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
 			location, err := parser.QueryInnerText(item, `//div[@class="location remote"]`)
 
-			item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
+			item = htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)[0]
 			var url string
 			var address string
+			var class string
 
 			for _, attr := range item.Attr {
 				if attr.Key == "href" {
 					url = attr.Val
 					break
+				} else if attr.Key == "class" {
+					class = attr.Val
 				}
 			}
+
 			if url != "" {
 				wg.Add(1)
 				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address = parser.GetVenueAddress(url)
+					address = parser.GetVenueAddress(url, class)
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, SITE, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()

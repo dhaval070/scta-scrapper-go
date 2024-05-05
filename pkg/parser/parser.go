@@ -121,14 +121,17 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 				continue
 			}
 
-			item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
+			item = htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)[0]
 			var url string
 			var address string
+			var class string
 
 			for _, attr := range item.Attr {
 				if attr.Key == "href" {
 					url = attr.Val
 					break
+				} else if attr.Key == "class" {
+					class = attr.Val
 				}
 			}
 
@@ -136,7 +139,7 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 				wg.Add(1)
 				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address = GetVenueAddress(url)
+					address = GetVenueAddress(url, class)
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
@@ -176,7 +179,7 @@ func ParseId(id string) string {
 	return fmt.Sprintf("%s-%02d-%s", parts[3], mm, parts[2])
 }
 
-func GetVenueAddress(url string) string {
+func GetVenueAddress(url string, class string) string {
 	req, err := http.NewRequest("GET", url, nil)
 	resp, err := Client.Do(req)
 
@@ -192,12 +195,21 @@ func GetVenueAddress(url string) string {
 		return ""
 	}
 
-	item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
-	if item == nil {
-		log.Println("address node not found, url:", url)
-		return ""
+	var address string
+
+	// theonedb.com
+	if class == "remote" {
+		item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
+		if item == nil {
+			log.Println("address node not found, url:", url)
+			return ""
+		}
+		address = htmlquery.InnerText(item)
+	} else if class == "local" {
+		// local url
+		node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
+		address = htmlquery.InnerText(node)
 	}
-	address := htmlquery.InnerText(item)
 	log.Println(url + ":" + address)
 	return address
 }
