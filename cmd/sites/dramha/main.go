@@ -19,9 +19,9 @@ import (
 	"golang.org/x/net/html"
 )
 
-const SITE = "sdhockey"
-const HOME_TEAM = "sdahockey"
-const BASE_URL = "https://sdhockey.ca/"
+const SITE = "dramha"
+const HOME_TEAM = "dramha"
+const BASE_URL = "https://dramha.com/"
 
 func main() {
 	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
