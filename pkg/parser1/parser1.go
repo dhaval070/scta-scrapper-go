@@ -38,7 +38,12 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			item := htmlquery.FindOne(parent, `div[2]`)
 			content := htmlquery.OutputHTML(item, true)
 
-			if !strings.Contains(strings.ToUpper(content), "HOME GAME") && !strings.Contains(strings.ToUpper(content), "AWAY GAME") {
+			var homeGame bool
+
+			if strings.Contains(strings.ToUpper(content), "HOME GAME") {
+				homeGame = true
+			} else if !strings.Contains(strings.ToUpper(content), "AWAY GAME") {
+				// neither home game or away game then skip
 				continue
 			}
 
@@ -60,6 +65,12 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			}
 
 			guestTeam := strings.Replace(guestStr, "@ ", "", -1)
+
+			hm := homeTeam
+
+			if !homeGame {
+				hm, guestTeam = guestTeam, homeTeam
+			}
 
 			location, err := parser.QueryInnerText(item, `//div[contains(@class,"location")]`)
 
@@ -87,11 +98,11 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 					address = strings.Replace(address, location, "", 1)
 
 					lock.Lock()
-					result = append(result, []string{ymd + " " + timeval, Site, homeTeam, guestTeam, location, division, address})
+					result = append(result, []string{ymd + " " + timeval, Site, hm, guestTeam, location, division, address})
 					lock.Unlock()
 				}(url, location, wg, lock)
 			} else {
-				result = append(result, []string{ymd + " " + timeval, Site, homeTeam, guestTeam, location, division, ""})
+				result = append(result, []string{ymd + " " + timeval, Site, hm, guestTeam, location, division, ""})
 			}
 		}
 	}
