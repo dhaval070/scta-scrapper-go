@@ -19,7 +19,7 @@ import (
 
 var repo *repository.Repository
 
-func processCsv(site string, r io.Reader) [][]string {
+func attachSurfaceID(site string, r io.Reader) [][]string {
 	rr := csv.NewReader(r)
 
 	var result = [][]string{}
@@ -57,6 +57,7 @@ func main() {
 	var cfg = config.MustReadConfig()
 	repo = repository.NewRepository(cfg)
 
+	matchSurface := flag.Bool("match-surface", true, "import only surface matched rows")
 	infile := flag.String("infile", "", "schedule csv file")
 	site := flag.String("site", "", "site name")
 	insert := flag.Bool("import", false, "--import")
@@ -95,7 +96,22 @@ func main() {
 
 	r := strings.NewReader(string(c))
 
-	result := processCsv(*site, r)
+	var result [][]string
+
+	if *matchSurface {
+		result = attachSurfaceID(*site, r)
+	} else {
+		rr := csv.NewReader(r)
+		for {
+			r, err := rr.Read()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			// add 0 surface ID
+			r = append(r, "0")
+			result = append(result, r)
+		}
+	}
 	if *insert {
 		log.Println("importing")
 		if err = importEvents(repo, *site, result, cdate); err != nil {
