@@ -20,8 +20,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 	var wg = &sync.WaitGroup{}
 
 	// https://soopeewee.ca has three types of games home, local and away.
-	reHome := regexp.MustCompile("(?i)(home|local).+game")
-	reAway := regexp.MustCompile("(?i)away.+game")
+	reHome := regexp.MustCompile("(?i)(home|local) game")
+	reAway := regexp.MustCompile("(?i)away game")
 
 	for _, node := range nodes {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
@@ -73,14 +73,15 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 				if err != nil {
 					log.Fatal("subject owner error ", err, content)
 				}
-				re := regexp.MustCompile(`^(U\w+ [A-Z]{1,}) (.+)$`)
-				rs := re.FindStringSubmatch(d)
-
-				if rs == nil {
-					log.Fatal("failed to parse team: ", d)
-				}
-				division = rs[1]
-				homeTeam = rs[2]
+				// re := regexp.MustCompile(`^(U\w+ [A-Z]{1,}) (.+)$`)
+				// rs := re.FindStringSubmatch(d)
+				//
+				// if rs == nil {
+				// 	log.Fatal("failed to parse team: ", d)
+				// }
+				// division = rs[1]
+				// homeTeam = rs[2]
+				division, homeTeam = d, d
 			}
 
 			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
