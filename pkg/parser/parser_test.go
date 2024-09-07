@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"log"
 	"testing"
 
+	"github.com/antchfx/htmlquery"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -74,20 +76,32 @@ func TestParseSchedules(t *testing.T) {
 		},
 	}
 
-	// result, err := ParseSchedules(doc, 20221017)
-	// assert.NoError(t, err)
-	//
-	// log.Println(result)
-	// expected := [][]string{
-	// 	{
-	// 		"2022-10-19 19:00",
-	// 		"",
-	// 		"Kingston Jr Gaels",
-	// 		"Quinte Red Devils",
-	// 		"INVISTA (Desjardins)",
-	// 		"U11 - 052",
-	// 	},
-	// }
-	//
-	// assert.Equal(t, expected, result[:1])
+	for site, test := range cases {
+
+		doc, err := htmlquery.LoadDoc(test.file)
+		assert.NoError(t, err)
+		result := ParseSchedules(site, doc)
+		assert.NoError(t, err)
+
+		log.Println(result)
+		expected := [][]string{
+			{
+				"2022-10-19 19:00",
+				"",
+				"Kingston Jr Gaels",
+				"Quinte Red Devils",
+				"INVISTA (Desjardins)",
+				"U11 - 052",
+			},
+		}
+
+		assert.Equal(t, expected, result[:1])
+	}
+}
+
+func TestGetVenueAddress(t *testing.T) {
+	url := "https://www.theonedb.com/Venues/FindForGame/2067480"
+	addr := GetVenueAddress(url, "remote")
+	log.Println(addr)
+	assert.NotEmpty(t, addr)
 }

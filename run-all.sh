@@ -20,5 +20,5 @@ for site in `ls cmd/sites/`; do
         exit
     fi
 
-    go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate 2000-01-01 &
+    go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate 2024-09-01 &
 done

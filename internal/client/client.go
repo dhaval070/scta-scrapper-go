@@ -3,6 +3,7 @@ package client
 import (
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type transport struct {
@@ -31,12 +32,14 @@ func GetClient(proxy string) *http.Client {
 	} else {
 		t.Proxy = nil
 	}
-	t.MaxIdleConns = 100
-	t.MaxConnsPerHost = 100
+	t.MaxIdleConns = 10
+	t.MaxConnsPerHost = 10
 	t.MaxIdleConnsPerHost = 100
+	t.ResponseHeaderTimeout = time.Second * 12
 
 	var client = &http.Client{
 		Transport: &transport{t},
+		Timeout:   time.Second * 15,
 	}
 
 	return client

@@ -4,6 +4,8 @@
 Download JSON file from https://staticdata.livebarn.com/api/v2.0.0/staticdata/venues
 ```
 wget https://staticdata.livebarn.com/api/v2.0.0/staticdata/venues -O master-locations.json
+
+https://staticdata.livebarn.com/api/v2.0.0/staticdata/venues
 ```
 
 and run following command:
