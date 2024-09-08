@@ -38,13 +38,12 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			item := htmlquery.FindOne(parent, `div[2]`)
 			content := htmlquery.OutputHTML(item, true)
 
-			var homeGame bool
+			var homeGame = true
 
-			if strings.Contains(strings.ToUpper(content), "HOME GAME") {
-				homeGame = true
-			} else if !strings.Contains(strings.ToUpper(content), "AWAY GAME") {
-				// neither home game or away game then skip
-				continue
+			if strings.Contains(strings.ToUpper(content), "AWAY GAME") ||
+				strings.Contains(strings.ToUpper(content), "AWAY TOURNAMENT") ||
+				strings.Contains(strings.ToUpper(content), "AWAY EXHIBITION") {
+				homeGame = false
 			}
 
 			timeval, err := parser.ParseTime(content)
@@ -67,7 +66,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", 1)
+			guestTeam = strings.Replace(guestTeam, "vs ", "", 1)
 
 			hm := homeTeam
 
