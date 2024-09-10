@@ -40,6 +40,9 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 
 			var homeGame = true
 
+			if strings.Contains(content, "Practice") || strings.Contains(content, "Tournament") {
+				continue
+			}
 			if strings.Contains(strings.ToUpper(content), "AWAY GAME") ||
 				strings.Contains(strings.ToUpper(content), "AWAY TOURNAMENT") ||
 				strings.Contains(strings.ToUpper(content), "AWAY EXHIBITION") {
@@ -48,7 +51,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 
 			timeval, err := parser.ParseTime(content)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal(err, content)
 				continue
 			}
 
