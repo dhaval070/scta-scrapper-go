@@ -77,9 +77,14 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 
 			location, err := parser.QueryInnerText(item, `//div[contains(@class,"location")]`)
 
-			item = htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)[0]
+			item = htmlquery.FindOne(parent, `div[1]//a[@class="remote" or @class="local"]`)
 			var url string
 			var class string
+
+			if item == nil {
+				log.Println("error parsing venue url")
+				continue
+			}
 
 			for _, attr := range item.Attr {
 				if attr.Key == "href" {
