@@ -115,8 +115,8 @@ func parseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			var gameType = htmlquery.InnerText(htmlquery.FindOne(item, `div[2]`))
 
 			if gameType == "Tournament" {
+				// parser1.ParseTournament(parent)
 				continue
-				// res := parseTournament(parent)
 			}
 			//Practice or SharedPractice
 			if strings.Contains(gameType, "Practice") {

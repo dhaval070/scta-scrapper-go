@@ -2,9 +2,11 @@ package parser1
 
 import (
 	"calendar-scrapper/pkg/parser"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -40,9 +42,13 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 
 			var homeGame = true
 
-			if strings.Contains(content, "Practice") || strings.Contains(content, "Tournament") {
+			gameType := htmlquery.InnerText(htmlquery.FindOne(item, `div[2]/div/div`))
+			if gameType == "Event" ||
+				strings.Contains(content, "Practice") ||
+				strings.Contains(gameType, "Tournament") {
 				continue
 			}
+
 			if strings.Contains(strings.ToUpper(content), "AWAY GAME") ||
 				strings.Contains(strings.ToUpper(content), "AWAY TOURNAMENT") ||
 				strings.Contains(strings.ToUpper(content), "AWAY EXHIBITION") {
@@ -118,5 +124,53 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 		}
 	}
 	wg.Wait()
+	return result
+}
+
+func ParseTournament(doc *html.Node, tournamentId string) [][]string {
+	// node := htmlquery.Find(doc, fmt.Sprintf(`//label[@for="team_tournament_%s"]/following-sibling::div/div[contains(@class, "tournament-details")]/div[@class="tabs-content"]`, tournamentId))
+
+	details := htmlquery.FindOne(doc, fmt.Sprintf(`//label[@for="team_tournament_%s"]/following-sibling::div/div[contains(@class, "tournament-details")]`, tournamentId))
+
+	nodes := htmlquery.Find(details, `ul/li/div[@class="accordion-content"]/div/div`)
+
+	result := [][]string{}
+
+	for _, parent := range nodes {
+		sdate := htmlquery.InnerText(htmlquery.FindOne(parent, `h4`))
+		log.Println(sdate)
+
+		for _, row := range htmlquery.Find(parent, `//div[contains(@class,"event-list-item")]`) {
+			tt, err := parser.ParseTime(htmlquery.InnerText(htmlquery.FindOne(row, `//div[@class="time-primary"]`)))
+
+			if err != nil {
+				log.Println("error parsing time")
+				continue
+			}
+
+			dt, err := time.Parse("Mon, Jan 2 2006 15:04", fmt.Sprintf(sdate+" %d "+tt, time.Now().Year()))
+
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			guestTeam := htmlquery.InnerText(htmlquery.FindOne(parent, `//div[@class="subject-text"]`).FirstChild)
+			guestTeam = strings.Replace(guestTeam, "vs ", "", 1)
+			guestTeam = strings.Replace(guestTeam, "@ ", "", 1)
+
+			loc := htmlquery.InnerText(htmlquery.FindOne(parent, `//div[contains(@class, "location")]`))
+
+			link := htmlquery.FindOne(row, `div/div/div/a`)
+			var venueUrl string
+
+			if link != nil {
+				venueUrl = parser.GetAttr(link, "href")
+
+			}
+			result = append(result, []string{dt.Format("2006-01-02 15:04"), guestTeam, loc, venueUrl})
+
+		}
+	}
 	return result
 }
