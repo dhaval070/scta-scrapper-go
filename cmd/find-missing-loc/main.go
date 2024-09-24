@@ -16,13 +16,13 @@ import (
 )
 
 // input csv fields:
-// ID
-// Full Name
-// Full Short Name
-// Street
-// City
-// Province
-// cameraURL
+//0 ID
+//1 Full Name
+//2 Full Short Name
+//3 Street
+//4 City
+//5 Province
+//6 cameraURL
 
 func main() {
 	fmt.Println("args", os.Args)
@@ -38,8 +38,6 @@ func main() {
 	}
 	wr := csv.NewWriter(out)
 
-	wr.Write([]string{"line#", "Error", "ID", "Full Name", "Full Short Name", "Street", "city", "Province", "camurl "})
-
 	config.Init("config", ".")
 	cfg := config.MustReadConfig()
 	db, err := gorm.Open(mysql.Open(cfg.DbDSN))
@@ -49,12 +47,16 @@ func main() {
 	}
 
 	reader := csv.NewReader(fh)
-	_, _ = reader.Read()
+	header, err := reader.Read()
+	if err != nil {
+		panic(err)
+	}
+
+	wr.Write(append(header, "surface ID", "Location ID"))
 
 	reg := regexp.MustCompile("[^a-zA-Z0-9\\s]")
 
 	for i := 2; ; i += 1 {
-		si := fmt.Sprintf("%d", i)
 		row, err := reader.Read()
 		if errors.Is(err, io.EOF) {
 			break
@@ -65,31 +67,26 @@ func main() {
 
 		var loc = &model.Location{}
 
-		err = db.Raw(`select * from locations where city like ?`, "%"+row[4]+"%").Scan(loc).Error
+		var city = row[4]
+		err = db.Raw(`select * from locations where city like ?`, "%"+city+"%").Scan(loc).Error
 		if err != nil {
 			panic(err)
 		}
 
 		if loc.ID == 0 {
-			fmt.Println(i, "city "+row[4]+" not found", row)
-			r := append([]string{si, "city " + row[4] + " not found"}, row...)
-			wr.Write(r)
+			wr.Write(row)
 			continue
 		}
-		// fmt.Println(row)
 		street := reg.ReplaceAllString(row[3], "")
-
-		err = db.Raw(`select * from locations where address1 like ?`, "%"+street+"%").Scan(loc).Error
-		if err != nil {
-			panic(err)
+		if street == "" {
+			wr.Write(row)
+			continue
 		}
 
+		loc = findByStreet(db, "%"+street+"%", city)
+
 		if loc.ID != 0 {
-			if loc.TotalSurfaces == 0 {
-				fmt.Println(i, "no surface", row)
-				r := append([]string{si, "no surface"}, row...)
-				wr.Write(r)
-			}
+			writeRow(db, row, loc.ID, wr)
 			continue
 		}
 
@@ -98,54 +95,60 @@ func main() {
 		if len(parts) > 3 {
 			st := strings.Join(parts[:4], " ")
 
-			err = db.Raw(`select * from locations where address1 like ?`, "%"+st+"%").Scan(loc).Error
-			if err != nil {
-				panic(err)
-			}
+			loc = findByStreet(db, "%"+st+"%", city)
 
 			if loc.ID != 0 {
-				if loc.TotalSurfaces == 0 {
-					fmt.Println(i, "no surface", row)
-					r := append([]string{si, "no surface"}, row...)
-					wr.Write(r)
-				}
+				writeRow(db, row, loc.ID, wr)
 				continue
 			}
-
 		}
 
 		st = strings.Replace(st, "Road", "Rd", -1)
-		err = db.Raw(`select * from locations where address1 like ?`, "%"+st+"%").Scan(loc).Error
-		if err != nil {
-			panic(err)
-		}
+		loc = findByStreet(db, "%"+st+"%", city)
 
 		if loc.ID != 0 {
-			if loc.TotalSurfaces == 0 {
-				fmt.Println(i, "no surface", row)
-				r := append([]string{si, "no surface"}, row...)
-				wr.Write(r)
-			}
+			writeRow(db, row, loc.ID, wr)
 			continue
 		}
 
 		st = strings.Replace(st, "Drive", "Dr", -1)
-		err = db.Raw(`select * from locations where address1 like ?`, "%"+st+"%").Scan(loc).Error
-		if err != nil {
-			panic(err)
-		}
+		loc = findByStreet(db, "%"+st+"%", city)
 
 		if loc.ID != 0 {
-			if loc.TotalSurfaces == 0 {
-				fmt.Println(i, "no surface", row)
-				r := append([]string{si, "no surface"}, row...)
-				wr.Write(r)
-			}
+			writeRow(db, row, loc.ID, wr)
 			continue
 		}
 
-		r := append([]string{si, "address " + row[3] + " not found"}, row...)
-		wr.Write(r)
-		fmt.Println(i, "address not found", row)
+		wr.Write(row)
 	}
+}
+
+func getSurfaceIDs(db *gorm.DB, locId int32) string {
+	// db.Find()
+	var ids = []string{}
+
+	err := db.Raw("select id from surfaces where location_id=?", locId).Scan(&ids).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return strings.Join(ids, ",")
+}
+
+func writeRow(db *gorm.DB, row []string, locID int32, wr *csv.Writer) {
+	id := getSurfaceIDs(db, locID)
+	row = append(row, id, fmt.Sprintf("%d", locID))
+	wr.Write(row)
+}
+
+func findByStreet(db *gorm.DB, street string, city string) *model.Location {
+	var loc = &model.Location{}
+
+	city = "%" + city + "%"
+	err := db.Raw(`select * from locations where address1 like ? and city like ?`, street, city).Scan(loc).Error
+	if err != nil {
+		panic(err)
+	}
+
+	return loc
 }
