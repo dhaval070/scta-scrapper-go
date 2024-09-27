@@ -1,18 +1,24 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
+	"calendar-scrapper/internal/schimport"
 	"calendar-scrapper/pkg/repository"
 
+	"github.com/antchfx/htmlquery"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
 )
 
 var cmd = &cobra.Command{
@@ -60,17 +66,35 @@ func runNyhl() error {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
 	m, err := repo.GetNyhlMappings()
 	if err != nil {
 		return err
 	}
-	err = importEvents(r, cdate, m)
+
+	switch path.Ext(*infile) {
+	case ".json":
+		return schimport.ImportJson(repo, "nyhl", *infile, cdate, m)
+	case ".xlx":
+		b, err := os.ReadFile(*infile)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s, %w", *infile, err)
+		}
+
+		// convert utf16 to utf8
+		data, _, _ := transform.Bytes(unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder(), b)
+
+		doc, err := htmlquery.Parse(bytes.NewReader(data))
+		if err != nil {
+			return fmt.Errorf("failed to read file %s, %w", *infile, err)
+		}
+
+		err = schimport.Importxls(repo, "nyhl", doc, cdate, m)
+	}
 	return err
 
 }
 
-//format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
+// format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	Date	Time
 func importEvents(ff *csv.Reader, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
 	var SourceType = "file"
