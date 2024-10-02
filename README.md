@@ -14,6 +14,11 @@ and run following command:
 go run ./cmd/venue-import/ --path=master-locations.json
 ```
 
+## json schedules download URL
+```
+https://www.agilex.ca/api/GameQuery?date=02-Oct-2024&id=AS0122341&league=NYHL
+
+```
 
 ## Run all the sites scrappers
 ```

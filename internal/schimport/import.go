@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -127,6 +129,24 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 }
 
 func parseDate(dateFormat, date, t string) (tt time.Time, err error) {
+	parts := strings.Split(t, ":")
+	if len(parts[0]) < 2 {
+		parts[0] = "0" + parts[0]
+	}
+
+	if strings.Index(t, "PM") > -1 {
+		h, err := strconv.ParseInt(parts[0], 10, 32)
+		if err != nil {
+			return tt, fmt.Errorf("failed to convert hours to int %w", err)
+		}
+		h += 12
+		parts[0] = fmt.Sprintf("%02d", h)
+		re := regexp.MustCompile(`\s*PM`)
+		parts[1] = re.ReplaceAllString(parts[1], "")
+	}
+
+	t = strings.Join(parts, ":")
+
 	t1, err := time.Parse("15:04", t)
 	if err != nil {
 		return tt, fmt.Errorf("failed to parse time:%s %w", t, err)
