@@ -77,7 +77,8 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 	for _, g := range data.Games {
 		dt, err := parseDate("2006-01-02", g.StartDate, g.StartTime)
 		if err != nil {
-			return err
+			log.Printf("error: failed parsing: date: %s , time: %s", g.StartDate, g.StartTime)
+			continue
 		}
 
 		if dt.Before(cutOffDate) {
@@ -145,11 +146,11 @@ func parseDate(dateFormat, date, t string) (tt time.Time, err error) {
 		parts[1] = re.ReplaceAllString(parts[1], "")
 	}
 
-	t = strings.Join(parts, ":")
+	tj := strings.Join(parts, ":")
 
-	t1, err := time.Parse("15:04", t)
+	t1, err := time.Parse("15:04", tj)
 	if err != nil {
-		return tt, fmt.Errorf("failed to parse time:%s %w", t, err)
+		return tt, fmt.Errorf("failed to parse time %s", t)
 	}
 
 	// 01-Oct-2023

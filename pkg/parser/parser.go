@@ -49,7 +49,7 @@ func ParseTime(content string) (string, error) {
 	parts := reg.FindStringSubmatch(content)
 
 	if parts == nil {
-		return "", errors.New("failed to parse time")
+		return "", fmt.Errorf("failed to parse time %s", content)
 	}
 
 	h, err := strconv.Atoi(parts[1])
