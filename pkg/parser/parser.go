@@ -208,6 +208,10 @@ func GetVenueAddress(url string, class string) string {
 	} else if class == "local" {
 		// local url
 		node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
+		if node == nil {
+			log.Println("address node not found, url:", url)
+			return ""
+		}
 		address = htmlquery.InnerText(node)
 	}
 	log.Println(url + ":" + address)
