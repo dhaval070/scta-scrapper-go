@@ -7,7 +7,9 @@ import (
 )
 
 type Config struct {
-	DbDSN string `mapstructure:"db_dsn"`
+	DbDSN     string `mapstructure:"db_dsn"`
+	ApiKey    string `mapstructure:"api_key"`
+	ImportUrl string `mapstructure:"import_url"`
 }
 
 func Init(name string, path ...string) {

@@ -42,9 +42,6 @@ func init() {
 
 	infile = cmd.Flags().StringP("file", "f", "", "XLS file path (required)")
 	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
-
-	cmd.MarkFlagRequired("file")
-	cmd.MarkFlagRequired("cutoffdate")
 }
 
 func main() {
@@ -64,10 +61,12 @@ func detectContentCharset(body io.Reader) string {
 func runMhl() error {
 	var cdate time.Time
 	var err error
-	cdate, err = time.Parse("2006-01-02", *sdate)
 
-	if err != nil {
-		return fmt.Errorf("failed to parse cutoff date %w", err)
+	if *sdate != "" {
+		cdate, err = time.Parse("2006-01-02", *sdate)
+		if err != nil {
+			return fmt.Errorf("failed to parse cutoff date %w", err)
+		}
 	}
 
 	m, err := repo.GetMhlMappings()
@@ -75,9 +74,13 @@ func runMhl() error {
 		return err
 	}
 
+	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
+
+	if *infile == "" {
+		return importer.FetchAndImport("mhl", m, cdate)
+	}
+
 	switch path.Ext(*infile) {
-	case ".json":
-		return schimport.ImportJson(repo, "mhl", *infile, cdate, m)
 	case ".xlx":
 		b, err := os.ReadFile(*infile)
 		if err != nil {
@@ -92,7 +95,7 @@ func runMhl() error {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}
 
-		err = schimport.Importxls(repo, "mhl", doc, cdate, m)
+		err = importer.Importxls("mhl", doc, cdate, m)
 	}
 	return err
 }

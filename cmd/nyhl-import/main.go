@@ -43,8 +43,6 @@ func init() {
 
 	infile = cmd.Flags().StringP("file", "f", "", "CSV file path (required)")
 	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
-	cmd.MarkFlagRequired("file")
-	cmd.MarkFlagRequired("cutoffdate")
 }
 
 func main() {
@@ -54,26 +52,26 @@ func main() {
 func runNyhl() error {
 	var cdate time.Time
 	var err error
-	cdate, err = time.Parse("2006-01-02", *sdate)
 
-	if err != nil {
-		return fmt.Errorf("failed to parse cutoff date %w", err)
+	if *sdate != "" {
+		cdate, err = time.Parse("2006-01-02", *sdate)
+		if err != nil {
+			return fmt.Errorf("failed to parse cutoff date %w", err)
+		}
 	}
-
-	f, err := os.Open(*infile)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
 
 	m, err := repo.GetNyhlMappings()
 	if err != nil {
 		return err
 	}
 
+	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
+
+	if *infile == "" {
+		return importer.FetchAndImport("nyhl", m, cdate)
+	}
+
 	switch path.Ext(*infile) {
-	case ".json":
-		return schimport.ImportJson(repo, "nyhl", *infile, cdate, m)
 	case ".xlx":
 		b, err := os.ReadFile(*infile)
 		if err != nil {
@@ -88,7 +86,7 @@ func runNyhl() error {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}
 
-		err = schimport.Importxls(repo, "nyhl", doc, cdate, m)
+		err = importer.Importxls("nyhl", doc, cdate, m)
 	}
 	return err
 

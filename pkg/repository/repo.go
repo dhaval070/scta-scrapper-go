@@ -221,7 +221,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 }
 
 func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDate time.Time) error {
-	log.Println(site, cutOffDate)
+	log.Println(site, ":importing events", site, cutOffDate)
 	return r.db.Transaction(func(db *gorm.DB) error {
 		if err := db.Exec("delete from events where site=? and datetime > ?", site, cutOffDate).Error; err != nil {
 			return err
@@ -237,6 +237,7 @@ func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDat
 }
 
 func (r *Repository) ImportMappings(site string, m map[string]int32) error {
+	log.Println(site, ":importing mappings")
 	var table = site + "_mappings"
 
 	for loc, surfaceID := range m {

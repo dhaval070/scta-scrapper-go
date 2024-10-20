@@ -2,11 +2,13 @@ package schimport
 
 import (
 	"calendar-scrapper/dao/model"
-	r "calendar-scrapper/pkg/repository"
+	"calendar-scrapper/pkg/repository"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -37,6 +39,22 @@ import (
 			]
 		}
 */
+var client = http.Client{}
+
+type Importer struct {
+	repo   *repository.Repository
+	apiKey string
+	url    string
+}
+
+func NewImporter(repo *repository.Repository, apiKey, url string) *Importer {
+	return &Importer{
+		repo:   repo,
+		apiKey: apiKey,
+		url:    url,
+	}
+}
+
 type Data struct {
 	Games []Game
 }
@@ -55,19 +73,31 @@ type Game struct {
 	GameType      string `json:"game_type"`
 }
 
-func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, mapping map[string]int) error {
+func (i *Importer) FetchAndImport(site string, m map[string]int, cdate time.Time) error {
+	var err error
+
+	b, err := i.FetchJson(site, cdate)
+	if err != nil {
+		return err
+	}
+
+	var data Data
+	if err = json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	if len(data.Games) == 0 {
+		log.Println("no games to import")
+		return nil
+	}
+	return i.ImportJson(site, data, cdate, m)
+}
+
+func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapping map[string]int) error {
+	log.Println("importing json")
+
 	var err error
 	var SourceType = "file"
-
-	b, err := os.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	var data Data
-	err = json.Unmarshal(b, &data)
-	if err != nil {
-		return err
-	}
 
 	m := []*model.Event{}
 
@@ -108,8 +138,6 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 			DateCreated: time.Now(),
 		})
 
-		mappingUpdates[g.Rink] = int32(sid)
-
 		r[0] = g.GameID
 		r[1] = g.Rink
 		r[2] = g.StartTime
@@ -131,11 +159,11 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 
 	log.Println("total events ", len(m))
 
-	err = repo.ImportEvents(site, m, cutOffDate)
+	err = i.repo.ImportEvents(site, m, cutOffDate)
 	if err != nil {
 		return err
 	}
-	return repo.ImportMappings(site, mappingUpdates)
+	return i.repo.ImportMappings(site, mappingUpdates)
 }
 
 func parseDate(dateFormat, date, t string) (tt time.Time, err error) {
@@ -172,7 +200,7 @@ func parseDate(dateFormat, date, t string) (tt time.Time, err error) {
 }
 
 // Game_id	Rink	StartTime	StartDate	Division	Category	Visitor	VisitorTeamID	Home	HomeTeamID	GameType
-func Importxls(repo *r.Repository, site string, root *html.Node, cutOffDate time.Time, mapping map[string]int) error {
+func (i *Importer) Importxls(site string, root *html.Node, cutOffDate time.Time, mapping map[string]int) error {
 	var err error
 	var SourceType = "file"
 
@@ -235,6 +263,27 @@ func Importxls(repo *r.Repository, site string, root *html.Node, cutOffDate time
 	ww.Flush()
 
 	log.Println("total events ", len(m))
-	err = repo.ImportEvents(site, m, cutOffDate)
+	err = i.repo.ImportEvents(site, m, cutOffDate)
 	return err
+}
+
+func (i *Importer) FetchJson(site string, cdate time.Time) ([]byte, error) {
+	log.Println("fetching json")
+
+	url := fmt.Sprintf(i.url, cdate.Format("02-Jan-2006"), site)
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("x-api-key", i.apiKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	return b, err
 }

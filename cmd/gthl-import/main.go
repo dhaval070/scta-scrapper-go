@@ -44,8 +44,6 @@ func init() {
 	infile = cmd.Flags().StringP("file", "f", "", "XLS or json file path (required)")
 	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
 
-	cmd.MarkFlagRequired("file")
-	cmd.MarkFlagRequired("cutoffdate")
 }
 
 func main() {
@@ -63,12 +61,14 @@ func detectContentCharset(body io.Reader) string {
 }
 
 func runGthl() error {
-	var cdate time.Time
+	var cdate = time.Now()
 	var err error
-	cdate, err = time.Parse("2006-01-02", *sdate)
 
-	if err != nil {
-		return fmt.Errorf("failed to parse cutoff date %w", err)
+	if *sdate != "" {
+		cdate, err = time.Parse("2006-01-02", *sdate)
+		if err != nil {
+			return fmt.Errorf("failed to parse cutoff date %w", err)
+		}
 	}
 
 	m, err := repo.GetGthlMappings()
@@ -76,15 +76,19 @@ func runGthl() error {
 		return err
 	}
 
-	switch path.Ext(*infile) {
-	case ".json":
-		return schimport.ImportJson(repo, "gthl", *infile, cdate, m)
-	case ".xlx":
-		b, err := os.ReadFile(*infile)
-		if err != nil {
-			return fmt.Errorf("failed to read file %s, %w", *infile, err)
-		}
+	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
 
+	if *infile == "" {
+		return importer.FetchAndImport("gthl", m, cdate)
+	}
+
+	b, err := os.ReadFile(*infile)
+	if err != nil {
+		return err
+	}
+
+	switch path.Ext(*infile) {
+	case ".xlx":
 		// convert utf16 to utf8
 		data, _, _ := transform.Bytes(unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder(), b)
 
@@ -94,7 +98,7 @@ func runGthl() error {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}
 
-		return schimport.Importxls(repo, "gthl", doc, cdate, m)
+		return importer.Importxls("gthl", doc, cdate, m)
 	}
 	return errors.New("invalid file format")
 }
