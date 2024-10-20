@@ -74,6 +74,8 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 	ww := csv.NewWriter(os.Stdout)
 	var r = make([]string, 11)
 
+	mappingUpdates := map[string]int32{}
+
 	for _, g := range data.Games {
 		dt, err := parseDate("2006-01-02", g.StartDate, g.StartTime)
 		if err != nil {
@@ -86,7 +88,8 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 		}
 
 		sid, ok := mapping[g.Rink]
-		if !ok {
+		if !ok || sid == 0 {
+			mappingUpdates[g.Rink] = 0
 			log.Printf("failed to map surfaceid %s\n", g.Rink)
 			continue
 		}
@@ -104,6 +107,8 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
 		})
+
+		mappingUpdates[g.Rink] = int32(sid)
 
 		r[0] = g.GameID
 		r[1] = g.Rink
@@ -125,8 +130,12 @@ func ImportJson(repo *r.Repository, site, file string, cutOffDate time.Time, map
 	ww.Flush()
 
 	log.Println("total events ", len(m))
+
 	err = repo.ImportEvents(site, m, cutOffDate)
-	return err
+	if err != nil {
+		return err
+	}
+	return repo.ImportMappings(site, mappingUpdates)
 }
 
 func parseDate(dateFormat, date, t string) (tt time.Time, err error) {

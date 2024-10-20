@@ -235,3 +235,20 @@ func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDat
 		return nil
 	})
 }
+
+func (r *Repository) ImportMappings(site string, m map[string]int32) error {
+	var table = site + "_mappings"
+
+	for loc, surfaceID := range m {
+		err := r.db.Exec(
+			fmt.Sprintf(`INSERT INTO %s (location, surface_id) VALUES(?,?)
+			ON DUPLICATE KEY UPDATE surface_id=VALUES(surface_id)`, table),
+			loc, surfaceID,
+		).Error
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
