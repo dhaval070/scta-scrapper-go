@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"time"
@@ -87,7 +89,20 @@ func runGthl() error {
 		return err
 	}
 
+	var data schimport.Data
+	if err = json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	if len(data.Games) == 0 {
+		log.Println("no games to import")
+		return nil
+	}
+
 	switch path.Ext(*infile) {
+	case ".json":
+		return importer.ImportJson("gthl", data, cdate, m)
+
 	case ".xlx":
 		// convert utf16 to utf8
 		data, _, _ := transform.Bytes(unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder(), b)

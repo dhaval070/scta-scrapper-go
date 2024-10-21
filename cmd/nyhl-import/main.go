@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -71,7 +72,25 @@ func runNyhl() error {
 		return importer.FetchAndImport("nyhl", m, cdate)
 	}
 
+	b, err := os.ReadFile(*infile)
+	if err != nil {
+		return err
+	}
+
+	var data schimport.Data
+	if err = json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	if len(data.Games) == 0 {
+		log.Println("no games to import")
+		return nil
+	}
+
 	switch path.Ext(*infile) {
+	case ".json":
+		return importer.ImportJson("nyhl", data, cdate, m)
+
 	case ".xlx":
 		b, err := os.ReadFile(*infile)
 		if err != nil {
