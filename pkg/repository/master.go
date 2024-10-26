@@ -10,7 +10,7 @@ import (
 )
 
 func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
-	r.db.Transaction(func(tx *gorm.DB) (err error) {
+	r.DB.Transaction(func(tx *gorm.DB) (err error) {
 		for _, loc := range js {
 			log.Println(loc.ID)
 			err = r.MasterImportLoc(tx, loc)
@@ -43,9 +43,10 @@ func (r *Repository) MasterImportLoc(db *gorm.DB, l entity.JsonLocation) error {
 
 	province := model.Province{ID: l.Province.ID}
 
-	if l.Province.Name != "Ontario" {
-		return nil
-	}
+	// import all for RAMP locations. ramp locations are not limited to Ontario
+	// if l.Province.Name != "Ontario" {
+	// 	return nil
+	// }
 
 	if err = db.First(&province).Error; err != nil {
 		province.ProvinceName = l.Province.Name

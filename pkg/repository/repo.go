@@ -13,7 +13,7 @@ import (
 )
 
 type Repository struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
 func NewRepository(cfg config.Config) *Repository {
@@ -24,7 +24,7 @@ func NewRepository(cfg config.Config) *Repository {
 	}
 
 	return &Repository{
-		db: db,
+		DB: db,
 	}
 }
 
@@ -32,7 +32,7 @@ func NewRepository(cfg config.Config) *Repository {
 func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 	var siteLoc model.SitesLocation
 
-	err := r.db.Raw("select * from sites_locations where site=? and location=?", site, loc).Scan(&siteLoc).Error
+	err := r.DB.Raw("select * from sites_locations where site=? and location=?", site, loc).Scan(&siteLoc).Error
 
 	if err != nil {
 		log.Println(err)
@@ -44,7 +44,7 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 	}
 
 	var surface model.Surface
-	if err = r.db.First(&surface, siteLoc.SurfaceID).Error; err != nil {
+	if err = r.DB.First(&surface, siteLoc.SurfaceID).Error; err != nil {
 		log.Panicln(err)
 		return nil
 	}
@@ -54,7 +54,7 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, error) {
 	var m model.SitesLocation
 
-	err := r.db.First(&m, "site=? and location=?", site, loc).Error
+	err := r.DB.First(&m, "site=? and location=?", site, loc).Error
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, e
 func (r *Repository) GetLocation(id int) (*model.Location, error) {
 	var m model.Location
 
-	err := r.db.First(&m, "id=?", id).Error
+	err := r.DB.First(&m, "id=?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (r *Repository) GetLocation(id int) (*model.Location, error) {
 func (r *Repository) GetGthlMappings() (map[string]int, error) {
 	res := []model.GthlMapping{}
 
-	err := r.db.Find(&res).Error
+	err := r.DB.Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (r *Repository) GetGthlMappings() (map[string]int, error) {
 func (r *Repository) GetNyhlMappings() (map[string]int, error) {
 	res := []model.NyhlMapping{}
 
-	err := r.db.Find(&res).Error
+	err := r.DB.Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r *Repository) GetNyhlMappings() (map[string]int, error) {
 func (r *Repository) GetMhlMappings() (map[string]int, error) {
 	res := []model.MhlMapping{}
 
-	err := r.db.Find(&res).Error
+	err := r.DB.Find(&res).Error
 	if err != nil {
 		return nil, err
 	}
@@ -125,21 +125,21 @@ type SiteRepository struct {
 }
 
 func (r *Repository) Site(site string) *SiteRepository {
-	if err := r.db.First(&model.Site{}, "site=?", site).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := r.DB.First(&model.Site{}, "site=?", site).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Println("inserting site", site)
-		r.db.Save(&model.Site{Site: site, URL: ""})
+		r.DB.Save(&model.Site{Site: site, URL: ""})
 	}
 
 	return &SiteRepository{
 		site,
-		Repository{r.db},
+		Repository{r.DB},
 	}
 }
 
 func (r *SiteRepository) ImportLocations(locations []string) error {
 	var rows = []model.SitesLocation{}
 
-	r.db.Where("site = ?", r.site).Find(&rows)
+	r.DB.Where("site = ?", r.site).Find(&rows)
 
 	var m = map[string]model.SitesLocation{}
 	for _, r := range rows {
@@ -158,7 +158,7 @@ func (r *SiteRepository) ImportLocations(locations []string) error {
 			Location:   l,
 			LocationID: 0,
 		}
-		if err := r.db.Save(&loc).Error; err != nil {
+		if err := r.DB.Save(&loc).Error; err != nil {
 			return fmt.Errorf("save "+l+"%w", err)
 		}
 	}
@@ -169,7 +169,7 @@ func (r *SiteRepository) ImportLocations(locations []string) error {
 func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 	var rows = []model.SitesLocation{}
 
-	r.db.Where("site = ?", r.site).Find(&rows)
+	r.DB.Where("site = ?", r.site).Find(&rows)
 
 	var m = map[string]model.SitesLocation{}
 	for _, r := range rows {
@@ -184,7 +184,7 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 		}
 
 		l.Site = r.site
-		if err := r.db.Save(&l).Error; err != nil {
+		if err := r.DB.Save(&l).Error; err != nil {
 			return fmt.Errorf("save "+l.Location+"%w", err)
 		}
 	}
@@ -194,18 +194,56 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 
 func (r *SiteRepository) RunMatchLocations() error {
 	var queries = []string{
-		"update sites_locations set loc= regexp_replace(location, ' (.+)','') where site=?",
+		`UPDATE sites_locations SET loc= regexp_replace(location, ' (.+)','') WHERE site=?`,
 
-		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='postal code' where l.postal_code<>'' and position(l.postal_code in s.address) and s.site=? and s.location_id=0",
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type='postal code'
+		WHERE
+			l.postal_code<>'' AND
+			position(l.postal_code in s.address) AND
+			p.id=l.province_id AND
+			p.province_name="Ontario" AND
+			s.site=? AND
+			s.location_id=0`,
 
-		`update sites_locations s, locations l set s.location_id = l.id, s.match_type="partial" where position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and position(left(l.postal_code,3) in s.address) and site=? and s.location_id=0`,
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type="partial"
+		WHERE
+			p.id=l.province_id AND
+			p.province_name="Ontario" AND
+			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
+			position(left(l.postal_code,3) in s.address) AND
+			site=? AND
+			s.location_id=0`,
 
-		"update sites_locations s, locations l set s.location_id = l.id, s.match_type='address' where position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) and s.site=? and s.location_id=0",
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type='address'
+		WHERE
+			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
+			p.id=l.province_id AND
+			p.province_name="Ontario" AND
+			s.site=? AND
+			s.location_id=0`,
 	}
 
-	return r.db.Transaction(func(db *gorm.DB) error {
+	return r.DB.Transaction(func(db *gorm.DB) error {
 		for _, q := range queries {
-			if err := r.db.Exec(q, r.site).Error; err != nil {
+			if err := r.DB.Exec(q, r.site).Error; err != nil {
 				return err
 			}
 		}
@@ -222,7 +260,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 
 func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDate time.Time) error {
 	log.Println(site, ":importing events", site, cutOffDate)
-	return r.db.Transaction(func(db *gorm.DB) error {
+	return r.DB.Transaction(func(db *gorm.DB) error {
 		if err := db.Exec("delete from events where site=? and datetime > ?", site, cutOffDate).Error; err != nil {
 			return err
 		}
@@ -241,7 +279,7 @@ func (r *Repository) ImportMappings(site string, m map[string]int32) error {
 	var table = site + "_mappings"
 
 	for loc, surfaceID := range m {
-		err := r.db.Exec(
+		err := r.DB.Exec(
 			fmt.Sprintf(`INSERT INTO %s (location, surface_id) VALUES(?,?)
 			ON DUPLICATE KEY UPDATE surface_id=VALUES(surface_id)`, table),
 			loc, surfaceID,
