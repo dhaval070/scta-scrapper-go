@@ -71,6 +71,8 @@ func runGthl() error {
 		if err != nil {
 			return fmt.Errorf("failed to parse cutoff date %w", err)
 		}
+	} else {
+		cdate = time.Now()
 	}
 
 	m, err := repo.GetGthlMappings()
