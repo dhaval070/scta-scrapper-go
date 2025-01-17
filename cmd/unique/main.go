@@ -67,7 +67,7 @@ func report(root string) error {
 		rows, err := readFile(prevLast, filepath)
 
 		if err != nil {
-			return fmt.Errorf("error in path " + filepath)
+			return fmt.Errorf("error in path %s: %w ", filepath, err)
 		}
 
 		if len(rows) > 0 {
@@ -80,7 +80,7 @@ func report(root string) error {
 		rows, err = readFile(prevLastWithLivebarn, filepath)
 
 		if err != nil {
-			return fmt.Errorf("error in path " + filepath)
+			return fmt.Errorf("error in path %s: %w ", filepath, err)
 		}
 
 		if len(rows) > 0 {
