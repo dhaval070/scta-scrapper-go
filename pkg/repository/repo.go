@@ -10,6 +10,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type Repository struct {
@@ -23,6 +24,8 @@ func NewRepository(cfg config.Config) *Repository {
 		panic(err)
 	}
 
+	// silent log to avoid junk in csv output
+	db.Logger.LogMode(logger.Silent)
 	return &Repository{
 		DB: db,
 	}
