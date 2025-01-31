@@ -14,7 +14,10 @@ d1="$dir/with-surface"
 mkdir -p $d1
 site="$1"
 
-mmyyyy="${sd:4:2}${sd:0:4}"
+yyyy=`echo $sd|cut -c 1-4`
+mm=`echo $sd|cut -c 5-6`
+
+mmyyyy="$mm$yyyy"
 echo "$site $mmyyyy"
 
 go run ./cmd/sites/$site/ --import-locations -date $mmyyyy --outfile /tmp/$site.csv

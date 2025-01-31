@@ -13,7 +13,10 @@ dt=`date +%Y-%m-%d`
 dir="var/$sd"
 d1="$dir/with-surface"
 
-mmyyyy="${sd:4:2}${sd:0:4}"
+yyyy=`echo $sd|cut -c 1-4`
+mm=`echo $sd|cut -c 5-6`
+
+mmyyyy="$mm$yyyy"
 
 mkdir -p $d1
 
