@@ -33,5 +33,4 @@ for site in `ls cmd/sites/`; do
     csvtool -c 1-6 /tmp/$site.csv > $f
 
     go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
-    break
 done
