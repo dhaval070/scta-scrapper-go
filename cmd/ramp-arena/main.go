@@ -15,8 +15,8 @@ var url = "https://api3.rampinteractive.com/livebarn/arenas/updatelist"
 var client = &http.Client{}
 
 type Result struct {
-	RARID     uint `json:"RARID"`
-	SurfaceID uint `json:"liveBarnId"`
+	RARID     uint   `json:"RARID"`
+	SurfaceID string `json:"liveBarnId"`
 }
 
 func main() {
@@ -39,7 +39,6 @@ func main() {
 	}
 
 	token := login()
-	fmt.Println(token)
 
 	data := map[string][]Result{
 		"data": result,
@@ -62,7 +61,7 @@ func sendData(data, token string) {
 	if err != nil {
 		panic(err)
 	}
-	req.Header.Add("Autorization", "Bearer: "+token)
+	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
@@ -76,7 +75,7 @@ func sendData(data, token string) {
 		panic(err)
 	}
 
-	fmt.Println("response: ", string(b))
+	log.Println("response: ", string(b))
 }
 
 func login() string {
