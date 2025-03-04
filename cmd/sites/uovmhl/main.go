@@ -115,7 +115,7 @@ func parseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 
 			timeval, err := parser.ParseTime(content)
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 				continue
 			}
 

@@ -126,7 +126,7 @@ func parseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			timeval, err := parser.ParseTime(htmlquery.InnerText(htmlquery.FindOne(item, `div/div[@class="time-primary"]`)))
 
 			if err != nil {
-				log.Fatal("can not find time-primary ", err, content)
+				log.Println(err)
 				continue
 			}
 
