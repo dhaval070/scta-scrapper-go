@@ -134,7 +134,7 @@ func WriteEvents(w io.Writer, data []Event) error {
 	ww := csv.NewWriter(w)
 	for _, rec := range data {
 		row := []string{
-			rec.Datetime.Format("1/2/2006 15:04"),
+			rec.Datetime.Format("2006-1-2 15:04"),
 			SITE,
 			rec.HomeTeam,
 			rec.AwayTeam,
