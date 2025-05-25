@@ -58,7 +58,7 @@ func main() {
 			log.Println("failed to get %s: %w", siteUrl, err)
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(8 * time.Second)
 		source, err = driver.PageSource()
 
 		if err != nil {
