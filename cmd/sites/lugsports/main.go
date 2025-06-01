@@ -111,6 +111,7 @@ func main() {
 			l := model.SitesLocation{
 				Location: r.Facility,
 				Address:  r.FacilityAddress,
+				Surface:  r.Rink,
 			}
 			locations = append(locations, l)
 		}

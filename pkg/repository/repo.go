@@ -251,11 +251,11 @@ func (r *SiteRepository) RunMatchLocations() error {
 			}
 		}
 		// set surface
-		db.Exec(`update sites_locations set surface=regexp_substr(location, '\\(.+\\)') where site=?`, r.site)
+		db.Exec(`update sites_locations set surface=regexp_substr(location, '\\(.+\\)') where site=? AND surface=""`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
 		// set surface id
-		db.Exec(`update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and s.location_id=b.id and position(a.surface in s.name)<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
+		db.Exec(`update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and s.location_id=b.id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
 		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=l.id and l.total_surfaces=1 and s.surface_id=0 and s.site=? and s.surface_id=0`, r.site)
 		return nil
 	})
