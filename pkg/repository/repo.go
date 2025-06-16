@@ -192,7 +192,73 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 		}
 	}
 
+	if r.site == "lugsports" {
+		return r.RunMatchLocationsAllStates()
+	}
 	return r.RunMatchLocations()
+}
+
+func (r *SiteRepository) RunMatchLocationsAllStates() error {
+	var queries = []string{
+		`UPDATE sites_locations SET loc= regexp_replace(location, ' (.+)','') WHERE site=?`,
+
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type='postal code'
+		WHERE
+			l.postal_code<>'' AND
+			position(l.postal_code in s.address) AND
+			p.id=l.province_id AND
+			s.site=? AND
+			s.location_id=0`,
+
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type="partial"
+		WHERE
+			p.id=l.province_id AND
+			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
+			position(left(l.postal_code,3) in s.address) AND
+			site=? AND
+			s.location_id=0`,
+
+		`UPDATE
+			sites_locations s,
+			locations l,
+			provinces p
+		SET
+			s.location_id = l.id,
+			s.match_type='address'
+		WHERE
+			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
+			p.id=l.province_id AND
+			s.site=? AND
+			s.location_id=0`,
+	}
+
+	return r.DB.Transaction(func(db *gorm.DB) error {
+		for _, q := range queries {
+			if err := r.DB.Exec(q, r.site).Error; err != nil {
+				return err
+			}
+		}
+		// set surface
+		db.Exec(`update sites_locations set surface=regexp_substr(location, '\\(.+\\)') where site=? AND surface=""`, r.site)
+		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
+		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
+		// set surface id
+		db.Exec(`update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and s.location_id=b.id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
+		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=l.id and l.total_surfaces=1 and s.surface_id=0 and s.site=? and s.surface_id=0`, r.site)
+		return nil
+	})
 }
 
 func (r *SiteRepository) RunMatchLocations() error {

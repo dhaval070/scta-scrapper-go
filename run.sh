@@ -28,6 +28,7 @@ if [ $? -ne 0 ]; then
 fi
 
 f="$dir/$site.csv"
-csvtool -c 1-6 /tmp/$site.csv > $f
+csvtool --encoding utf8 -c 1-6 /tmp/$site.csv > $f
+
 
 go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
