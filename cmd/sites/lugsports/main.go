@@ -25,7 +25,8 @@ import (
 
 const SessionID = "8683"
 
-var siteUrl = "https://www.lugsports.com/stats#/1709/schedule?season_id=" + SessionID + "&all"
+var siteUrl = "https://www.lugsports.com/stats#/1709/schedule?season_id=" + SessionID
+
 var driver selenium.WebDriver
 var client = http.DefaultClient
 
@@ -116,7 +117,7 @@ func main() {
 		}
 		ticket := val.(string)
 
-		for i := 0; i < 4; i += 1 {
+		for i := 0; i < 50; i += 1 {
 			events, err = getMore(lastEvent.ID, ticket)
 			if err != nil {
 				panic(err)
