@@ -56,6 +56,9 @@ func main() {
 	}
 
 	result := ParseSchedules(doc, mm, yyyy)
+	if len(result) == 0 {
+		return
+	}
 
 	if *importLocations {
 		config.Init("config", ".")
@@ -91,6 +94,12 @@ func main() {
 }
 
 func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
+	contents := htmlquery.OutputHTML(doc, true)
+	if strings.Contains(contents, "No games scheduled") {
+		log.Println("not games scheduled for alliancehockey")
+		return [][]string{}
+	}
+
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 	if len(nodes) == 0 {
 		log.Println(htmlquery.OutputHTML(doc, true))
