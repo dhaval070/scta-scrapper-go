@@ -26,7 +26,7 @@ for site in `ls cmd/sites/`; do
     go run ./cmd/sites/$site/ --import-locations -date $mmyyyy --outfile /tmp/$site.csv
     if [ $? -ne 0 ]; then
         echo "$site failed"
-        exit
+        continue
     fi
 
     if [ -e /tmp/$site.csv -a -s /tmp/$site.csv ]; then
