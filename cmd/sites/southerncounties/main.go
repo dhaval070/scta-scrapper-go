@@ -21,7 +21,7 @@ import (
 const SITE = "southerncounties"
 
 func parseGroups(doc *html.Node) map[string]string {
-	links := htmlquery.Find(doc, `//div[@class="site-list"]/div/a`)
+	links := htmlquery.Find(doc, `//div[contains(@class, "site-list")]/a`)
 
 	var groups = make(map[string]string)
 
@@ -33,7 +33,7 @@ func parseGroups(doc *html.Node) map[string]string {
 
 		parts := re.FindAllStringSubmatch(href, -1)
 		if parts == nil {
-			log.Fatal("failed to parse group link", href)
+			continue
 		}
 		groups[division] = parts[0][1]
 	}
@@ -58,6 +58,7 @@ func main() {
 	}
 
 	doc, err = htmlquery.LoadURL("https://southerncounties.ca/Seasons/Current/")
+	// fmt.Println(htmlquery.OutputHTML(doc, true))
 
 	groups := parseGroups(doc)
 	log.Println(groups)
