@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"regexp"
 	"time"
 
 	"flag"
@@ -21,23 +20,7 @@ import (
 const SITE = "srll"
 
 func parseGroups(doc *html.Node) map[string]string {
-	links := htmlquery.Find(doc, `//div[@class="site-list"]/div/a`)
-
-	var groups = make(map[string]string)
-
-	for _, n := range links {
-		href := parser.GetAttr(n, "href")
-		division := htmlquery.InnerText(n)
-
-		re := regexp.MustCompile(`Groups/(.+)/`)
-
-		parts := re.FindAllStringSubmatch(href, -1)
-		if parts == nil {
-			log.Fatal("failed to parse group link", href)
-		}
-		groups[division] = parts[0][1]
-	}
-	return groups
+	return parser.ParseSiteListGroups(doc, `//div[@class="site-list"]/div/a`)
 }
 
 func main() {
