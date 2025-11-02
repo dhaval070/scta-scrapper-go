@@ -3,20 +3,15 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
-	"calendar-scrapper/config"
-	"calendar-scrapper/dao/model"
 	"calendar-scrapper/internal/webdriver"
-	"calendar-scrapper/pkg/repository"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/tebeka/selenium"
@@ -136,26 +131,14 @@ func main() {
 		fmt.Println("total ", len(result))
 	}
 
-	if *importLocations {
-		config.Init("config", ".")
-		cfg := config.MustReadConfig()
-
-		var locations = make([]model.SitesLocation, 0, len(result))
-		for _, r := range result {
-			l := model.SitesLocation{
-				Location: r.Facility,
-				Address:  r.FacilityAddress,
-				Surface:  r.Rink,
-			}
-			locations = append(locations, l)
+	if *flags.ImportLocations {
+		if err := cmdutil.ImportLocations(SITE, result); err != nil {
+			log.Fatal(err)
 		}
-
-		repo := repository.NewRepository(cfg).Site(SITE)
-		repo.ImportLoc(locations)
 	}
 
-	if *outfile != "" {
-		fh, err := os.Create(*outfile)
+	if *flags.Outfile != "" {
+		fh, err := os.Create(*flags.Outfile)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -262,9 +262,9 @@ func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) []
 
 // DayDetailsConfig configures the ParseDayDetailsSchedule function
 type DayDetailsConfig struct {
-	TournamentCheckExact bool                  // true for exact match, false for contains check
-	LogErrors            bool                  // enable verbose error logging
-	GameDetailsFunc      func(string) string   // function to fetch venue address from game URL
+	TournamentCheckExact bool                // true for exact match, false for contains check
+	LogErrors            bool                // enable verbose error logging
+	GameDetailsFunc      func(string) string // function to fetch venue address from game URL
 }
 
 // ParseDayDetailsSchedule parses schedules from day-details divs with home/away logic
@@ -278,19 +278,14 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 	var wg = &sync.WaitGroup{}
 
 	for _, node := range nodes {
-		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
+		id := GetAttr(node, "id")
 
-		var id string
-		for _, v := range node.Attr {
-			if v.Key == "id" {
-				id = v.Val
-				break
-			}
-		}
 		if id == "" {
 			log.Fatal("id not found")
 		}
+
 		ymd := ParseId(id)
+		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
 
 		for _, parent := range listItems {
 			item := htmlquery.FindOne(parent, `div[2]`)
@@ -388,8 +383,8 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 
 // MonthScheduleConfig configures the ParseMonthBasedSchedule function
 type MonthScheduleConfig struct {
-	TeamParseStrategy string // "subject-owner-first" or "first-char-detect"
-	URLPrefix         string // optional base URL prefix
+	TeamParseStrategy string                      // "subject-owner-first" or "first-char-detect"
+	URLPrefix         string                      // optional base URL prefix
 	VenueAddressFunc  func(string, string) string // function to fetch venue address
 }
 

@@ -1,7 +1,7 @@
 # Code Refactoring Summary
 
 ## Overview
-Successfully generalized duplicate HTML parsing functions across 37 hockey league scraper sites, eliminating ~2,611 lines of duplicate code.
+Successfully generalized duplicate HTML parsing functions and command-line utilities across 76+ hockey league scraper sites, eliminating ~4,517 lines of duplicate code.
 
 ## Changes Made
 
@@ -70,6 +70,20 @@ Consolidated the `gameDetails()` and `venueDetails()` functions from **16 sites*
 
 **Lines saved:** ~645 lines (16 sites × ~46 lines)
 
+#### Command-Line Utilities (ParseCommonFlags, ImportLocations, WriteOutput)
+Consolidated common main() function code from **76 sites**:
+- **Sites updated:** 76+ sites with identical flag parsing, import, and output logic
+
+**Functions created in `pkg/cmdutil/`:**
+- `ParseCommonFlags()` - Handles date, outfile, and importLocations flags
+- `ImportLocations()` - Imports location data to database  
+- `WriteOutput()` - Writes CSV output or logs results
+
+**Before (per site):** ~35 lines of duplicate boilerplate code
+**After (per site):** ~9 lines using helper functions
+
+**Lines saved:** ~1,906 lines (76 sites × ~26 lines)
+
 ### 2. Removed Duplicate Helper Functions
 
 #### parseHref()
@@ -93,7 +107,8 @@ Removed unused imports from updated sites:
 | parseGroups | 22 | ~440 | ~59 | ~381 |
 | parseHref | 16 | ~160 | 0 | ~160 |
 | gameDetails/venueDetails | 16 | ~736 | ~91 | ~645 |
-| **TOTAL** | **37** | **~2,941** | **~330** | **~2,611** |
+| main() boilerplate | 76 | ~2,660 | ~754 | ~1,906 |
+| **TOTAL** | **76+** | **~5,601** | **~1,084** | **~4,517** |
 
 ### Benefits
 ✅ **Single source of truth** - Schedule parsing logic defined once  
@@ -148,6 +163,7 @@ func parseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 
 ## Files Modified
 - `pkg/parser/parser.go` - Added 5 new generalized functions (+~243 lines)
-- 37 site files in `cmd/sites/` - Replaced duplicate code with function calls (-~2,611 lines)
+- `pkg/cmdutil/cmdutil.go` - Created new package with 3 helper functions (+~70 lines)
+- 76+ site files in `cmd/sites/` - Replaced duplicate code with function calls (-~4,517 lines)
 
-**Net change:** Reduced codebase by ~2,368 lines while adding more functionality
+**Net change:** Reduced codebase by ~4,204 lines while adding more functionality
