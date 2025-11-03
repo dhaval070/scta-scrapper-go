@@ -3,15 +3,18 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"calendar-scrapper/internal/webdriver"
+	"calendar-scrapper/pkg/cmdutil"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/tebeka/selenium"
@@ -28,12 +31,8 @@ var client = http.DefaultClient
 const SITE = "lugsports"
 
 func main() {
+	flags := cmdutil.ParseCommonFlags()
 	infile := flag.String("infile", "", "local html filename")
-	importLocations := flag.Bool("import-locations", false, "import site locations")
-	outfile := flag.String("outfile", "", "output filename")
-	// date flag is not used but have to add here to make this command compatible with other sites and use with run.sh and run-all.sh
-	_ = flag.String("date", "", "calendar month and year in format: mmyyyy")
-
 	flag.Parse()
 
 	var source string
@@ -132,18 +131,25 @@ func main() {
 	}
 
 	if *flags.ImportLocations {
-		if err := cmdutil.ImportLocations(SITE, result); err != nil {
+		if err := cmdutil.ImportLocations(SITE, convertToCSVFormat(result)); err != nil {
 			log.Fatal(err)
 		}
 	}
 
 	if *flags.Outfile != "" {
-		fh, err := os.Create(*flags.Outfile)
-		if err != nil {
-			log.Fatal(err)
+		var fh *os.File
+		var err error
+		
+		if *flags.Outfile == "-" {
+			fh = os.Stdout
+		} else {
+			fh, err = os.Create(*flags.Outfile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer fh.Close()
 		}
 		WriteEvents(fh, result)
-		fh.Close()
 	}
 }
 
@@ -225,4 +231,20 @@ type Event struct {
 	Facility        string     `json:"facility"`
 	FacilityAddress string     `json:"facility_address"`
 	Rink            string     `json:"rink"`
+}
+
+func convertToCSVFormat(events []Event) [][]string {
+	result := make([][]string, len(events))
+	for i, rec := range events {
+		result[i] = []string{
+			rec.Datetime.Format("2006-1-02 15:04"),
+			SITE,
+			rec.HomeTeam,
+			rec.AwayTeam,
+			rec.Facility,
+			rec.HomeDivision,
+			rec.FacilityAddress,
+		}
+	}
+	return result
 }

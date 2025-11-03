@@ -265,6 +265,7 @@ type DayDetailsConfig struct {
 	TournamentCheckExact bool                // true for exact match, false for contains check
 	LogErrors            bool                // enable verbose error logging
 	GameDetailsFunc      func(string) string // function to fetch venue address from game URL
+	ContentFilter        string              // optional filter - skip events not containing this text
 }
 
 // ParseDayDetailsSchedule parses schedules from day-details divs with home/away logic
@@ -290,6 +291,13 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 		for _, parent := range listItems {
 			item := htmlquery.FindOne(parent, `div[2]`)
 			content := htmlquery.OutputHTML(item, true)
+
+			// Apply content filter if specified
+			if cfg.ContentFilter != "" {
+				if !strings.Contains(strings.ToUpper(content), strings.ToUpper(cfg.ContentFilter)) {
+					continue
+				}
+			}
 
 			var homeGame = true
 			var gameType = htmlquery.InnerText(htmlquery.FindOne(item, `div[2]`))

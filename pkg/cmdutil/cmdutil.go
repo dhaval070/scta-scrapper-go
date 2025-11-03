@@ -58,11 +58,18 @@ func ImportLocations(siteName string, result [][]string) error {
 // Used by 76+ sites with identical code
 func WriteOutput(outfile string, result [][]string) error {
 	if outfile != "" {
-		fh, err := os.Create(outfile)
-		if err != nil {
-			return err
+		var fh *os.File
+		var err error
+
+		if outfile == "-" {
+			fh = os.Stdout
+		} else {
+			fh, err = os.Create(outfile)
+			if err != nil {
+				return err
+			}
+			defer fh.Close()
 		}
-		defer fh.Close()
 		writer.WriteCsv(fh, result)
 	} else {
 		log.Println(result)
