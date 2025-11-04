@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -20,12 +21,13 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"github.com/tebeka/selenium"
-	"golang.org/x/net/html"
 )
 
-const SessionID = "8683"
-
-var siteUrl = "https://www.lugsports.com/stats#/1709/schedule?season_id=" + SessionID
+var sites = [][]string{
+	{"https://www.lugsports.com/stats#/1709/schedule?season_id=", "8683"},
+	{"https://www.lugsports.com/stats#/1869/schedule?season_id=", "9203"},
+	{"https://www.lugsports.com/stats#/162/schedule?season_id=", "9350"},
+}
 
 var driver selenium.WebDriver
 var client = http.DefaultClient
@@ -33,7 +35,6 @@ var client = http.DefaultClient
 const SITE = "lugsports"
 
 func main() {
-	infile := flag.String("infile", "", "local html filename")
 	importLocations := flag.Bool("import-locations", false, "import site locations")
 	outfile := flag.String("outfile", "", "output filename")
 	// date flag is not used but have to add here to make this command compatible with other sites and use with run.sh and run-all.sh
@@ -41,100 +42,27 @@ func main() {
 
 	flag.Parse()
 
-	var source string
-	var doc *html.Node
 	var err error
 
-	if *infile != "" {
-		doc, err = htmlquery.LoadDoc(*infile)
-		if err != nil {
-			panic("failed to load file")
-		}
-	} else {
-		service, err := selenium.NewChromeDriverService("./chromedriver", 4444)
-		if err != nil {
-			log.Fatal("Error:", err)
-		}
-		defer service.Stop()
-
-		driver = webdriver.GetWebDriver()
-
-		err = driver.Get(siteUrl)
-		if err != nil {
-			log.Println("failed to get %s: %w", siteUrl, err)
-		}
-
-		time.Sleep(8 * time.Second)
-		source, err = driver.PageSource()
-
-		if err != nil {
-			log.Println("pageSource error %s: %w", siteUrl, err)
-		}
-
-		doc, err = htmlquery.Parse(strings.NewReader(source))
-		if err != nil {
-			log.Println(source)
-			panic("failed to parse html")
-		}
+	service, err := selenium.NewChromeDriverService("./chromedriver", 4444)
+	if err != nil {
+		log.Fatal("Error:", err)
 	}
+	defer service.Stop()
 
-	node := htmlquery.FindOne(doc, `//partial[@slug="stats/schedule/table"]/div//table[@class="schedule"]/tbody`)
-	if node == nil {
-		panic("schedule not found")
-	}
-
-	var content string
-	for _, attr := range node.Attr {
-		if attr.Key == "ng-init" {
-			content = attr.Val
-			break
-		}
-	}
-	if content == "" {
-		panic("ng-init not found")
-	}
-	content = strings.Replace(content, "ctrl.schedule=", "", 1)
+	driver = webdriver.GetWebDriver()
 
 	var result []Event
-
-	if err = json.Unmarshal([]byte(content), &result); err != nil {
-		panic(fmt.Errorf("failed to unmarshal schedule json %w", err))
-	}
-	for i, v := range result {
-		address, err := url.QueryUnescape(v.FacilityAddress)
+	for _, site := range sites {
+		r, err := scrapeSeason(driver, site[0], site[1])
 		if err != nil {
-			panic(fmt.Errorf("failed to unescape address %s ", v.FacilityAddress))
+			log.Printf("lugsports error in %s, %s: %s\n", site[0], site[1], err.Error())
+			continue
 		}
-		result[i].FacilityAddress = address
+		result = append(result, r...)
 	}
 
-	if *infile == "" {
-		var events []Event
-		lastEvent := result[len(result)-1]
-		val, err := driver.ExecuteScript("return window.localStorage.getItem('website_api_ticket')", nil)
-		if err != nil {
-			log.Println("failed to get api token")
-		}
-		ticket := val.(string)
-
-		for i := 0; i < 50; i += 1 {
-			events, err = getMore(lastEvent.ID, ticket)
-			if err != nil {
-				panic(err)
-			}
-			if len(events) == 0 {
-				break
-			}
-			// b, err := json.Marshal(events)
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// fmt.Println(string(b))
-			result = append(result, events...)
-			lastEvent = events[len(events)-1]
-		}
-		fmt.Println("total ", len(result))
-	}
+	fmt.Println("total ", len(result))
 
 	if *importLocations {
 		config.Init("config", ".")
@@ -164,8 +92,87 @@ func main() {
 	}
 }
 
-func getMore(lastID string, ticket string) ([]Event, error) {
-	s := "https://web.api.digitalshift.ca/partials/stats/schedule/table?order=datetime&season_id=" + SessionID + "&start_id=" + lastID + "&offset=1&limit=200&all=true"
+func scrapeSeason(driver selenium.WebDriver, siteUrl, seasonId string) (events []Event, err error) {
+	err = driver.Get(siteUrl + seasonId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get %s: %v\n", siteUrl, err)
+	}
+
+	time.Sleep(10 * time.Second)
+	source, err := driver.PageSource()
+
+	if err != nil {
+		return nil, fmt.Errorf("pageSource error %s: %v\n", siteUrl, err)
+	}
+
+	doc, err := htmlquery.Parse(strings.NewReader(source))
+	if err != nil {
+		return nil, errors.New("failed to parse html")
+	}
+
+	node := htmlquery.FindOne(doc, `//partial[@slug="stats/schedule/table"]/div//table[@class="schedule"]/tbody`)
+	if node == nil {
+		return events, errors.New("schedule not found")
+	}
+
+	var content string
+	for _, attr := range node.Attr {
+		if attr.Key == "ng-init" {
+			content = attr.Val
+			break
+		}
+	}
+	if content == "" {
+		return nil, errors.New("ng-init not found")
+	}
+	content = strings.Replace(content, "ctrl.schedule=", "", 1)
+
+	var result []Event
+
+	if err = json.Unmarshal([]byte(content), &result); err != nil {
+		return nil, errors.New("failed to unmarshal schedule json ")
+	}
+
+	for i, v := range result {
+		address, err := url.QueryUnescape(v.FacilityAddress)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unescape address %s ", v.FacilityAddress)
+		}
+		result[i].FacilityAddress = address
+	}
+
+	if len(result) == 0 {
+		return nil, errors.New("no results found")
+	}
+
+	lastEvent := result[len(result)-1]
+	val, err := driver.ExecuteScript("return window.localStorage.getItem('website_api_ticket')", nil)
+	if err != nil {
+		return nil, errors.New("failed to get api token")
+	}
+	ticket := val.(string)
+
+	for i := 0; i < 50; i += 1 {
+		events, err = getMore(seasonId, lastEvent.ID, ticket)
+		if err != nil {
+			return nil, err
+		}
+		if len(events) == 0 {
+			break
+		}
+		// b, err := json.Marshal(events)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// fmt.Println(string(b))
+		result = append(result, events...)
+		lastEvent = events[len(events)-1]
+	}
+	return result, nil
+}
+
+func getMore(seasonId, lastID, ticket string) ([]Event, error) {
+	s := "https://web.api.digitalshift.ca/partials/stats/schedule/table?order=datetime&season_id=" + seasonId + "&start_id=" + lastID + "&offset=1&limit=200&all=true"
 
 	req, err := http.NewRequest("GET", s, nil)
 	if err != nil {
@@ -198,6 +205,7 @@ func getMore(lastID string, ticket string) ([]Event, error) {
 	var data = map[string][]Event{}
 	err = json.Unmarshal(b, &data)
 	if err != nil {
+		log.Println(string(b))
 		return nil, err
 	}
 	for i, v := range data["schedule"] {
