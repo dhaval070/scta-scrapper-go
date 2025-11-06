@@ -71,9 +71,10 @@ func main() {
 		var locations = make([]model.SitesLocation, 0, len(result))
 		for _, r := range result {
 			l := model.SitesLocation{
-				Location: r.Facility,
+				Location: r.Facility + "(" + r.Rink + ")",
 				Address:  r.FacilityAddress,
-				Surface:  r.Rink,
+				// surface will be populated later by extracting from Location field
+				// Surface:  r.Rink,
 			}
 			locations = append(locations, l)
 		}
