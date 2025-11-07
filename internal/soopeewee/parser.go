@@ -79,7 +79,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			guestTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 
 			if !homeGame {
 				homeTeam, guestTeam = guestTeam, homeTeam
