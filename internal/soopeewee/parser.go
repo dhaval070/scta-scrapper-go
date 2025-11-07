@@ -68,14 +68,6 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 				if err != nil {
 					log.Fatal("subject owner error ", err, content)
 				}
-				// re := regexp.MustCompile(`^(U\w+ [A-Z]{1,}) (.+)$`)
-				// rs := re.FindStringSubmatch(d)
-				//
-				// if rs == nil {
-				// 	log.Fatal("failed to parse team: ", d)
-				// }
-				// division = rs[1]
-				// homeTeam = rs[2]
 				division, homeTeam = d, d
 			}
 

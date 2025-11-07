@@ -1,6 +1,7 @@
 package parser2
 
 import (
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"log"
 	"regexp"
@@ -27,14 +28,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 	for _, node := range nodes {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
 
-		var id string
+		var id = htmlutil.GetAttr(node, "id")
 
-		for _, v := range node.Attr {
-			if v.Key == "id" {
-				id = v.Val
-				break
-			}
-		}
 		if id == "" {
 			log.Fatal("id not found")
 		}
@@ -76,9 +71,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 					log.Fatal("subject owner error ", err, content)
 				}
 
-				re := regexp.MustCompile(`[0-9]{4}-[9-9]{4} • `)
-				homeTeam = re.ReplaceAllString(d, "")
-				division = ""
+				division, homeTeam = d, d
 			}
 
 			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
@@ -88,7 +81,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			guestTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 
 			if !homeGame {
 				homeTeam, guestTeam = guestTeam, homeTeam
@@ -103,17 +96,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			if item == nil {
 				log.Fatal("can not find venue link: ", htmlquery.OutputHTML(parent, true))
 			}
-			var url string
-			var class string
-
-			for _, attr := range item.Attr {
-				if attr.Key == "href" {
-					url = attr.Val
-					break
-				} else if attr.Key == "class" {
-					class = attr.Val
-				}
-			}
+			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
 
 			if url != "" {
 				wg.Add(1)
