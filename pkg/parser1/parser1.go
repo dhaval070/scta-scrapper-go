@@ -1,6 +1,7 @@
 package parser1
 
 import (
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"fmt"
 	"log"
@@ -166,7 +167,7 @@ func ParseTournament(doc *html.Node, tournamentId string) [][]string {
 			var venueUrl string
 
 			if link != nil {
-				venueUrl = parser.GetAttr(link, "href")
+				venueUrl = htmlutil.GetAttr(link, "href")
 
 			}
 			result = append(result, []string{dt.Format("2006-01-02 15:04"), guestTeam, loc, venueUrl})

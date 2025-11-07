@@ -2,6 +2,7 @@ package parser
 
 import (
 	"calendar-scrapper/internal/client"
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/month"
 	"errors"
 	"fmt"
@@ -32,15 +33,6 @@ func (a ByDate) Swap(i, j int) {
 
 func (a ByDate) Less(i, j int) bool {
 	return a[i][0] < a[j][0]
-}
-
-func GetAttr(node *html.Node, key string) string {
-	for _, attr := range node.Attr {
-		if attr.Key == key {
-			return attr.Val
-		}
-	}
-	return ""
 }
 
 func ParseTime(content string) (string, error) {
@@ -78,7 +70,7 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 	var wg = &sync.WaitGroup{}
 
 	for _, node := range nodes {
-		id := GetAttr(node, "id")
+		id := htmlutil.GetAttr(node, "id")
 		ymd := ParseId(id)
 
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`) // `div[2]`)
@@ -279,7 +271,7 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 	var wg = &sync.WaitGroup{}
 
 	for _, node := range nodes {
-		id := GetAttr(node, "id")
+		id := htmlutil.GetAttr(node, "id")
 
 		if id == "" {
 			log.Fatal("id not found")
@@ -359,7 +351,7 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 			location, err := QueryInnerText(item, `//div[contains(@class,"location")]`)
 
 			item = htmlquery.FindOne(parent, `//div[1]/div[2]/a`)
-			url := GetAttr(item, "href")
+			url := htmlutil.GetAttr(item, "href")
 
 			if url != "" {
 				wg.Add(1)
@@ -539,7 +531,7 @@ func ParseSiteListGroups(doc *html.Node, xpath string) map[string]string {
 	var groups = make(map[string]string)
 
 	for _, n := range links {
-		href := GetAttr(n, "href")
+		href := htmlutil.GetAttr(n, "href")
 		division := htmlquery.InnerText(n)
 
 		re := regexp.MustCompile(`Groups/(.+)/`)
@@ -598,7 +590,7 @@ func GetGameDetailsAddress(gameURL, baseURL string) string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class,"game-details-tabs")]//a`)
 
 	for _, n := range nodes {
-		venueURL = GetAttr(n, "href")
+		venueURL = htmlutil.GetAttr(n, "href")
 
 		if htmlquery.InnerText(n) == "More Venue Details" {
 			return GetVenueDetailsFromRelativeURL(baseURL, venueURL)

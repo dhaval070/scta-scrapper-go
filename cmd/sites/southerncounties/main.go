@@ -5,8 +5,9 @@ import (
 	"regexp"
 	"time"
 
-	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/cmdutil"
+	"calendar-scrapper/pkg/htmlutil"
+	"calendar-scrapper/pkg/parser"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -20,7 +21,7 @@ func parseGroups(doc *html.Node) map[string]string {
 	var groups = make(map[string]string)
 
 	for _, n := range links {
-		href := parser.GetAttr(n, "href")
+		href := htmlutil.GetAttr(n, "href")
 		division := htmlquery.InnerText(n)
 
 		re := regexp.MustCompile(`Groups/(.+)/`)

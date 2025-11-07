@@ -1,6 +1,7 @@
 package soopeewee
 
 import (
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"log"
 	"regexp"
@@ -26,14 +27,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 	for _, node := range nodes {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
 
-		var id string
+		var id = htmlutil.GetAttr(node, "id")
 
-		for _, v := range node.Attr {
-			if v.Key == "id" {
-				id = v.Val
-				break
-			}
-		}
 		if id == "" {
 			log.Fatal("id not found")
 		}
