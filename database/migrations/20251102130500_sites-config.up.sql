@@ -152,9 +152,9 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
 ('heoaaaleague', 'HEOAA League', 'https://heoaaaleague.ca/', 'heoaaaleague', 'month_based', 
  JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'subject-owner-first')),
 ('spfhahockey', 'SPFHA Hockey', 'https://spfhahockey.com/', 'sun parlour', 'month_based', 
- JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'subject-owner-first')),
+ JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'first-char-detect')),
 ('windsoraaazone', 'Windsor AAA Zone', 'https://windsoraaazone.net/', 'Windsor AAA Zone', 'month_based', 
- JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'subject-owner-first')),
+ JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'first-char-detect')),
 ('wmha', 'WMHA', 'https://wmha.net/', 'Windsor Spitfires', 'month_based', 
  JSON_OBJECT('url_template', 'Schedule/?Month=%d&Year=%d', 'team_parse_strategy', 'first-char-detect'));
 

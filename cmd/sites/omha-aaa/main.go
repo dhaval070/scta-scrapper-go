@@ -38,7 +38,7 @@ func main() {
 
 	groups := parseGroups(doc)
 
-	var result = parser.FetchSchedules(SITE, "https://omha-aaa.net/Groups/%s/Calendar/?Month=%d&Year=%d", groups, mm, yyyy)
+	var result = parser.FetchSchedules(SITE, "https://omha-aaa.net/", "https://omha-aaa.net/Groups/%s/Calendar/?Month=%d&Year=%d", groups, mm, yyyy)
 
 	if *flags.ImportLocations {
 		if err := cmdutil.ImportLocations(SITE, result); err != nil {

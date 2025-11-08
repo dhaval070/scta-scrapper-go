@@ -31,16 +31,15 @@ type ParserConfigJSON struct {
 	LogErrors            bool   `json:"log_errors,omitempty"`
 	URLTemplate          string `json:"url_template,omitempty"`
 	ContentFilter        string `json:"content_filter,omitempty"` // Filter events by content substring
-	
+
 	// Group-based parser fields
-	GroupXPath        string `json:"group_xpath,omitempty"`
-	GroupURLTemplate  string `json:"group_url_template,omitempty"`
-	SeasonsURL        string `json:"seasons_url,omitempty"`
-	
+	GroupXPath       string `json:"group_xpath,omitempty"`
+	GroupURLTemplate string `json:"group_url_template,omitempty"`
+	SeasonsURL       string `json:"seasons_url,omitempty"`
+
 	// Month-based parser fields
 	TeamParseStrategy string `json:"team_parse_strategy,omitempty"`
-	URLPrefix         string `json:"url_prefix,omitempty"`
-	
+
 	// External parser fields
 	BinaryPath string   `json:"binary_path,omitempty"`
 	ExtraArgs  []string `json:"extra_args,omitempty"`

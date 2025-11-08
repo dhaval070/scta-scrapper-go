@@ -65,7 +65,7 @@ func ParseTime(content string) (string, error) {
 	return fmt.Sprintf("%02d:%02d", h, m), nil
 }
 
-func ParseSchedules(site string, doc *html.Node) [][]string {
+func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 
 	var result = [][]string{}
@@ -132,6 +132,10 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 			}
 
 			if url != "" {
+				// Prepend baseUrl if URL doesn't start with "http"
+				if baseUrl != "" && len(url) >= 4 && url[:4] != "http" {
+					url = baseUrl + url
+				}
 				wg.Add(1)
 				go func(url string, class string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
@@ -237,7 +241,7 @@ func ParseMonthYear(dt string) (int, int) {
 	return mm, yyyy
 }
 
-func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) [][]string {
+func FetchSchedules(site, baseUrl, url string, groups map[string]string, mm, yyyy int) [][]string {
 
 	var schedules = make([][]string, 0)
 
@@ -248,7 +252,7 @@ func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) []
 			log.Fatal("load calendar url", err)
 		}
 
-		result := ParseSchedules(site, doc)
+		result := ParseSchedules(site, baseUrl, doc)
 
 		for _, row := range result {
 			row[5] = division
@@ -396,7 +400,6 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 // MonthScheduleConfig configures the ParseMonthBasedSchedule function
 type MonthScheduleConfig struct {
 	TeamParseStrategy string                      // "subject-owner-first" or "first-char-detect"
-	URLPrefix         string                      // optional base URL prefix
 	VenueAddressFunc  func(string, string) string // function to fetch venue address
 }
 
@@ -421,7 +424,7 @@ func ParseMonthBasedSchedule(doc *html.Node, mm, yyyy int, site string, cfg Mont
 			item := items[0]
 			content := htmlquery.OutputHTML(item, true)
 
-			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
+			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") || strings.Contains(content, "Tournament") {
 				continue
 			}
 
@@ -501,22 +504,12 @@ func ParseMonthBasedSchedule(doc *html.Node, mm, yyyy int, site string, cfg Mont
 			}
 			item = items[0]
 
-			var url string
 			var address string
-			var class string
 
-			for _, attr := range item.Attr {
-				if attr.Key == "href" {
-					url = attr.Val
-				} else if attr.Key == "class" {
-					class = attr.Val
-				}
-			}
+			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
 
 			if url != "" {
-				if cfg.URLPrefix != "" && url[:4] != "http" {
-					url = cfg.URLPrefix + url
-				}
 				wg.Add(1)
 				go func(url string, class string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()

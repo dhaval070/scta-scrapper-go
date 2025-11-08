@@ -108,7 +108,7 @@ func (s *Scraper) scrapeGroupBased(mm, yyyy int) ([][]string, error) {
 	log.Printf("[%s] Found %d groups\n", s.config.SiteName, len(groups))
 
 	urlTemplate := s.config.BaseURL + s.parserCfg.GroupURLTemplate
-	result := parser.FetchSchedules(s.config.SiteName, urlTemplate, groups, mm, yyyy)
+	result := parser.FetchSchedules(s.config.SiteName, s.config.BaseURL, urlTemplate, groups, mm, yyyy)
 
 	log.Printf("[%s] Parsed %d schedule entries from all groups\n", s.config.SiteName, len(result))
 	return result, nil
@@ -126,8 +126,10 @@ func (s *Scraper) scrapeMonthBased(mm, yyyy int) ([][]string, error) {
 
 	cfg := parser.MonthScheduleConfig{
 		TeamParseStrategy: s.parserCfg.TeamParseStrategy,
-		URLPrefix:         s.parserCfg.URLPrefix,
-		VenueAddressFunc:  func(url, class string) string {
+		VenueAddressFunc: func(url, class string) string {
+			if len(url) > 3 && url[:4] != "http" {
+				url = s.config.BaseURL + url
+			}
 			address, err := parser.VenueFetcher.Fetch(url, class)
 			if err != nil {
 				return ""
@@ -145,16 +147,16 @@ func (s *Scraper) scrapeMonthBased(mm, yyyy int) ([][]string, error) {
 // scrapeDayDetailsParser1 handles day_details_parser1 parser type (uses parser1 package)
 func (s *Scraper) scrapeDayDetailsParser1(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
-	
+
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
 	doc, err := htmlquery.LoadURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load URL: %w", err)
 	}
-	
+
 	// parser1.ParseSchedules has different signature - includes baseURL and homeTeam
 	result := parser1.ParseSchedules(doc, s.config.SiteName, s.config.BaseURL, s.config.HomeTeam)
-	
+
 	log.Printf("[%s] Parsed %d schedule entries\n", s.config.SiteName, len(result))
 	return result, nil
 }
@@ -163,16 +165,16 @@ func (s *Scraper) scrapeDayDetailsParser1(mm, yyyy int) ([][]string, error) {
 // This parser requires explicit "home game" or "away game" markers
 func (s *Scraper) scrapeDayDetailsParser2(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
-	
+
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
 	doc, err := htmlquery.LoadURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load URL: %w", err)
 	}
-	
+
 	// parser2.ParseSchedules has same signature as parser1
 	result := parser2.ParseSchedules(doc, s.config.SiteName, s.config.BaseURL)
-	
+
 	log.Printf("[%s] Parsed %d schedule entries\n", s.config.SiteName, len(result))
 	return result, nil
 }
@@ -182,14 +184,14 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 	if s.parserCfg.BinaryPath == "" {
 		return nil, fmt.Errorf("binary_path not configured for external parser")
 	}
-	
+
 	// Build command arguments
 	dateStr := fmt.Sprintf("%02d%d", mm, yyyy)
 	args := []string{"--date", dateStr, "--outfile", "-"}
 	args = append(args, s.parserCfg.ExtraArgs...)
-	
+
 	log.Printf("[%s] Calling external binary: %s %v\n", s.config.SiteName, s.parserCfg.BinaryPath, args)
-	
+
 	// Execute the binary
 	cmd := exec.Command(s.parserCfg.BinaryPath, args...)
 	output, err := cmd.Output()
@@ -199,14 +201,14 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 		}
 		return nil, fmt.Errorf("failed to execute external binary: %w", err)
 	}
-	
+
 	// Parse CSV output
 	reader := csv.NewReader(strings.NewReader(string(output)))
 	records, err := reader.ReadAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse CSV output: %w", err)
 	}
-	
+
 	log.Printf("[%s] External parser returned %d records\n", s.config.SiteName, len(records))
 	return records, nil
 }

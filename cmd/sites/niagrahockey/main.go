@@ -35,7 +35,7 @@ func main() {
 	groups := parseGroups(doc)
 	log.Println(groups)
 
-	var result = parser.FetchSchedules(SITE, "https://niagaradistricthockeyleague.com/Groups/%s/Calendar/?Month=%d&Year=%d", groups, mm, yyyy)
+	var result = parser.FetchSchedules(SITE, "https://niagaradistricthockeyleague.com/", "https://niagaradistricthockeyleague.com/Groups/%s/Calendar/?Month=%d&Year=%d", groups, mm, yyyy)
 
 	if *flags.ImportLocations {
 		if err := cmdutil.ImportLocations(SITE, result); err != nil {

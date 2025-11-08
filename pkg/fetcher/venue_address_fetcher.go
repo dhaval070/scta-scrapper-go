@@ -20,10 +20,10 @@ type VenueAddressFetcher struct {
 
 // cacheEntry holds cached response and in-progress request information
 type cacheEntry struct {
-	body      string
-	err       error
-	done      chan struct{} // closed when request completes
-	inFlight  bool          // true if request is currently in progress
+	body     string
+	err      error
+	done     chan struct{} // closed when request completes
+	inFlight bool          // true if request is currently in progress
 }
 
 // NewVenueAddressFetcher creates a new VenueAddressFetcher with the given HTTP client.
@@ -34,7 +34,7 @@ func NewVenueAddressFetcher(client *http.Client) *VenueAddressFetcher {
 			Timeout: 30 * time.Second,
 		}
 	}
-	
+
 	return &VenueAddressFetcher{
 		client: client,
 		cache:  make(map[string]*cacheEntry),
@@ -64,9 +64,9 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 		// Request in flight - wait for it
 		doneChan := entry.done
 		f.mu.RUnlock()
-		
+
 		<-doneChan // Wait for in-flight request to complete
-		
+
 		// Now get the completed result
 		f.mu.RLock()
 		entry = f.cache[cacheKey]
@@ -74,10 +74,10 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 		return entry.body, entry.err
 	}
 	f.mu.RUnlock()
-	
+
 	// No cache entry exists - create one and start the request
 	f.mu.Lock()
-	
+
 	// Double-check: another goroutine might have created the entry
 	entry, exists = f.cache[cacheKey]
 	if exists {
@@ -89,15 +89,15 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 		// Request in flight - wait for it
 		doneChan := entry.done
 		f.mu.Unlock()
-		
+
 		<-doneChan
-		
+
 		f.mu.RLock()
 		entry = f.cache[cacheKey]
 		f.mu.RUnlock()
 		return entry.body, entry.err
 	}
-	
+
 	// Create new cache entry and mark as in-flight
 	entry = &cacheEntry{
 		done:     make(chan struct{}),
@@ -105,10 +105,13 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 	}
 	f.cache[cacheKey] = entry
 	f.mu.Unlock()
-	
+
 	// Perform the HTTP request and scrape address
 	body, err := f.scrapeVenueAddress(url, class)
-	
+	if err != nil {
+		return "", err
+	}
+
 	// Update cache entry with result
 	f.mu.Lock()
 	entry.body = body
@@ -116,7 +119,7 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 	entry.inFlight = false
 	close(entry.done) // Signal all waiting goroutines
 	f.mu.Unlock()
-	
+
 	return body, err
 }
 
@@ -127,47 +130,44 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	resp, err := f.client.Do(req)
 	if err != nil {
 		log.Println(err)
 		return "", fmt.Errorf("HTTP request failed: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("HTTP request returned status %d", resp.StatusCode)
 	}
-	
+
 	doc, err := htmlquery.Parse(resp.Body)
 	if err != nil {
 		log.Println("error getting "+url, err)
 		return "", fmt.Errorf("failed to parse HTML: %w", err)
 	}
-	
+
 	var address string
-	
+
 	// theonedb.com - remote URLs
 	if class == "remote" {
 		item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
 		if item == nil {
-			log.Println("address node not found, url:", url)
-			return "", fmt.Errorf("address node not found for remote URL")
+			return "", fmt.Errorf("address node not found for remote URL: %v", url)
 		}
 		address = htmlquery.InnerText(item)
 	} else if class == "local" {
 		// local URLs
 		node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
 		if node == nil {
-			log.Println("address node not found, url:", url)
-			return "", fmt.Errorf("address node not found for local URL")
+			return "", fmt.Errorf("address node not found for local URL: %v", url)
 		}
 		address = htmlquery.InnerText(node)
 	} else {
 		return "", fmt.Errorf("unknown class type: %s (expected 'remote' or 'local')", class)
 	}
-	
-	log.Println(url + ":" + address)
+
 	return address, nil
 }
 
@@ -183,7 +183,7 @@ func (f *VenueAddressFetcher) FetchMultiple(requests []VenueRequest) map[string]
 	results := make(map[string]string)
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	
+
 	for _, req := range requests {
 		wg.Add(1)
 		go func(r VenueRequest) {
@@ -196,7 +196,7 @@ func (f *VenueAddressFetcher) FetchMultiple(requests []VenueRequest) map[string]
 			}
 		}(req)
 	}
-	
+
 	wg.Wait()
 	return results
 }
