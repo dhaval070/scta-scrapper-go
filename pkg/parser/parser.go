@@ -92,11 +92,8 @@ func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 				continue
 			}
 
-			division, err := QueryInnerText(item, `//span[@class="game_no"]`)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
+			// division is later populated by parser.FetchSchdules after this function returns
+			var division = ""
 			guestTeam, err := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
 			if err != nil {
 				log.Println(err)
@@ -252,6 +249,7 @@ func FetchSchedules(site, baseUrl, url string, groups map[string]string, mm, yyy
 			log.Fatal("load calendar url", err)
 		}
 
+		log.Printf("parsing: site= %s, url= %s\n", site, url)
 		result := ParseSchedules(site, baseUrl, doc)
 
 		for _, row := range result {
@@ -266,10 +264,12 @@ func FetchSchedules(site, baseUrl, url string, groups map[string]string, mm, yyy
 
 // DayDetailsConfig configures the ParseDayDetailsSchedule function
 type DayDetailsConfig struct {
-	TournamentCheckExact bool                // true for exact match, false for contains check
-	LogErrors            bool                // enable verbose error logging
-	GameDetailsFunc      func(string) string // function to fetch venue address from game URL
-	ContentFilter        string              // optional filter - skip events not containing this text
+	TournamentCheckExact bool // true for exact match, false for contains check
+	LogErrors            bool // enable verbose error logging
+	// GameDEtailsFunc is unused
+	// GameDetailsFunc      func(string) string         // function to fetch venue address from game URL
+	VenueAddressFunc func(string, string) string // function to fetch venue address
+	ContentFilter    string                      // optional filter - skip events not containing this text
 }
 
 // ParseDayDetailsSchedule parses schedules from day-details divs with home/away logic
@@ -286,7 +286,8 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 		id := htmlutil.GetAttr(node, "id")
 
 		if id == "" {
-			log.Fatal("id not found")
+			log.Println("error: id not found")
+			continue
 		}
 
 		ymd := ParseId(id)
@@ -306,6 +307,9 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 			var homeGame = true
 			var gameType = htmlquery.InnerText(htmlquery.FindOne(item, `div[2]`))
 
+			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
+				continue
+			}
 			// Skip tournaments
 			if cfg.TournamentCheckExact {
 				if gameType == "Tournament" || gameType == "Hosted Tournament" {
@@ -362,12 +366,17 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 
 			location, err := QueryInnerText(item, `//div[contains(@class,"location")]`)
 
-			item = htmlquery.FindOne(parent, `//div[1]/div[2]/a`)
-			if item == nil {
-				log.Printf("error: address url not found, site=%s\n", site)
+			items := htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)
+			if len(items) == 0 {
+				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, ""})
 				continue
 			}
+			item = items[0]
+
+			var address string
+
 			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
 
 			if url != "" {
 				wg.Add(1)
@@ -377,11 +386,9 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 
 				go func(url string, location string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address := cfg.GameDetailsFunc(url)
+					address = cfg.VenueAddressFunc(url, class)
 					if address == "" {
 						log.Println("addr not found ", url)
-					} else {
-						log.Println(url, address)
 					}
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, site, hm, guestTeam, location, division, address})
@@ -542,7 +549,7 @@ func ParseSiteListGroups(doc *html.Node, xpath string) map[string]string {
 		re := regexp.MustCompile(`Groups/(.+)/`)
 		parts := re.FindAllStringSubmatch(href, -1)
 		if parts == nil {
-			log.Fatal("failed to parse group link", href)
+			continue
 		}
 		groups[division] = parts[0][1]
 	}

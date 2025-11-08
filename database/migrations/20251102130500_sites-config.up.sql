@@ -71,7 +71,7 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
  JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
 ('aceshockey', 'Aces Hockey', 'https://aceshockey.com/', 'aceshockey', 'day_details',
- JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
+ JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
 ('waterlooravens', 'Waterloo Ravens', 'https://waterlooravens.com/', 'waterlooravens', 'day_details',
  JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d'));
@@ -114,7 +114,7 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
 ('ndll', 'NDLL', 'https://ndll.ca/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
-('omha-aaa', 'OMHA AAA', 'https://omha-aaa.ca/', '', 'group_based',
+('omha-aaa', 'OMHA AAA', 'https://omha-aaa.net/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
 ('srll', 'SRLL', 'https://srll.ca/', '', 'group_based',
@@ -127,21 +127,21 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
 ('woaa.on', 'WOAA', 'https://woaa.on.ca/', '', 'group_based',
- JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
+ JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
 ('bluewaterhockey', 'Bluewater Hockey', 'https://bluewaterhockey.ca/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/div/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
-('lakeshorehockey', 'Lakeshore Hockey', 'https://lakeshorehockey.ca/', '', 'group_based',
+('lakeshorehockey', 'Lakeshore Hockey', 'https://lakeshorehockeyleague.net/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/div/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
-('niagrahockey', 'Niagara Hockey', 'https://niagrahockey.ca/', '', 'group_based',
+('niagrahockey', 'Niagara Hockey', 'https://niagaradistricthockeyleague.com/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/div/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
-('shamrockhockey', 'Shamrock Hockey', 'https://shamrockhockey.ca/', '', 'group_based',
+('shamrockhockey', 'Shamrock Hockey', 'https://shamrockhockeyleague.ca/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/div/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 
-('ysmhl', 'YSMHL', 'https://ysmhl.ca/', '', 'group_based',
+('ysmhl', 'YSMHL', 'https://ysmhl.net/', '', 'group_based',
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/div/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')
 );
 
@@ -161,11 +161,11 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
 -- Group-based parser sites (4 sites) - These use ParseSiteListGroups
 INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_type, parser_config) VALUES
 ('mpshl', 'MPSHL', 'https://mpshl.ca/', '', 'group_based', 
- JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
+ JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 ('southerncounties', 'Southern Counties', 'https://southerncounties.ca/', '', 'group_based', 
- JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
+ JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 ('tcmhl', 'TCMHL', 'https://tcmhl.ca/', '', 'group_based', 
- JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
+ JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 ('ucmhl', 'UCMHL', 'https://ucmhl.ca/', '', 'group_based', 
  JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/'));
 

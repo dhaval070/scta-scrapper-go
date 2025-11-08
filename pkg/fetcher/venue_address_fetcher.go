@@ -109,7 +109,7 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 	// Perform the HTTP request and scrape address
 	body, err := f.scrapeVenueAddress(url, class)
 	if err != nil {
-		return "", err
+		log.Printf("fetcher error %v\n", err)
 	}
 
 	// Update cache entry with result
@@ -126,16 +126,33 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 // scrapeVenueAddress performs the HTTP request and scrapes the venue address
 // This is copied from pkg/parser/parser.go:GetVenueAddress
 func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (string, error) {
+	var err error
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := f.client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("HTTP request failed: %w", err)
+	var resp *http.Response
+	var try int
+
+	for try = 1; try < 3; try += 1 {
+		resp, err = f.client.Do(req)
+		if err != nil {
+			log.Println(err)
+			err = fmt.Errorf("HTTP request failed: %w", err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		break
 	}
+
+	if err != nil {
+		return "", err
+	}
+	if try > 1 {
+		log.Println("retry successful for url ", url)
+	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {

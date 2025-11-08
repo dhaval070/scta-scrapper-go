@@ -71,8 +71,18 @@ func (s *Scraper) scrapeDayDetails(mm, yyyy int) ([][]string, error) {
 		TournamentCheckExact: s.parserCfg.TournamentCheckExact,
 		LogErrors:            s.parserCfg.LogErrors,
 		ContentFilter:        s.parserCfg.ContentFilter,
-		GameDetailsFunc: func(gameURL string) string {
-			return parser.GetGameDetailsAddress(gameURL, s.config.BaseURL)
+		// GameDetailsFunc: func(gameURL string) string {
+		// 	return parser.GetGameDetailsAddress(gameURL, s.config.BaseURL)
+		// },
+		VenueAddressFunc: func(url, class string) string {
+			if len(url) > 3 && url[:4] != "http" {
+				url = s.config.BaseURL + url
+			}
+			address, err := parser.VenueFetcher.Fetch(url, class)
+			if err != nil {
+				return ""
+			}
+			return address
 		},
 	}
 
