@@ -37,43 +37,43 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
 ('bghc', 'BGHC', 'https://bghc.ca/', 'bghc', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('cygha', 'CYGHA', 'https://cygha.ca/', 'cygha', 'day_details',
+('cygha', 'CYGHA', 'https://cygha.com/', 'cygha', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('georginagirlshockey', 'Georgina Girls Hockey', 'https://georginagirlshockey.ca/', 'georginagirlshockey', 'day_details',
+('georginagirlshockey', 'Georgina Girls Hockey', 'https://georginagirlshockey.com/', 'georginagirlshockey', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('lakeshorelightning', 'Lakeshore Lightning', 'https://lakeshorelightning.ca/', 'lakeshorelightning', 'day_details',
+('lakeshorelightning', 'Lakeshore Lightning', 'https://lakeshorelightning.com/', 'lakeshorelightning', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('londondevilettes', 'London Devilettes', 'https://londondevilettes.pointstreaksites.com/', 'londondevilettes', 'day_details',
+('londondevilettes', 'London Devilettes', 'https://londondevilettes.ca/', 'londondevilettes', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('pgha', 'PGHA', 'https://pgha.ca/', 'pgha', 'day_details',
+('pgha', 'PGHA', 'https://pgha.net/', 'pgha', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('sarniagirlshockey', 'Sarnia Girls Hockey', 'https://sarniagirlshockey.ca/', 'sarniagirlshockey', 'day_details',
+('sarniagirlshockey', 'Sarnia Girls Hockey', 'https://sarniagirlshockey.com/', 'sarniagirlshockey', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('scarboroughsharks', 'Scarborough Sharks', 'https://scarboroughsharks.ca/', 'scarboroughsharks', 'day_details',
+('scarboroughsharks', 'Scarborough Sharks', 'https://scarboroughsharks.com/', 'scarboroughsharks', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('smgha', 'SMGHA', 'https://smgha.ca/', 'smgha', 'day_details',
+('smgha', 'SMGHA', 'https://smgha.com/', 'smgha', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('wgha', 'WGHA', 'https://wgha.ca/', 'wgha', 'day_details',
+('wgha', 'WGHA', 'https://wgha.org/', 'wgha', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('londonjuniorknights', 'London Junior Knights', 'https://londonjuniorknights.pointstreaksites.com/', 'londonjuniorknights', 'day_details',
+('londonjuniorknights', 'London Junior Knights', 'https://londonjuniorknights.com/', 'londonjuniorknights', 'day_details',
  JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('londonjuniormustangs', 'London Junior Mustangs', 'https://londonjuniormustangs.pointstreaksites.com/', 'londonjuniormustangs', 'day_details',
+('londonjuniormustangs', 'London Junior Mustangs', 'https://londonjuniormustangs.ca/', 'londonjuniormustangs', 'day_details',
  JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
 ('aceshockey', 'Aces Hockey', 'https://aceshockey.com/', 'aceshockey', 'day_details',
  JSON_OBJECT('tournament_check_exact', true, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d')),
 
-('waterlooravens', 'Waterloo Ravens', 'https://waterlooravens.ca/', 'waterlooravens', 'day_details',
+('waterlooravens', 'Waterloo Ravens', 'https://waterlooravens.com/', 'waterlooravens', 'day_details',
  JSON_OBJECT('tournament_check_exact', false, 'log_errors', true, 'url_template', 'Calendar/?Month=%d&Year=%d'));
 
 -- Group-based parser sites (22 sites using ParseSiteListGroups)

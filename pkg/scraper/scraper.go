@@ -127,7 +127,13 @@ func (s *Scraper) scrapeMonthBased(mm, yyyy int) ([][]string, error) {
 	cfg := parser.MonthScheduleConfig{
 		TeamParseStrategy: s.parserCfg.TeamParseStrategy,
 		URLPrefix:         s.parserCfg.URLPrefix,
-		VenueAddressFunc:  parser.GetVenueAddress,
+		VenueAddressFunc:  func(url, class string) string {
+			address, err := parser.VenueFetcher.Fetch(url, class)
+			if err != nil {
+				return ""
+			}
+			return address
+		},
 	}
 
 	result := parser.ParseMonthBasedSchedule(doc, mm, yyyy, s.config.SiteName, cfg)

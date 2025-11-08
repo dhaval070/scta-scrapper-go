@@ -113,7 +113,11 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 				}
 				go func(url string, location string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address := parser.GetVenueAddress(url, class)
+					address, err := parser.VenueFetcher.Fetch(url, class)
+					if err != nil {
+						log.Println("Error fetching venue address:", err)
+						address = ""
+					}
 					address = strings.Replace(address, location, "", 1)
 
 					lock.Lock()

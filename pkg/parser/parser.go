@@ -2,6 +2,7 @@ package parser
 
 import (
 	"calendar-scrapper/internal/client"
+	"calendar-scrapper/pkg/fetcher"
 	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/month"
 	"errors"
@@ -20,6 +21,9 @@ import (
 )
 
 var Client = client.GetClient(os.Getenv("HTTP_PROXY"))
+
+// VenueFetcher is a shared instance of VenueAddressFetcher for caching and deduplication
+var VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
 
 type ByDate [][]string
 
@@ -129,13 +133,17 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 
 			if url != "" {
 				wg.Add(1)
-				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
+				go func(url string, class string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address = GetVenueAddress(url, class)
+					address, err := VenueFetcher.Fetch(url, class)
+					if err != nil {
+						log.Println("Error fetching venue address:", err)
+						address = ""
+					}
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
-				}(url, wg, lock)
+				}(url, class, wg, lock)
 			} else {
 				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 			}
@@ -351,6 +359,10 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 			location, err := QueryInnerText(item, `//div[contains(@class,"location")]`)
 
 			item = htmlquery.FindOne(parent, `//div[1]/div[2]/a`)
+			if item == nil {
+				log.Printf("error: address url not found, site=%s\n", site)
+				continue
+			}
 			url := htmlutil.GetAttr(item, "href")
 
 			if url != "" {
