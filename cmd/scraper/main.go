@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"calendar-scrapper/config"
@@ -22,6 +23,7 @@ func main() {
 	allSites := flag.Bool("all", false, "Scrape all enabled sites")
 	dueOnly := flag.Bool("due", false, "Only scrape sites due for scraping (based on frequency)")
 	listSites := flag.Bool("list", false, "List all configured sites and exit")
+	workers := flag.Int("workers", 1, "Number of sites to scrape in parallel (default: 1)")
 
 	// Parse common flags (date, outfile, import-locations)
 	flags := cmdutil.ParseCommonFlags()
@@ -84,30 +86,18 @@ func main() {
 	// Determine date range
 	mm, yyyy := getMonthYear(*flags.Date)
 
-	// Process each site
-	successCount := 0
-	failCount := 0
-
-	for _, site := range sites {
-		log.Printf("\n========================================")
-		log.Printf("Processing: %s (%s)", site.DisplayName, site.SiteName)
-		log.Printf("========================================")
-
-		err := processSite(&site, loader, mm, yyyy, flags)
-		if err != nil {
-			log.Printf("❌ ERROR scraping %s: %v\n", site.SiteName, err)
-			failCount++
-			continue
-		}
-
-		// Update last scraped timestamp
-		if err := loader.UpdateLastScraped(site.ID); err != nil {
-			log.Printf("⚠️  Warning: Failed to update last_scraped_at for %s: %v\n", site.SiteName, err)
-		}
-
-		successCount++
-		log.Printf("✅ Successfully processed %s\n", site.SiteName)
+	// Validate workers count
+	if *workers < 1 {
+		log.Fatal("Error: workers must be at least 1")
 	}
+	if *workers > 20 {
+		log.Fatal("Error: workers cannot exceed 20")
+	}
+
+	log.Printf("Using %d worker(s) for parallel scraping\n", *workers)
+
+	// Process sites using worker pool
+	successCount, failCount := processSitesWithPool(sites, loader, mm, yyyy, flags, *workers)
 
 	// Summary
 	log.Printf("\n========================================")
@@ -117,6 +107,70 @@ func main() {
 	log.Printf("Successful: %d", successCount)
 	log.Printf("Failed: %d", failCount)
 	log.Printf("========================================\n")
+}
+
+// processSitesWithPool processes multiple sites using a worker pool
+func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, workers int) (int, int) {
+	// Create channels
+	jobs := make(chan siteconfig.SiteConfig, len(sites))
+	type result struct {
+		siteName string
+		success  bool
+		err      error
+	}
+	results := make(chan result, len(sites))
+
+	// Start workers
+	var wg sync.WaitGroup
+	for w := 1; w <= workers; w++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+			for site := range jobs {
+				log.Printf("\n[Worker %d] ========================================", workerID)
+				log.Printf("[Worker %d] Processing: %s (%s)", workerID, site.DisplayName, site.SiteName)
+				log.Printf("[Worker %d] ========================================", workerID)
+
+				err := processSite(&site, loader, mm, yyyy, flags)
+				if err != nil {
+					log.Printf("[Worker %d] ❌ ERROR scraping %s: %v\n", workerID, site.SiteName, err)
+					results <- result{siteName: site.SiteName, success: false, err: err}
+					continue
+				}
+
+				// Update last scraped timestamp
+				if err := loader.UpdateLastScraped(site.ID); err != nil {
+					log.Printf("[Worker %d] ⚠️  Warning: Failed to update last_scraped_at for %s: %v\n", workerID, site.SiteName, err)
+				}
+
+				log.Printf("[Worker %d] ✅ Successfully processed %s\n", workerID, site.SiteName)
+				results <- result{siteName: site.SiteName, success: true, err: nil}
+			}
+		}(w)
+	}
+
+	// Send jobs to workers
+	for _, site := range sites {
+		jobs <- site
+	}
+	close(jobs)
+
+	// Wait for all workers to complete
+	wg.Wait()
+	close(results)
+
+	// Collect results
+	successCount := 0
+	failCount := 0
+	for res := range results {
+		if res.success {
+			successCount++
+		} else {
+			failCount++
+		}
+	}
+
+	return successCount, failCount
 }
 
 // processSite handles scraping and output for a single site

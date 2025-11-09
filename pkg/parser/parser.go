@@ -23,7 +23,7 @@ import (
 var Client = client.GetClient(os.Getenv("HTTP_PROXY"))
 
 // VenueFetcher is a shared instance of VenueAddressFetcher for caching and deduplication
-var VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
+var VenueFetcher = fetcher.NewVenueAddressFetcher(client.GetClient(os.Getenv("HTTP_PROXY")))
 
 type ByDate [][]string
 
