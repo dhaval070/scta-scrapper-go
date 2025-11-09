@@ -1,18 +1,26 @@
 package scraper
 
 import (
+	"bytes"
+	httpclient "calendar-scrapper/internal/client"
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/parser1"
 	"calendar-scrapper/pkg/parser2"
 	"calendar-scrapper/pkg/siteconfig"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/antchfx/htmlquery"
 )
+
+var client = httpclient.GetClient(os.Getenv("HTTP_PROXY"))
 
 // Scraper handles dynamic scraping based on site configuration
 type Scraper struct {
@@ -57,14 +65,48 @@ func (s *Scraper) Scrape(mm, yyyy int) ([][]string, error) {
 	}
 }
 
+func loadUrl(url string) (io.Reader, error) {
+	var try int
+	var resp *http.Response
+	var err error
+	for try = 1; try < 4; try += 1 {
+		resp, err = client.Get(url)
+		if err != nil {
+			log.Printf("error: load url failed: url=%s, err=%v\n", url, err)
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		break
+	}
+	if err != nil {
+		log.Printf("error: loadurl - all retry failed url=%s, err=%v\n", url, err)
+		return nil, err
+	}
+	if try > 1 {
+		log.Printf("retry successful: url=%v\n", url)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, fmt.Errorf("error: failed to read body, url=%s, err=%v\n", url, err)
+	}
+	return bytes.NewReader(body), err
+}
+
 // scrapeDayDetails handles day_details parser type
 func (s *Scraper) scrapeDayDetails(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
 
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
-	doc, err := htmlquery.LoadURL(url)
+	body, err := loadUrl(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load URL: %w", err)
+		return nil, err
+	}
+	doc, err := htmlquery.Parse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	cfg := parser.DayDetailsConfig{
@@ -103,9 +145,13 @@ func (s *Scraper) scrapeGroupBased(mm, yyyy int) ([][]string, error) {
 	seasonsURL := s.config.BaseURL + s.parserCfg.SeasonsURL
 
 	log.Printf("[%s] Loading seasons URL: %s\n", s.config.SiteName, seasonsURL)
-	doc, err := htmlquery.LoadURL(seasonsURL)
+	body, err := loadUrl(seasonsURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load seasons URL: %w", err)
+		return nil, err
+	}
+	doc, err := htmlquery.Parse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	log.Printf("[%s] Parsing groups with XPath: %s\n", s.config.SiteName, s.parserCfg.GroupXPath)
@@ -129,9 +175,13 @@ func (s *Scraper) scrapeMonthBased(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
 
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
-	doc, err := htmlquery.LoadURL(url)
+	body, err := loadUrl(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load URL: %w", err)
+		return nil, err
+	}
+	doc, err := htmlquery.Parse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	cfg := parser.MonthScheduleConfig{
@@ -159,9 +209,13 @@ func (s *Scraper) scrapeDayDetailsParser1(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
 
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
-	doc, err := htmlquery.LoadURL(url)
+	body, err := loadUrl(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load URL: %w", err)
+		return nil, err
+	}
+	doc, err := htmlquery.Parse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	// parser1.ParseSchedules has different signature - includes baseURL and homeTeam
@@ -177,9 +231,14 @@ func (s *Scraper) scrapeDayDetailsParser2(mm, yyyy int) ([][]string, error) {
 	url := fmt.Sprintf(s.config.BaseURL+s.parserCfg.URLTemplate, mm, yyyy)
 
 	log.Printf("[%s] Loading URL: %s\n", s.config.SiteName, url)
-	doc, err := htmlquery.LoadURL(url)
+
+	body, err := loadUrl(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load URL: %w", err)
+		return nil, err
+	}
+	doc, err := htmlquery.Parse(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	// parser2.ParseSchedules has same signature as parser1

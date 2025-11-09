@@ -109,7 +109,7 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 	// Perform the HTTP request and scrape address
 	body, err := f.scrapeVenueAddress(url, class)
 	if err != nil {
-		log.Printf("fetcher error %v\n", err)
+		log.Printf("fetcher error: url=%s, err= %v\n", url, err)
 	}
 
 	// Update cache entry with result
@@ -137,10 +137,11 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 
 	for try = 1; try < 3; try += 1 {
 		resp, err = f.client.Do(req)
-		if err != nil {
-			log.Println(err)
-			err = fmt.Errorf("HTTP request failed: %w", err)
-			time.Sleep(3 * time.Second)
+		if err != nil || resp.StatusCode != 200 {
+			log.Printf("error in fetcher(retrying): url=%s,  err=%v\n", url, err)
+			err = fmt.Errorf("HTTP request failed:  %w", err)
+			var backoff = time.Duration(int64(3) * int64(try) * int64(time.Second))
+			time.Sleep(backoff * time.Second)
 			continue
 		}
 		break
@@ -149,39 +150,36 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 	if err != nil {
 		return "", err
 	}
+
+	defer resp.Body.Close()
+
 	if try > 1 {
 		log.Println("retry successful for url ", url)
 	}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("HTTP request returned status %d", resp.StatusCode)
-	}
-
 	doc, err := htmlquery.Parse(resp.Body)
 	if err != nil {
-		log.Println("error getting "+url, err)
 		return "", fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
 	var address string
 
 	// theonedb.com - remote URLs
-	if class == "remote" {
+	switch class {
+	case "remote":
 		item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
 		if item == nil {
 			return "", fmt.Errorf("address node not found for remote URL: %v", url)
 		}
 		address = htmlquery.InnerText(item)
-	} else if class == "local" {
+	case "local":
 		// local URLs
 		node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
 		if node == nil {
 			return "", fmt.Errorf("address node not found for local URL: %v", url)
 		}
 		address = htmlquery.InnerText(node)
-	} else {
+	default:
 		return "", fmt.Errorf("unknown class type: %s (expected 'remote' or 'local')", class)
 	}
 

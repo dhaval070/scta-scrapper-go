@@ -167,7 +167,7 @@ INSERT INTO sites_config (site_name, display_name, base_url, home_team, parser_t
 ('tcmhl', 'TCMHL', 'https://tcmhl.ca/', '', 'group_based', 
  JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/')),
 ('ucmhl', 'UCMHL', 'https://ucmhl.ca/', '', 'group_based', 
- JSON_OBJECT('group_xpath', '//div[@class="site-list"]/div/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/'));
+ JSON_OBJECT('group_xpath', '//div[contains(@class,"site-list")]/a', 'group_url_template', 'Groups/%s/Calendar/?Month=%d&Year=%d', 'seasons_url', 'Seasons/Current/'));
 
 
 -- Parser1 sites (22 sites) - Use parser1.ParseSchedules for away game handling
