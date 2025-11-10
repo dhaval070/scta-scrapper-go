@@ -140,15 +140,15 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 		if err != nil || resp.StatusCode != 200 {
 			log.Printf("error in fetcher(retrying): url=%s,  err=%v\n", url, err)
 			err = fmt.Errorf("HTTP request failed:  %w", err)
-			var backoff = time.Duration(int64(3) * int64(try) * int64(time.Second))
-			time.Sleep(backoff * time.Second)
+			var backoff = 2 * int64(try) * int64(time.Second)
+			time.Sleep(time.Duration(backoff))
 			continue
 		}
 		break
 	}
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("all retry failed %w", err)
 	}
 
 	defer resp.Body.Close()

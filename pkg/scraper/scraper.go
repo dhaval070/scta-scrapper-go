@@ -71,9 +71,11 @@ func loadUrl(url string) (io.Reader, error) {
 	var err error
 	for try = 1; try < 4; try += 1 {
 		resp, err = client.Get(url)
-		if err != nil {
-			log.Printf("error: load url failed: url=%s, err=%v\n", url, err)
-			time.Sleep(2 * time.Second)
+		if err != nil || resp.StatusCode != 200 {
+			log.Printf("error: load url failed(retrying): url=%s, err=%v\n", url, err)
+			err = fmt.Errorf("error: load url failed: url=%s, err=%v\n", url, err)
+			var backoff = 2 * int64(try) * int64(time.Second)
+			time.Sleep(time.Duration(backoff))
 			continue
 		}
 		break
