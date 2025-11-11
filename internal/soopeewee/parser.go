@@ -1,6 +1,7 @@
 package soopeewee
 
 import (
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"log"
 	"regexp"
@@ -26,14 +27,8 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 	for _, node := range nodes {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
 
-		var id string
+		var id = htmlutil.GetAttr(node, "id")
 
-		for _, v := range node.Attr {
-			if v.Key == "id" {
-				id = v.Val
-				break
-			}
-		}
 		if id == "" {
 			log.Fatal("id not found")
 		}
@@ -73,14 +68,6 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 				if err != nil {
 					log.Fatal("subject owner error ", err, content)
 				}
-				// re := regexp.MustCompile(`^(U\w+ [A-Z]{1,}) (.+)$`)
-				// rs := re.FindStringSubmatch(d)
-				//
-				// if rs == nil {
-				// 	log.Fatal("failed to parse team: ", d)
-				// }
-				// division = rs[1]
-				// homeTeam = rs[2]
 				division, homeTeam = d, d
 			}
 
@@ -92,7 +79,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			guestTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 
 			if !homeGame {
 				homeTeam, guestTeam = guestTeam, homeTeam
@@ -120,7 +107,11 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 				}
 				go func(url string, location string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address := parser.GetVenueAddress(url, class)
+					address, err := parser.VenueFetcher.Fetch(url, class)
+					if err != nil {
+						log.Println("Error fetching venue address:", err)
+						address = ""
+					}
 					address = strings.Replace(address, location, "", 1)
 
 					lock.Lock()

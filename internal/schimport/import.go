@@ -149,8 +149,8 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 		r[8] = g.Home
 		r[9] = g.HomeTeamID
 
-		r[7] = strings.Replace(r[7], "HC ", "", -1)
-		r[9] = strings.Replace(r[9], "HC ", "", -1)
+		r[7] = strings.ReplaceAll(r[7], "HC ", "")
+		r[9] = strings.ReplaceAll(r[9], "HC ", "")
 		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
 		ww.Write(r)
@@ -253,8 +253,8 @@ func (i *Importer) Importxls(site string, root *html.Node, cutOffDate time.Time,
 		for i := 0; i < 10; i += 1 {
 			r[i] = htmlquery.InnerText(cols[i])
 		}
-		r[7] = strings.Replace(r[7], "HC ", "", -1)
-		r[9] = strings.Replace(r[9], "HC ", "", -1)
+		r[7] = strings.ReplaceAll(r[7], "HC ", "")
+		r[9] = strings.ReplaceAll(r[9], "HC ", "")
 		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
 

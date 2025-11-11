@@ -1,6 +1,7 @@
 package timminsminorhockey
 
 import (
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"log"
 	"regexp"
@@ -27,14 +28,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 	for _, node := range nodes {
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
 
-		var id string
-
-		for _, v := range node.Attr {
-			if v.Key == "id" {
-				id = v.Val
-				break
-			}
-		}
+		id := htmlutil.GetAttr(node, "id")
 		if id == "" {
 			log.Fatal("id not found")
 		}
@@ -88,7 +82,7 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			guestTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 
 			if !homeGame {
 				homeTeam, guestTeam = guestTeam, homeTeam
@@ -103,17 +97,9 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 			if item == nil {
 				log.Fatal("can not find venue link: ", htmlquery.OutputHTML(parent, true))
 			}
-			var url string
-			var class string
 
-			for _, attr := range item.Attr {
-				if attr.Key == "href" {
-					url = attr.Val
-					break
-				} else if attr.Key == "class" {
-					class = attr.Val
-				}
-			}
+			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
 
 			if url != "" {
 				wg.Add(1)
@@ -122,7 +108,11 @@ func ParseSchedules(doc *html.Node, Site, baseURL string) [][]string {
 				}
 				go func(url string, location string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address := parser.GetVenueAddress(url, class)
+					address, err := parser.VenueFetcher.Fetch(url, class)
+					if err != nil {
+						log.Println("Error fetching venue address:", err)
+						address = ""
+					}
 					address = strings.Replace(address, location, "", 1)
 
 					lock.Lock()

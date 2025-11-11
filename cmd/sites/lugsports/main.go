@@ -14,17 +14,15 @@ import (
 	"strings"
 	"time"
 
-	"calendar-scrapper/config"
-	"calendar-scrapper/dao/model"
 	"calendar-scrapper/internal/webdriver"
-	"calendar-scrapper/pkg/repository"
+	"calendar-scrapper/pkg/cmdutil"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/tebeka/selenium"
 )
 
 var sites = [][]string{
-	{"https://www.lugsports.com/stats#/1709/schedule?season_id=", "8683"},
+	// {"https://www.lugsports.com/stats#/1709/schedule?season_id=", "8683"},
 	{"https://www.lugsports.com/stats#/1869/schedule?season_id=", "9203"},
 	{"https://www.lugsports.com/stats#/162/schedule?season_id=", "9350"},
 }
@@ -35,11 +33,7 @@ var client = http.DefaultClient
 const SITE = "lugsports"
 
 func main() {
-	importLocations := flag.Bool("import-locations", false, "import site locations")
-	outfile := flag.String("outfile", "", "output filename")
-	// date flag is not used but have to add here to make this command compatible with other sites and use with run.sh and run-all.sh
-	_ = flag.String("date", "", "calendar month and year in format: mmyyyy")
-
+	flags := cmdutil.ParseCommonFlags()
 	flag.Parse()
 
 	var err error
@@ -62,34 +56,26 @@ func main() {
 		result = append(result, r...)
 	}
 
-	fmt.Println("total ", len(result))
-
-	if *importLocations {
-		config.Init("config", ".")
-		cfg := config.MustReadConfig()
-
-		var locations = make([]model.SitesLocation, 0, len(result))
-		for _, r := range result {
-			l := model.SitesLocation{
-				Location: r.Facility + "(" + r.Rink + ")",
-				Address:  r.FacilityAddress,
-				// surface will be populated later by extracting from Location field
-				// Surface:  r.Rink,
-			}
-			locations = append(locations, l)
-		}
-
-		repo := repository.NewRepository(cfg).Site(SITE)
-		repo.ImportLoc(locations)
-	}
-
-	if *outfile != "" {
-		fh, err := os.Create(*outfile)
-		if err != nil {
+	if *flags.ImportLocations {
+		if err := cmdutil.ImportLocations(SITE, convertToCSVFormat(result)); err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	if *flags.Outfile != "" {
+		var fh *os.File
+		var err error
+
+		if *flags.Outfile == "-" {
+			fh = os.Stdout
+		} else {
+			fh, err = os.Create(*flags.Outfile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer fh.Close()
+		}
 		WriteEvents(fh, result)
-		fh.Close()
 	}
 }
 
@@ -139,7 +125,7 @@ func scrapeSeason(driver selenium.WebDriver, siteUrl, seasonId string) (events [
 		if err != nil {
 			return nil, fmt.Errorf("failed to unescape address %s ", v.FacilityAddress)
 		}
-		result[i].FacilityAddress = address
+		result = append(result, r...)
 	}
 
 	if len(result) == 0 {
@@ -251,4 +237,20 @@ type Event struct {
 	Facility        string     `json:"facility"`
 	FacilityAddress string     `json:"facility_address"`
 	Rink            string     `json:"rink"`
+}
+
+func convertToCSVFormat(events []Event) [][]string {
+	result := make([][]string, len(events))
+	for i, rec := range events {
+		result[i] = []string{
+			rec.Datetime.Format("2006-1-02 15:04"),
+			SITE,
+			rec.HomeTeam,
+			rec.AwayTeam,
+			rec.Facility,
+			rec.HomeDivision,
+			rec.FacilityAddress,
+		}
+	}
+	return result
 }

@@ -2,6 +2,8 @@ package parser
 
 import (
 	"calendar-scrapper/internal/client"
+	"calendar-scrapper/pkg/fetcher"
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/month"
 	"errors"
 	"fmt"
@@ -20,6 +22,9 @@ import (
 
 var Client = client.GetClient(os.Getenv("HTTP_PROXY"))
 
+// VenueFetcher is a shared instance of VenueAddressFetcher for caching and deduplication
+var VenueFetcher = fetcher.NewVenueAddressFetcher(client.GetClient(os.Getenv("HTTP_PROXY")))
+
 type ByDate [][]string
 
 func (a ByDate) Len() int {
@@ -32,15 +37,6 @@ func (a ByDate) Swap(i, j int) {
 
 func (a ByDate) Less(i, j int) bool {
 	return a[i][0] < a[j][0]
-}
-
-func GetAttr(node *html.Node, key string) string {
-	for _, attr := range node.Attr {
-		if attr.Key == key {
-			return attr.Val
-		}
-	}
-	return ""
 }
 
 func ParseTime(content string) (string, error) {
@@ -69,7 +65,7 @@ func ParseTime(content string) (string, error) {
 	return fmt.Sprintf("%02d:%02d", h, m), nil
 }
 
-func ParseSchedules(site string, doc *html.Node) [][]string {
+func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 
 	var result = [][]string{}
@@ -78,7 +74,7 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 	var wg = &sync.WaitGroup{}
 
 	for _, node := range nodes {
-		id := GetAttr(node, "id")
+		id := htmlutil.GetAttr(node, "id")
 		ymd := ParseId(id)
 
 		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`) // `div[2]`)
@@ -96,11 +92,8 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 				continue
 			}
 
-			division, err := QueryInnerText(item, `//span[@class="game_no"]`)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
+			// division is later populated by parser.FetchSchdules after this function returns
+			var division = ""
 			guestTeam, err := QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
 			if err != nil {
 				log.Println(err)
@@ -136,14 +129,22 @@ func ParseSchedules(site string, doc *html.Node) [][]string {
 			}
 
 			if url != "" {
+				// Prepend baseUrl if URL doesn't start with "http"
+				if baseUrl != "" && len(url) >= 4 && url[:4] != "http" {
+					url = baseUrl + url
+				}
 				wg.Add(1)
-				go func(url string, wg *sync.WaitGroup, lock *sync.Mutex) {
+				go func(url string, class string, wg *sync.WaitGroup, lock *sync.Mutex) {
 					defer wg.Done()
-					address = GetVenueAddress(url, class)
+					address, err := VenueFetcher.Fetch(url, class)
+					if err != nil {
+						log.Println("Error fetching venue address:", err)
+						address = ""
+					}
 					lock.Lock()
 					result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
-				}(url, wg, lock)
+				}(url, class, wg, lock)
 			} else {
 				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
 			}
@@ -237,7 +238,7 @@ func ParseMonthYear(dt string) (int, int) {
 	return mm, yyyy
 }
 
-func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) [][]string {
+func FetchSchedules(site, baseUrl, url string, groups map[string]string, mm, yyyy int) [][]string {
 
 	var schedules = make([][]string, 0)
 
@@ -248,7 +249,8 @@ func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) []
 			log.Fatal("load calendar url", err)
 		}
 
-		result := ParseSchedules(site, doc)
+		log.Printf("parsing: site= %s, url= %s\n", site, url)
+		result := ParseSchedules(site, baseUrl, doc)
 
 		for _, row := range result {
 			row[5] = division
@@ -258,4 +260,353 @@ func FetchSchedules(site, url string, groups map[string]string, mm, yyyy int) []
 
 	sort.Sort(ByDate(schedules))
 	return schedules
+}
+
+// DayDetailsConfig configures the ParseDayDetailsSchedule function
+type DayDetailsConfig struct {
+	TournamentCheckExact bool // true for exact match, false for contains check
+	LogErrors            bool // enable verbose error logging
+	// GameDEtailsFunc is unused
+	// GameDetailsFunc      func(string) string         // function to fetch venue address from game URL
+	VenueAddressFunc func(string, string) string // function to fetch venue address
+	ContentFilter    string                      // optional filter - skip events not containing this text
+}
+
+// ParseDayDetailsSchedule parses schedules from day-details divs with home/away logic
+// This is used by sites like ckgha, bghc, cygha, georginagirlshockey, lakeshorelightning,
+// londondevilettes, pgha, sarniagirlshockey, scarboroughsharks, smgha, wgha
+func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg DayDetailsConfig) [][]string {
+	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
+
+	var result = [][]string{}
+	var lock = &sync.Mutex{}
+	var wg = &sync.WaitGroup{}
+
+	for _, node := range nodes {
+		id := htmlutil.GetAttr(node, "id")
+
+		if id == "" {
+			log.Println("error: id not found")
+			continue
+		}
+
+		ymd := ParseId(id)
+		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
+
+		for _, parent := range listItems {
+			item := htmlquery.FindOne(parent, `div[2]`)
+			content := htmlquery.OutputHTML(item, true)
+
+			// Apply content filter if specified
+			if cfg.ContentFilter != "" {
+				if !strings.Contains(strings.ToUpper(content), strings.ToUpper(cfg.ContentFilter)) {
+					continue
+				}
+			}
+
+			var homeGame = true
+			var gameType = htmlquery.InnerText(htmlquery.FindOne(item, `div[2]`))
+
+			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
+				continue
+			}
+			// Skip tournaments
+			if cfg.TournamentCheckExact {
+				if gameType == "Tournament" || gameType == "Hosted Tournament" {
+					continue
+				}
+			} else {
+				if strings.Contains(gameType, "Tournament") {
+					continue
+				}
+			}
+
+			// Skip practices
+			if strings.Contains(gameType, "Practice") {
+				continue
+			}
+
+			// Determine if away game
+			if strings.Contains(gameType, "Away") {
+				homeGame = false
+			}
+
+			timeval, err := ParseTime(content)
+			if err != nil {
+				if cfg.LogErrors {
+					log.Println(err)
+				}
+				continue
+			}
+
+			division, err := QueryInnerText(item, `div[3]/div[1]`)
+			if err != nil {
+				if cfg.LogErrors {
+					log.Println(err)
+				}
+				continue
+			}
+
+			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+			if err != nil {
+				if cfg.LogErrors {
+					log.Println(err)
+				}
+				continue
+			}
+
+			ch := subjectText.FirstChild
+			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", 1)
+			guestTeam = strings.Replace(guestTeam, "vs ", "", 1)
+
+			hm := homeTeam
+			if !homeGame {
+				hm, guestTeam = guestTeam, homeTeam
+			}
+
+			location, err := QueryInnerText(item, `//div[contains(@class,"location")]`)
+
+			items := htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)
+			if len(items) == 0 {
+				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, ""})
+				continue
+			}
+			item = items[0]
+
+			var address string
+
+			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
+
+			if url != "" {
+				wg.Add(1)
+				if url[:4] != "http" {
+					url = baseURL + url
+				}
+
+				go func(url string, location string, wg *sync.WaitGroup, lock *sync.Mutex) {
+					defer wg.Done()
+					address = cfg.VenueAddressFunc(url, class)
+					if address == "" {
+						log.Println("addr not found ", url)
+					}
+					lock.Lock()
+					result = append(result, []string{ymd + " " + timeval, site, hm, guestTeam, location, division, address})
+					lock.Unlock()
+				}(url, location, wg, lock)
+			} else {
+				log.Println("url not found")
+				result = append(result, []string{ymd + " " + timeval, site, hm, guestTeam, location, division, ""})
+			}
+		}
+	}
+	wg.Wait()
+	return result
+}
+
+// MonthScheduleConfig configures the ParseMonthBasedSchedule function
+type MonthScheduleConfig struct {
+	TeamParseStrategy string                      // "subject-owner-first" or "first-char-detect"
+	VenueAddressFunc  func(string, string) string // function to fetch venue address
+}
+
+// ParseMonthBasedSchedule parses schedules using month/year parameters
+// NOTE: Currently unused - created as a template for future month-based sites
+// Existing sites (heoaaaleague, wmha, windsoraaazone, spfhahockey) have different
+// implementations and would require manual adaptation and testing to use this function
+func ParseMonthBasedSchedule(doc *html.Node, mm, yyyy int, site string, cfg MonthScheduleConfig) [][]string {
+	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
+
+	var result = [][]string{}
+	var lock = &sync.Mutex{}
+	var wg = &sync.WaitGroup{}
+
+	for _, node := range nodes {
+		listItems := htmlquery.Find(node, `//div[contains(@class, "event-list-item")]/div`)
+		for _, parent := range listItems {
+			items := htmlquery.Find(parent, `div[2]`)
+			if len(items) == 0 {
+				continue
+			}
+			item := items[0]
+			content := htmlquery.OutputHTML(item, true)
+
+			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") || strings.Contains(content, "Tournament") {
+				continue
+			}
+
+			timeval, err := ParseTime(content)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			txt, err := QueryInnerText(item, `//div[@class="day_of_month"]`)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			dom := txt[4:]
+			ymd := fmt.Sprintf("%d-%d-%s", yyyy, mm, dom)
+
+			var division, homeTeam, guestTeam string
+
+			if cfg.TeamParseStrategy == "first-char-detect" {
+				// Used by wmha
+				division, err = QueryInnerText(item, `//div[contains(@class,"subject-owner")]`)
+				if err != nil {
+					log.Println("subject owner error ", err, content)
+					continue
+				}
+
+				subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				ch := htmlquery.InnerText(subjectText.FirstChild)
+				if len(ch) > 0 && ch[0] == '@' {
+					guestTeam = site // Assume site has HOME_TEAM value
+					homeTeam = ch[2:]
+				} else if len(ch) > 2 && ch[0:3] == "vs " {
+					homeTeam = site
+					guestTeam = ch[3:]
+				} else {
+					log.Println("failed to parse teams from:", ch)
+					continue
+				}
+			} else {
+				// Default: "subject-owner-first" - used by heoaaaleague, etc
+				division, err = QueryInnerText(item, `//span[@class="game_no"]`)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				guestTeam, err = QueryInnerText(item, `//div[contains(@class, "subject-owner")]`)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				ch := subjectText.FirstChild
+				homeTeam = strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			}
+
+			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
+			if err != nil {
+				// Try alternative location class
+				location, _ = QueryInnerText(item, `//div[contains(@class,"location")]`)
+			}
+
+			items = htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)
+			if len(items) == 0 {
+				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, ""})
+				continue
+			}
+			item = items[0]
+
+			var address string
+
+			url := htmlutil.GetAttr(item, "href")
+			class := htmlutil.GetAttr(item, "class")
+
+			if url != "" {
+				wg.Add(1)
+				go func(url string, class string, wg *sync.WaitGroup, lock *sync.Mutex) {
+					defer wg.Done()
+					address = cfg.VenueAddressFunc(url, class)
+					lock.Lock()
+					result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
+					lock.Unlock()
+				}(url, class, wg, lock)
+			} else {
+				result = append(result, []string{ymd + " " + timeval, site, homeTeam, guestTeam, location, division, address})
+			}
+		}
+	}
+	wg.Wait()
+	return result
+}
+
+// ParseSiteListGroups extracts division groups from site-list divs
+// Used by 17 sites: beechey, eomhl, essexll, fourcountieshockey, gbmhl, gbtll,
+// grandriverll, haldimandll, intertownll, leohockey, lmll, ndll,
+// omha-aaa, srll, threecountyhockey, victoriadurham, woaa.on
+func ParseSiteListGroups(doc *html.Node, xpath string) map[string]string {
+	links := htmlquery.Find(doc, xpath)
+	var groups = make(map[string]string)
+
+	for _, n := range links {
+		href := htmlutil.GetAttr(n, "href")
+		division := htmlquery.InnerText(n)
+
+		re := regexp.MustCompile(`Groups/(.+)/`)
+		parts := re.FindAllStringSubmatch(href, -1)
+		if parts == nil {
+			continue
+		}
+		groups[division] = parts[0][1]
+	}
+	return groups
+}
+
+// GetVenueDetailsFromRelativeURL fetches venue address from a relative URL
+// Used by 16 sites as venueDetails() function
+func GetVenueDetailsFromRelativeURL(baseURL, relativeURL string) string {
+	resp, err := Client.Get(baseURL + relativeURL)
+	if err != nil {
+		log.Println("error get "+relativeURL, err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	doc, err := htmlquery.Parse(resp.Body)
+	if err != nil {
+		log.Println("error parsing "+relativeURL, err)
+		return ""
+	}
+
+	node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
+	if node == nil {
+		log.Println("error venue detail not found ", baseURL+relativeURL)
+		return ""
+	}
+	address := htmlquery.InnerText(node)
+	return address
+}
+
+// GetGameDetailsAddress finds and fetches venue address from game details page
+// Used by 16 sites as gameDetails() function
+// Looks for "More Venue Details" link and fetches the venue address
+func GetGameDetailsAddress(gameURL, baseURL string) string {
+	resp, err := Client.Get(gameURL)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	doc, err := htmlquery.Parse(resp.Body)
+	if err != nil {
+		log.Println("error getting "+gameURL, err)
+		return ""
+	}
+
+	var venueURL string
+	nodes := htmlquery.Find(doc, `//div[contains(@class,"game-details-tabs")]//a`)
+
+	for _, n := range nodes {
+		venueURL = htmlutil.GetAttr(n, "href")
+
+		if htmlquery.InnerText(n) == "More Venue Details" {
+			return GetVenueDetailsFromRelativeURL(baseURL, venueURL)
+		}
+	}
+	return ""
 }

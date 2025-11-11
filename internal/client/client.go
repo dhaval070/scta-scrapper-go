@@ -1,6 +1,7 @@
 package client
 
 import (
+	"compress/gzip"
 	"net/http"
 	"net/url"
 	"time"
@@ -13,7 +14,22 @@ type transport struct {
 func (adt *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0")
 	req.Header.Add("Accept", "text/html")
-	return adt.t.RoundTrip(req)
+	req.Header.Add("Accept-Encoding", "gzip")
+	resp, err := adt.t.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Header.Get("Content-Encoding") == "gzip" {
+		gzReader, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		resp.Body = gzReader
+		resp.Header.Del("Content-Encoding")
+		resp.Header.Del("Content-Length")
+	}
+	return resp, err
 }
 
 func GetClient(proxy string) *http.Client {
@@ -32,14 +48,15 @@ func GetClient(proxy string) *http.Client {
 	} else {
 		t.Proxy = nil
 	}
-	t.MaxIdleConns = 10
-	t.MaxConnsPerHost = 10
-	t.MaxIdleConnsPerHost = 100
-	t.ResponseHeaderTimeout = time.Second * 12
+	t.MaxIdleConns = 50
+	t.MaxConnsPerHost = 5
+	t.MaxIdleConnsPerHost = 10
+	t.ResponseHeaderTimeout = time.Second * 20
+	t.TLSHandshakeTimeout = 20 * time.Second
 
 	var client = &http.Client{
 		Transport: &transport{t},
-		Timeout:   time.Second * 15,
+		Timeout:   time.Second * 25,
 	}
 
 	return client

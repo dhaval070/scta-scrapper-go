@@ -20,18 +20,24 @@ mmyyyy="$mm$yyyy"
 
 mkdir -p $d1
 
-for site in `ls cmd/sites/`; do
-    echo "$site $mmyyyy"
+# Use new universal scraper instead of individual site binaries
+echo "Running universal scraper for all sites: $mmyyyy"
 
-    go run ./cmd/sites/$site/ --import-locations -date $mmyyyy --outfile /tmp/$site.csv
-    if [ $? -ne 0 ]; then
-        echo "$site failed"
-        continue
-    fi
+./scraper --all --import-locations --date $mmyyyy --outfile /tmp/schedules.csv
 
-    if [ -e /tmp/$site.csv -a -s /tmp/$site.csv ]; then
+if [ $? -ne 0 ]; then
+    echo "Scraper failed"
+    exit 1
+fi
+
+# Process each site's output file
+for csv_file in /tmp/*_schedules.csv; do
+    if [ -e "$csv_file" ]; then
+        site=$(basename "$csv_file" _schedules.csv)
+        echo "Processing $site"
+
         f="$dir/$site.csv"
-        csvtool --encoding utf8 -c 1-6 /tmp/$site.csv > $f
+        csvtool --encoding utf8 -c 1-6 "$csv_file" > $f
 
         go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
     fi

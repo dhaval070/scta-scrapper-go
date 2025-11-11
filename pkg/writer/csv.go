@@ -16,7 +16,6 @@ func WriteCsv(fh io.WriteCloser, data [][]string) {
 	if err := csv.Error(); err != nil {
 		panic(err)
 	}
-	fh.Close()
 }
 
 func WriteEvents(w io.Writer, data []*model.Event) error {

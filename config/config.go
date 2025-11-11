@@ -1,15 +1,16 @@
 package config
 
 import (
+	"errors"
 	"log"
 
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	DbDSN     string `mapstructure:"db_dsn"`
-	ApiKey    string `mapstructure:"api_key"`
-	ImportUrl string `mapstructure:"import_url"`
+	DbDSN     string `mapstructure:"DB_DSN"`
+	ApiKey    string `mapstructure:"API_KEY"`
+	ImportUrl string `mapstructure:"IMPORT_URL"`
 }
 
 func Init(name string, path ...string) {
@@ -30,6 +31,10 @@ func ReadConfig() (Config, error) {
 
 	if err := viper.Unmarshal(&cfg); err != nil {
 		return cfg, err
+	}
+
+	if cfg.DbDSN == "" {
+		return cfg, errors.New("DB_DSN is required in config")
 	}
 
 	return cfg, err

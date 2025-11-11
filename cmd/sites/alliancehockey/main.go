@@ -1,21 +1,16 @@
 package main
 
 import (
-	"calendar-scrapper/config"
-	"calendar-scrapper/dao/model"
 	"calendar-scrapper/pkg/parser"
-	"calendar-scrapper/pkg/repository"
-	"calendar-scrapper/pkg/writer"
+	"calendar-scrapper/pkg/cmdutil"
+	"flag"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
-
-	"flag"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -25,11 +20,7 @@ const SITE = "alliancehockey"
 
 func main() {
 	infile := flag.String("infile", "", "local html filename")
-	date := flag.String("date", "", "calendar month and year in format: mmyyyy")
-	outfile := flag.String("outfile", "", "output filename")
-	importLocations := flag.Bool("import-locations", false, "import site locations")
-
-	flag.Parse()
+	flags := cmdutil.ParseCommonFlags()
 
 	var doc *html.Node
 	var err error
@@ -42,8 +33,8 @@ func main() {
 	if *infile != "" {
 		doc, err = htmlquery.LoadDoc(*infile)
 	} else {
-		if *date != "" {
-			mm, yyyy = parser.ParseMonthYear(*date)
+		if *flags.Date != "" {
+			mm, yyyy = parser.ParseMonthYear(*flags.Date)
 		}
 
 		url := fmt.Sprintf("https://alliancehockey.com/Schedule/?Month=%d&Year=%d", mm, yyyy)
@@ -60,35 +51,16 @@ func main() {
 		return
 	}
 
-	if *importLocations {
-		config.Init("config", ".")
-		cfg := config.MustReadConfig()
-
-		var locations = make([]model.SitesLocation, 0, len(result))
-		for _, r := range result {
-			log.Printf("%+v\n", r)
-
-			l := model.SitesLocation{
-				Location: r[4],
-				Address:  r[6],
-			}
-			locations = append(locations, l)
+	if *flags.ImportLocations {
+		if err := cmdutil.ImportLocations(SITE, result); err != nil {
+			log.Fatal(err)
 		}
-
-		repo := repository.NewRepository(cfg).Site(SITE)
-		repo.ImportLoc(locations)
 	}
 
 	sort.Sort(parser.ByDate(result))
 
-	if *outfile != "" {
-		fh, err := os.Create(*outfile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		writer.WriteCsv(fh, result)
-	} else {
-		log.Println(result)
+	if err := cmdutil.WriteOutput(*flags.Outfile, result); err != nil {
+		log.Fatal(err)
 	}
 
 }
