@@ -21,7 +21,7 @@ mmyyyy="$mm$yyyy"
 echo "$site $mmyyyy"
 
 # Use new universal scraper instead of individual site binary
-./scraper --site=$site --import-locations --date $mmyyyy --outfile /tmp/$site.csv
+./scraper --sites=$site --import-locations --date $mmyyyy --outfile /tmp/$site.csv
 
 if [ $? -ne 0 ]; then
     echo "$site failed"
