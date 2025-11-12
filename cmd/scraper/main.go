@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,13 +14,15 @@ import (
 	"calendar-scrapper/pkg/scraper"
 	"calendar-scrapper/pkg/siteconfig"
 
+	"path/filepath"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func main() {
 	// Define scraper-specific flags
-	siteName := flag.String("site", "", "Site name to scrape (use with --all to scrape all sites)")
+	siteNames := flag.String("sites", "", "Comma-separated list of site names to scrape")
 	allSites := flag.Bool("all", false, "Scrape all enabled sites")
 	dueOnly := flag.Bool("due", false, "Only scrape sites due for scraping (based on frequency)")
 	listSites := flag.Bool("list", false, "List all configured sites and exit")
@@ -35,12 +38,12 @@ func main() {
 	}
 
 	// Validate input
-	if *siteName == "" && !*allSites && !*dueOnly {
-		log.Fatal("Error: Must specify --site=<name>, --all, or --due flag")
+	if *siteNames == "" && !*allSites && !*dueOnly {
+		log.Fatal("Error: Must specify --sites=<name1,name2,...>, --all, or --due flag")
 	}
 
-	if *siteName != "" && (*allSites || *dueOnly) {
-		log.Fatal("Error: Cannot use --site with --all or --due")
+	if *siteNames != "" && (*allSites || *dueOnly) {
+		log.Fatal("Error: Cannot use --sites with --all or --due")
 	}
 
 	// Initialize configuration
@@ -71,11 +74,19 @@ func main() {
 		}
 		log.Printf("Loaded %d sites due for scraping\n", len(sites))
 	} else {
-		site, err := loader.GetSite(*siteName)
-		if err != nil {
-			log.Fatalf("Failed to load site '%s': %v", *siteName, err)
+		// Parse comma-separated site names
+		names := strings.Split(*siteNames, ",")
+		for i, name := range names {
+			names[i] = strings.TrimSpace(name)
 		}
-		sites = []siteconfig.SiteConfig{*site}
+		log.Printf("Loading %d specified site(s): %v\n", len(names), names)
+		for _, name := range names {
+			site, err := loader.GetSite(name)
+			if err != nil {
+				log.Fatalf("Failed to load site '%s': %v", name, err)
+			}
+			sites = append(sites, *site)
+		}
 	}
 
 	if len(sites) == 0 {
@@ -205,7 +216,10 @@ func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyy
 
 	// Write output if requested
 	if *flags.Outfile != "" {
-		outfile := fmt.Sprintf("%s_%s", site.SiteName, *flags.Outfile)
+		dir := filepath.Dir(*flags.Outfile)
+		basename := filepath.Base(*flags.Outfile)
+
+		outfile := filepath.Join(dir, fmt.Sprintf("%s_%s", site.SiteName, basename))
 		log.Printf("Writing output to: %s\n", outfile)
 		if err := cmdutil.WriteOutput(outfile, result); err != nil {
 			return fmt.Errorf("failed to write output: %w", err)
