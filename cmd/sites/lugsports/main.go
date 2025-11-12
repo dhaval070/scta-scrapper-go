@@ -125,7 +125,7 @@ func scrapeSeason(driver selenium.WebDriver, siteUrl, seasonId string) (events [
 		if err != nil {
 			return nil, fmt.Errorf("failed to unescape address %s ", v.FacilityAddress)
 		}
-		result = append(result, r...)
+		result[i].FacilityAddress = address
 	}
 
 	if len(result) == 0 {
