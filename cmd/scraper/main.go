@@ -1,9 +1,9 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -14,36 +14,71 @@ import (
 	"calendar-scrapper/pkg/scraper"
 	"calendar-scrapper/pkg/siteconfig"
 
-	"path/filepath"
-
+	"github.com/spf13/cobra"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func main() {
-	// Define scraper-specific flags
-	siteNames := flag.String("sites", "", "Comma-separated list of site names to scrape")
-	allSites := flag.Bool("all", false, "Scrape all enabled sites")
-	dueOnly := flag.Bool("due", false, "Only scrape sites due for scraping (based on frequency)")
-	listSites := flag.Bool("list", false, "List all configured sites and exit")
-	workers := flag.Int("workers", 1, "Number of sites to scrape in parallel (default: 1)")
+var (
+	siteNames       string
+	allSites        bool
+	dueOnly         bool
+	workers         int
+	dateFlag        string
+	outfile         string
+	importLocations bool
+)
 
-	// Parse common flags (date, outfile, import-locations)
-	flags := cmdutil.ParseCommonFlags()
+var rootCmd = &cobra.Command{
+	Use:   "scraper",
+	Short: "Calendar scraper for hockey scheduling sites",
+	Long:  `A CLI tool to scrape hockey schedule data from various scheduling sites and store it in a database.`,
+	Run:   runScraper,
+}
 
-	// Handle list command
-	if *listSites {
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all configured sites",
+	Long:  `List all sites configured in the database with their status and last scraped time.`,
+	Run: func(cmd *cobra.Command, args []string) {
 		listConfiguredSites()
-		return
-	}
+	},
+}
 
+func init() {
+	rootCmd.Flags().StringVar(&siteNames, "sites", "", "Comma-separated list of site names to scrape")
+	rootCmd.Flags().BoolVar(&allSites, "all", false, "Scrape all enabled sites")
+	rootCmd.Flags().BoolVar(&dueOnly, "due", false, "Only scrape sites due for scraping (based on frequency)")
+	rootCmd.Flags().IntVar(&workers, "workers", 1, "Number of sites to scrape in parallel (default: 1)")
+	rootCmd.Flags().StringVar(&dateFlag, "date", "", "Date in MMYYYY or MM/YYYY format (default: current month)")
+	rootCmd.Flags().StringVar(&outfile, "outfile", "", "Output file path for scraped data")
+	rootCmd.Flags().BoolVar(&importLocations, "import-locations", false, "Import locations to database")
+
+	rootCmd.AddCommand(listCmd)
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runScraper(cmd *cobra.Command, args []string) {
 	// Validate input
-	if *siteNames == "" && !*allSites && !*dueOnly {
+	if siteNames == "" && !allSites && !dueOnly {
 		log.Fatal("Error: Must specify --sites=<name1,name2,...>, --all, or --due flag")
 	}
 
-	if *siteNames != "" && (*allSites || *dueOnly) {
+	if siteNames != "" && (allSites || dueOnly) {
 		log.Fatal("Error: Cannot use --sites with --all or --due")
+	}
+
+	// Validate workers count
+	if workers < 1 {
+		log.Fatal("Error: workers must be at least 1")
+	}
+	if workers > 20 {
+		log.Fatal("Error: workers cannot exceed 20")
 	}
 
 	// Initialize configuration
@@ -61,13 +96,13 @@ func main() {
 	// Get sites to process
 	var sites []siteconfig.SiteConfig
 
-	if *allSites {
+	if allSites {
 		sites, err = loader.GetAllEnabled()
 		if err != nil {
 			log.Fatalf("Failed to load enabled sites: %v", err)
 		}
 		log.Printf("Loaded %d enabled sites\n", len(sites))
-	} else if *dueOnly {
+	} else if dueOnly {
 		sites, err = loader.GetDueForScraping()
 		if err != nil {
 			log.Fatalf("Failed to load sites due for scraping: %v", err)
@@ -75,7 +110,7 @@ func main() {
 		log.Printf("Loaded %d sites due for scraping\n", len(sites))
 	} else {
 		// Parse comma-separated site names
-		names := strings.Split(*siteNames, ",")
+		names := strings.Split(siteNames, ",")
 		for i, name := range names {
 			names[i] = strings.TrimSpace(name)
 		}
@@ -95,20 +130,19 @@ func main() {
 	}
 
 	// Determine date range
-	mm, yyyy := getMonthYear(*flags.Date)
+	mm, yyyy := getMonthYear(dateFlag)
 
-	// Validate workers count
-	if *workers < 1 {
-		log.Fatal("Error: workers must be at least 1")
-	}
-	if *workers > 20 {
-		log.Fatal("Error: workers cannot exceed 20")
-	}
+	log.Printf("Using %d worker(s) for parallel scraping\n", workers)
 
-	log.Printf("Using %d worker(s) for parallel scraping\n", *workers)
+	// Create flags struct for compatibility with existing code
+	flags := &cmdutil.Flags{
+		Date:            &dateFlag,
+		Outfile:         &outfile,
+		ImportLocations: &importLocations,
+	}
 
 	// Process sites using worker pool
-	successCount, failCount := processSitesWithPool(sites, loader, mm, yyyy, flags, *workers)
+	successCount, failCount := processSitesWithPool(sites, loader, mm, yyyy, flags, workers)
 
 	// Summary
 	log.Printf("\n========================================")
