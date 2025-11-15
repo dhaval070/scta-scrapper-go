@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -192,10 +193,52 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 		}
 	}
 
-	if r.site == "lugsports" {
+	switch {
+	case r.site == "lugsports":
 		return r.RunMatchLocationsAllStates()
+	case strings.HasSuffix(r.site, "_gs"):
+		return r.MatchGamesheet()
+
+	default:
+		return r.RunMatchLocations()
 	}
-	return r.RunMatchLocations()
+}
+
+func (r *SiteRepository) MatchGamesheet() error {
+	var err error
+
+	err = r.DB.Transaction(func(tx *gorm.DB) error {
+		err = tx.Exec(`UPDATE sites_locations sl, locations l SET sl.location_id=l.id WHERE
+			(sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND sl.site =?`, r.site).Error
+
+		if err != nil {
+			return err
+		}
+
+		query := `UPDATE sites_locations sl, locations l, surfaces s
+			SET sl.surface_id=s.id
+			WHERE
+			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
+			AND 1=(select count(*) FROM surfaces WHERE location_id=l.id)`
+
+		err = tx.Exec(query, r.site).Error
+		if err != nil {
+			return err
+		}
+
+		query = `UPDATE sites_locations sl, locations l, surfaces s
+			SET sl.surface_id=s.id
+			WHERE
+			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
+			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`
+
+		err = tx.Exec(query, r.site).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }
 
 func (r *SiteRepository) RunMatchLocationsAllStates() error {

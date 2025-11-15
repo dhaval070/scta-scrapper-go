@@ -209,6 +209,10 @@ func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, season model.Gameshe
 				continue
 			}
 
+			if game.Location == "" {
+				log.Println("empty location found: ", string(gameRaw))
+			}
+
 			// Save to database
 			schedule := model.GamesheetSchedule{
 				SeasonID: seasonID,
@@ -220,7 +224,7 @@ func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, season model.Gameshe
 				continue
 			}
 
-			result = append(result, []string{game.StartTime.Format("2006-01-02 15:04"), season.Site, game.Home.Title, game.Visitor.Title, game.Location, game.Home.Division.Title, ""})
+			result = append(result, []string{game.ScheduledStartTime.Format("2006-01-02 15:04"), season.Site, game.Home.Title, game.Visitor.Title, game.Location, game.Home.Division.Title, ""})
 			totalGames++
 		}
 	}
