@@ -16,6 +16,7 @@ type GamesheetSeason struct {
 	IsActive  int8       `gorm:"column:is_active;default:0" json:"is_active"`
 	StartDate *time.Time `gorm:"column:start_date" json:"start_date"`
 	EndDate   *time.Time `gorm:"column:end_date" json:"end_date"`
+	Site      string
 }
 
 // TableName GamesheetSeason's table name

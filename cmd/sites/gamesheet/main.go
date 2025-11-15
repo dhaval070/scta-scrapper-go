@@ -4,12 +4,14 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
 	httpclient "calendar-scrapper/internal/client"
+	"calendar-scrapper/pkg/cmdutil"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"gorm.io/driver/mysql"
@@ -26,10 +28,56 @@ type ScheduleResponse struct {
 	} `json:"data"`
 }
 
+type Game struct {
+	ID                 int64     `json:"id"`
+	GameType           string    `json:"gameType"`
+	Number             string    `json:"number"`
+	Location           string    `json:"location"`
+	ScheduledStartTime time.Time `json:"scheduledStartTime"`
+	StartTime          time.Time `json:"startTime"`
+	EndTime            time.Time `json:"endTime"`
+	Status             string    `json:"status"`
+	Category           string    `json:"category"`
+	HasOvertime        bool      `json:"hasOvertime"`
+	HasShootout        bool      `json:"hasShootout"`
+	Periods            struct {
+		Period1 int `json:"1"`
+		Period2 int `json:"2"`
+		Period3 int `json:"3"`
+		OT1     int `json:"ot_1"`
+	} `json:"periods"`
+	Home    Team `json:"home"`
+	Visitor Team `json:"visitor"`
+}
+
+type Team struct {
+	ID       int64    `json:"id"`
+	Title    string   `json:"title"`
+	Logo     string   `json:"logo"`
+	Division Division `json:"division"`
+	Record   Record   `json:"record"`
+}
+
+type Division struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+}
+
+type Record struct {
+	GamesPlayed            int `json:"gamesPlayed"`
+	Wins                   int `json:"wins"`
+	Losses                 int `json:"losses"`
+	Ties                   int `json:"ties"`
+	OvertimeShootoutWins   int `json:"overtimeShootoutWins"`
+	OvertimeShootoutLosses int `json:"overtimeShootoutLosses"`
+}
+
 var client = httpclient.GetClient("")
 
 func main() {
 	seasonsFlag := flag.String("seasons", "", "Season IDs to fetch (use 'all' for all active seasons or comma-separated season IDs like '123,456,789')")
+	outfileFlag := flag.String("outfile", "", "Output CSV file path(optional)")
+	importLocationsFlag := flag.Bool("import-locations", false, "Import locations to database")
 	flag.Parse()
 
 	if *seasonsFlag == "" {
@@ -79,12 +127,30 @@ func main() {
 	for _, season := range seasonsToProcess {
 		log.Printf("Processing Season: ID=%d, Title=%s, LeagueID=%d", season.ID, season.Title, season.LeagueID)
 
-		if err := fetchAndSaveSchedules(db, &cfg, season.ID); err != nil {
+		result, err := fetchAndSaveSchedules(db, &cfg, season, *importLocationsFlag)
+		if err != nil {
 			log.Printf("Error fetching schedules for season %d: %v", season.ID, err)
 			continue
 		}
 
-		log.Printf("Successfully saved schedules for season %d", season.ID)
+		if *importLocationsFlag {
+			if err := cmdutil.ImportLocations(season.Site, result); err != nil {
+				log.Fatal(err)
+			}
+		}
+		var filename string
+
+		if *outfileFlag == "-" {
+			filename = "-"
+		} else {
+			filename = season.Site + "_" + *outfileFlag
+		}
+
+		if err := cmdutil.WriteOutput(filename, result); err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Successfully processed schedules for season %d", season.ID)
 	}
 
 }
@@ -98,14 +164,15 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, seasonID uint32) error {
+func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason, importLocations bool) ([][]string, error) {
+	seasonID := season.ID
 	// Build the API URL
 	url := fmt.Sprintf(URL, fmt.Sprintf("%d", seasonID))
 
 	// Create request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// Add API key header
@@ -114,38 +181,51 @@ func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, seasonID uint32) err
 	// Make the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to fetch schedules: %w", err)
+		return nil, fmt.Errorf("failed to fetch schedules: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	// Parse response
 	var scheduleResp ScheduleResponse
 	if err := jsoniter.NewDecoder(resp.Body).Decode(&scheduleResp); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
+		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// Save each game to database
+	// Process each game
 	totalGames := 0
+
+	var result = [][]string{}
+
 	for _, dayData := range scheduleResp.Data {
-		for _, game := range dayData.Games {
+		for _, gameRaw := range dayData.Games {
+			var game Game
+			if err := jsoniter.Unmarshal(gameRaw, &game); err != nil {
+				log.Printf("Failed to decode game: %v", err)
+				continue
+			}
+
+			// Save to database
 			schedule := model.GamesheetSchedule{
 				SeasonID: seasonID,
-				GameData: model.JSON(game),
+				GameData: model.JSON(gameRaw),
 			}
 
 			if err := db.Create(&schedule).Error; err != nil {
 				log.Printf("Failed to save game: %v", err)
 				continue
 			}
+
+			result = append(result, []string{game.StartTime.Format("2006-01-02 15:04"), season.Site, game.Home.Title, game.Visitor.Title, game.Location, game.Home.Division.Title, ""})
 			totalGames++
 		}
 	}
 
 	log.Printf("Saved %d games for season %d", totalGames, seasonID)
-	return nil
+
+	return result, nil
 }
