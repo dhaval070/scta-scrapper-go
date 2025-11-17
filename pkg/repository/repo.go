@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -36,7 +37,7 @@ func NewRepository(cfg config.Config) *Repository {
 func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 	var siteLoc model.SitesLocation
 
-	err := r.DB.Raw("select * from sites_locations where site=? and location=?", site, loc).Scan(&siteLoc).Error
+	err := r.DB.Raw("SELECT * FROM sites_locations WHERE site=? AND location=?", site, loc).Scan(&siteLoc).Error
 
 	if err != nil {
 		log.Println(err)
@@ -208,37 +209,144 @@ func (r *SiteRepository) MatchGamesheet() error {
 	var err error
 
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
-		err = tx.Exec(`UPDATE sites_locations sl, locations l SET sl.location_id=l.id WHERE
-			(sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND sl.site =?`, r.site).Error
+		var queries = []string{
+			`UPDATE sites_locations sl, locations l SET sl.location_id=l.id WHERE
+			(sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND sl.site =?`,
 
-		if err != nil {
-			return err
-		}
-
-		query := `UPDATE sites_locations sl, locations l, surfaces s
+			`UPDATE sites_locations sl, locations l, surfaces s
 			SET sl.surface_id=s.id
 			WHERE
 			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
-			AND 1=(select count(*) FROM surfaces WHERE location_id=l.id)`
+			AND 1=(select count(*) FROM surfaces WHERE location_id=l.id)`,
 
-		err = tx.Exec(query, r.site).Error
-		if err != nil {
-			return err
-		}
-
-		query = `UPDATE sites_locations sl, locations l, surfaces s
+			`UPDATE sites_locations sl, locations l, surfaces s
 			SET sl.surface_id=s.id
 			WHERE
 			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
-			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`
+			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`,
+		}
 
-		err = tx.Exec(query, r.site).Error
-		if err != nil {
-			return err
+		for _, q := range queries {
+			err = tx.Exec(q, r.site).Error
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
-	return err
+	var locations []model.Location
+	err = r.DB.Raw(`SELECT id, name FROM locations WHERE id NOT in(SELECT location_id FROM sites_locations WHERE site LIKE '%_gs')`).Scan(&locations).Error
+	if err != nil {
+		return err
+	}
+	var siteLoc []model.SitesLocation
+	err = r.DB.Raw(`SELECT site, location FROM sites_locations WHERE site LIKE '%_gs'
+		AND surface_id=0`).Scan(&siteLoc).Error
+	if err != nil {
+		return err
+	}
+
+	var ids = make([]int, 0, len(locations))
+	for _, l := range locations {
+		ids = append(ids, int(l.ID))
+	}
+
+	var surfaces = make([]model.Surface, 0, len(locations)*2)
+
+	err = r.DB.Where("location_id in ?", ids).Find(&surfaces).Error
+
+	smap := map[int32][]model.Surface{}
+
+	for _, s := range surfaces {
+		smap[s.LocationID] = append(smap[s.LocationID], s)
+	}
+
+	var totalLocMatch, totalSurfaceMatch = 0, 0
+	for _, sl := range siteLoc {
+		locMatched, surfaceMatched, err := r.MatchLocByTokens(sl, locations, smap)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		if locMatched {
+			totalLocMatch++
+		}
+		if surfaceMatched {
+			totalSurfaceMatch++
+		}
+	}
+
+	log.Printf("gamesheet: by tokens totalLocMatched=%d, totalSurfaceMatched=%d\n", totalLocMatch, totalSurfaceMatch)
+
+	return nil
+}
+
+func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []model.Location, smap map[int32][]model.Surface) (bool, bool, error) {
+	var err error
+	tokens := strings.Split(sl.Location, " ")
+	re := regexp.MustCompile("[^0-9A-Za-z]")
+
+	locMatch := false
+	surfaceMatch := false
+
+	blackList := map[string]bool{
+		"ice": true, "arena": true, "pavilion": true, "centennial": true,
+		"arctic": true, "national": true, "sports": true, "sportplex": true,
+		"bell": true, "center": true, "centre": true, "field": true,
+		"fields": true, "livebarn": true, "convention": true,
+	}
+
+TOKENS_LOOP:
+	for _, t := range tokens {
+		if len(t) < 2 || re.MatchString(t) || blackList[t] {
+			log.Println("skipping location ", sl.Location)
+			continue
+		}
+		var id int32 = 0
+
+		for _, l := range locations {
+			if strings.Contains(l.Name, t) {
+				// if more than one location matched then skip token.
+				if id != 0 {
+					log.Println("multiple loc matched for site-location:", sl.Location, ",token:", t)
+					continue TOKENS_LOOP
+				}
+				id = l.ID
+			}
+		}
+		if id == 0 {
+			continue
+		}
+
+		err = r.DB.Transaction(func(tx *gorm.DB) error {
+			// set location id
+			err = tx.Exec(`UPDATE sites_locations set location_id=? WHERE site=? AND location=?`, id, sl.Site, sl.Location).Error
+			if err != nil {
+				return fmt.Errorf("failed to set location id, %w", err)
+			}
+			locMatch = true
+
+			log.Printf("gamesheet matched location. site=%s, location=%s, locId=%d, token=%s\n", sl.Site, sl.Location, id, t)
+
+			// locaton has single surface then it is a match.
+			if len(smap[id]) == 1 {
+				surfaceMatch = true
+				log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
+				err = tx.Exec(`update sites_locations set surface_id=? where
+						site=? and location=?`, smap[id][0].ID, sl.Site, sl.Location).Error
+				if err != nil {
+					return fmt.Errorf("failed to set location id, %w", err)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return false, false, err
+		}
+		break
+	}
+	return locMatch, surfaceMatch, nil
 }
 
 func (r *SiteRepository) RunMatchLocationsAllStates() error {

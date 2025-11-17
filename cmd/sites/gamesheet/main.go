@@ -211,6 +211,7 @@ func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, season model.Gameshe
 
 			if game.Location == "" {
 				log.Println("empty location found: ", string(gameRaw))
+				continue
 			}
 
 			// Save to database
