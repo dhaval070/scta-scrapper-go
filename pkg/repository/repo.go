@@ -299,7 +299,7 @@ func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []mo
 
 TOKENS_LOOP:
 	for _, t := range tokens {
-		if len(t) < 2 || re.MatchString(t) || blackList[t] {
+		if len(t) < 2 || re.MatchString(t) || blackList[strings.ToLower(t)] {
 			log.Println("skipping location ", sl.Location)
 			continue
 		}
@@ -333,10 +333,30 @@ TOKENS_LOOP:
 			if len(smap[id]) == 1 {
 				surfaceMatch = true
 				log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
-				err = tx.Exec(`update sites_locations set surface_id=? where
-						site=? and location=?`, smap[id][0].ID, sl.Site, sl.Location).Error
+				err = tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE
+						site=? AND location=?`, smap[id][0].ID, sl.Site, sl.Location).Error
 				if err != nil {
 					return fmt.Errorf("failed to set location id, %w", err)
+				}
+			} else {
+				lastWord := tokens[len(tokens)-1]
+				lastWord = re.ReplaceAllString(lastWord, "")
+				if lastWord == "" {
+					return nil
+				}
+
+				for _, s := range smap[id] {
+					if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
+						continue
+					}
+					surfaceMatch = true
+					log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
+
+					err = tx.Exec(`UPDATE sites_locations sET surface_id=? WHERE
+							site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
+					if err != nil {
+						return fmt.Errorf("failed to set location id, %w", err)
+					}
 				}
 			}
 			return nil
