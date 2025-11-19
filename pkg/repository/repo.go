@@ -17,11 +17,15 @@ type Repository struct {
 	DB *gorm.DB
 }
 
-func NewRepository(cfg config.Config) *Repository {
-	db, err := gorm.Open(mysql.Open(cfg.DbDSN))
+var db *gorm.DB
 
-	if err != nil {
-		panic(err)
+func NewRepository(cfg config.Config) *Repository {
+	var err error
+	if db == nil {
+		db, err = gorm.Open(mysql.Open(cfg.DbDSN))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// silent log to avoid junk in csv output
