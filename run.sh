@@ -12,7 +12,7 @@
 sites="$1"
 if [ -z "$sites" ]; then
     echo "Error: sites parameter is required"
-    echo "Usage: sh run-all.sh <sites> [date]"
+    echo "Usage: sh run.sh <sites> [date]"
     echo "  sites: --all or comma-separated list (e.g., site1,site2,site3)"
     echo "  date: optional, defaults to current date (YYYY-MM-DD)"
     exit 1
