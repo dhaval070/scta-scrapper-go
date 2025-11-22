@@ -1,12 +1,12 @@
 #!/bin/bash
-# usage: sh run-all.sh <sites> [date]
+# usage: sh run.sh <sites> [date]
 # sites: mandatory - can be --all or comma-separated list (e.g., site1,site2,site3)
 # date: optional - defaults to current date (format: YYYY-MM-DD)
 # Examples:
-#   sh run-all.sh --all              # all sites, current date
-#   sh run-all.sh site1,site2        # specific sites, current date
-#   sh run-all.sh --all 2024-12-01   # all sites, specific date
-#   sh run-all.sh site1 2024-12-01   # specific site, specific date
+#   sh run.sh --all              # all sites, current date
+#   sh run.sh site1,site2        # specific sites, current date
+#   sh run.sh --all 2024-12-01   # all sites, specific date
+#   sh run.sh site1 2024-12-01   # specific site, specific date
 
 # Sites is mandatory
 sites="$1"
