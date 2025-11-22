@@ -8,9 +8,6 @@ import (
 	"flag"
 	"io"
 	"os"
-
-	"gorm.io/gen"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -52,16 +49,4 @@ func main() {
 	// log.Printf("%#v\n", js[0].Surfaces)
 
 	repo.MasterImportJson(js)
-}
-
-func genModels(db *gorm.DB) {
-	g := gen.NewGenerator(gen.Config{
-		OutPath: "./query",
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
-	})
-
-	g.UseDB(db)
-	g.ApplyBasic(g.GenerateAllTable()...)
-
-	g.Execute()
 }

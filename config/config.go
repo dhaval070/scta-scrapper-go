@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	DbDSN     string `mapstructure:"DB_DSN"`
-	ApiKey    string `mapstructure:"API_KEY"`
-	ImportUrl string `mapstructure:"IMPORT_URL"`
+	DbDSN           string `mapstructure:"DB_DSN"`
+	ApiKey          string `mapstructure:"API_KEY"`
+	ImportUrl       string `mapstructure:"IMPORT_URL"`
+	GameSheetAPIKey string `mapstructure:"GAMESHEET_API_KEY"`
 }
 
 func Init(name string, path ...string) {
