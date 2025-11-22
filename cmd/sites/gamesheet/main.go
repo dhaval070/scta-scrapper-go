@@ -76,12 +76,19 @@ var client = httpclient.GetClient("")
 
 func main() {
 	seasonsFlag := flag.String("seasons", "", "Season IDs to fetch (use 'all' for all active seasons or comma-separated season IDs like '123,456,789')")
+	sitesFlag := flag.String("sites", "", "Site names to fetch (comma-separated site names like 'site1,site2')")
 	outfileFlag := flag.String("outfile", "", "Output CSV file path(optional)")
 	importLocationsFlag := flag.Bool("import-locations", false, "Import locations to database")
+	// date is currently defiend to make compatible with unified scraper.
+	_ = flag.String("date", "", "mmyyyy of fetch events")
 	flag.Parse()
 
-	if *seasonsFlag == "" {
-		log.Fatalf("Error: -seasons flag is required. Use 'all' for all active seasons or specify comma-separated season IDs")
+	if *seasonsFlag == "" && *sitesFlag == "" {
+		log.Fatalf("Error: either -seasons or -sites flag is required")
+	}
+
+	if *seasonsFlag != "" && *sitesFlag != "" {
+		log.Fatalf("Error: -seasons and -sites flags cannot be used together")
 	}
 
 	var err error
@@ -97,7 +104,18 @@ func main() {
 
 	var seasonsToProcess []model.GamesheetSeason
 
-	if *seasonsFlag == "all" {
+	if *sitesFlag != "" {
+		// Fetch seasons by site names
+		siteNames := strings.Split(*sitesFlag, ",")
+		for i := range siteNames {
+			siteNames[i] = strings.TrimSpace(siteNames[i])
+		}
+
+		if err := db.Where("site IN ? AND is_active = ?", siteNames, 1).Find(&seasonsToProcess).Error; err != nil {
+			log.Fatalf("Failed to fetch seasons for sites: %v", err)
+		}
+		log.Printf("Found %d active seasons for sites %v", len(seasonsToProcess), siteNames)
+	} else if *seasonsFlag == "all" {
 		// Fetch all active seasons
 		if err := db.Where("is_active = ?", 1).Find(&seasonsToProcess).Error; err != nil {
 			log.Fatalf("Failed to fetch active seasons: %v", err)
@@ -127,7 +145,7 @@ func main() {
 	for _, season := range seasonsToProcess {
 		log.Printf("Processing Season: ID=%d, Title=%s, LeagueID=%d", season.ID, season.Title, season.LeagueID)
 
-		result, err := fetchAndSaveSchedules(db, &cfg, season, *importLocationsFlag)
+		result, err := fetchSchedules(db, &cfg, season, *importLocationsFlag)
 		if err != nil {
 			log.Printf("Error fetching schedules for season %d: %v", season.ID, err)
 			continue
@@ -164,7 +182,7 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func fetchAndSaveSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason, importLocations bool) ([][]string, error) {
+func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason, importLocations bool) ([][]string, error) {
 	seasonID := season.ID
 	// Build the API URL
 	url := fmt.Sprintf(URL, fmt.Sprintf("%d", seasonID))

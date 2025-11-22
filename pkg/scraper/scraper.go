@@ -258,8 +258,9 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 
 	// Build command arguments
 	dateStr := fmt.Sprintf("%02d%d", mm, yyyy)
-	args := []string{"--date", dateStr, "--outfile", "-"}
-	args = append(args, s.parserCfg.ExtraArgs...)
+	// args := []string{"--date", dateStr, "--outfile", "-"}
+	args := s.parserCfg.ExtraArgs
+	args = append(args, "--date", dateStr, "--outfile", "-")
 
 	log.Printf("[%s] Calling external binary: %s %v\n", s.config.SiteName, s.parserCfg.BinaryPath, args)
 

@@ -9,4 +9,4 @@ create table gamesheet_schedules(
 
 
 insert into sites_config (site_name, display_name, base_url, parser_type, enabled, parser_config)
-select site, title, '', "external", is_active, concat( '{"season_id":', id , '}') from gamesheet_seasons gs;
+select site, title, '', "external", is_active, concat( '{"season_id":', id , ',"binary_path":"./bin/gamesheet","extra_args":["--sites=', site, ' "]}') from gamesheet_seasons gs;
