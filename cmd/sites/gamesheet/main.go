@@ -72,7 +72,7 @@ type Record struct {
 	OvertimeShootoutLosses int `json:"overtimeShootoutLosses"`
 }
 
-var client = httpclient.GetClient("")
+var client = httpclient.GetClient("", 0)
 
 func main() {
 	seasonsFlag := flag.String("seasons", "", "Season IDs to fetch (use 'all' for all active seasons or comma-separated season IDs like '123,456,789')")

@@ -1,3 +1,4 @@
 DB_DSN: app:app@(172.17.0.1:5506)/schedules?parseTime=true
 API_KEY:
 IMPORT_URL: "https://www.agilex.ca/api/GameQuery?date=%s&id=AS0122341&league=%s"
+MAX_REQUESTS_PER_HOST: 5

@@ -124,6 +124,7 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 }
 
 // scrapeVenueAddress performs the HTTP request and scrapes the venue address
+// Rate limiting is handled by the HTTP client's transport layer.
 // This is copied from pkg/parser/parser.go:GetVenueAddress
 func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (string, error) {
 	var err error

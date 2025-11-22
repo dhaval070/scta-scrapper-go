@@ -20,10 +20,18 @@ import (
 	"golang.org/x/net/html"
 )
 
-var Client = client.GetClient(os.Getenv("HTTP_PROXY"))
+var Client *http.Client
+var VenueFetcher *fetcher.VenueAddressFetcher
 
-// VenueFetcher is a shared instance of VenueAddressFetcher for caching and deduplication
-var VenueFetcher = fetcher.NewVenueAddressFetcher(client.GetClient(os.Getenv("HTTP_PROXY")))
+func init() {
+	InitWithConfig(0)
+}
+
+// InitWithConfig initializes the parser package with configuration
+func InitWithConfig(maxRequestsPerHost int) {
+	Client = client.GetClient(os.Getenv("HTTP_PROXY"), maxRequestsPerHost)
+	VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
+}
 
 type ByDate [][]string
 

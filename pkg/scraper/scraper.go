@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"bytes"
-	httpclient "calendar-scrapper/internal/client"
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/parser1"
 	"calendar-scrapper/pkg/parser2"
@@ -12,7 +11,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -20,7 +18,7 @@ import (
 	"github.com/antchfx/htmlquery"
 )
 
-var client = httpclient.GetClient(os.Getenv("HTTP_PROXY"))
+var client = parser.Client
 
 // Scraper handles dynamic scraping based on site configuration
 type Scraper struct {
