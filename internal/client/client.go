@@ -3,6 +3,7 @@ package client
 import (
 	"compress/gzip"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"time"
 )
@@ -48,15 +49,18 @@ func GetClient(proxy string) *http.Client {
 	} else {
 		t.Proxy = nil
 	}
-	t.MaxIdleConns = 50
+	t.MaxIdleConns = 200
 	t.MaxConnsPerHost = 5
 	t.MaxIdleConnsPerHost = 10
+	t.IdleConnTimeout = 3 * time.Second
 	t.ResponseHeaderTimeout = time.Second * 20
 	t.TLSHandshakeTimeout = 20 * time.Second
 
+	jar, _ := cookiejar.New(nil)
 	var client = &http.Client{
 		Transport: &transport{t},
 		Timeout:   time.Second * 25,
+		Jar:       jar,
 	}
 
 	return client
