@@ -145,26 +145,63 @@ func runScraper(cmd *cobra.Command, args []string) {
 	}
 
 	// Process sites using worker pool
-	successCount, failCount := processSitesWithPool(sites, loader, mm, yyyy, flags, workers)
+	siteResults := processSitesWithPool(sites, loader, mm, yyyy, flags, workers)
 
 	// Summary
 	log.Printf("\n========================================")
-	log.Printf("SUMMARY")
+	log.Printf("SCRAPING SUMMARY")
 	log.Printf("========================================")
-	log.Printf("Total sites: %d", len(sites))
-	log.Printf("Successful: %d", successCount)
-	log.Printf("Failed: %d", failCount)
-	log.Printf("========================================\n")
+
+	// Print table header
+	log.Printf("%-30s %10s", "SITE", "EVENTS")
+	log.Printf("%-30s %10s", "----", "------")
+
+	// Print each site result
+	successCount := 0
+	failCount := 0
+	totalEvents := 0
+	var zeroEventSites []string
+
+	for _, res := range siteResults {
+		if res.success {
+			successCount++
+			totalEvents += res.eventCount
+			status := fmt.Sprintf("%d", res.eventCount)
+			log.Printf("%-30s %10s", res.siteName, status)
+			if res.eventCount == 0 {
+				zeroEventSites = append(zeroEventSites, res.siteName)
+			}
+		} else {
+			failCount++
+			log.Printf("%-30s %10s", res.siteName, "FAILED")
+		}
+	}
+
+	log.Printf("%-30s %10s", "----", "------")
+	log.Printf("%-30s %10d", "TOTAL", totalEvents)
+	log.Printf("========================================")
+	log.Printf("Sites processed: %d | Successful: %d | Failed: %d", len(sites), successCount, failCount)
+	log.Printf("========================================")
+
+	// Show warnings for sites with 0 events
+	if len(zeroEventSites) > 0 {
+		log.Printf("\n⚠️  WARNING: The following sites scraped 0 events:")
+		for _, siteName := range zeroEventSites {
+			log.Printf("  - %s", siteName)
+		}
+		log.Printf("")
+	}
 }
 
 // processSitesWithPool processes multiple sites using a worker pool
-func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, workers int) (int, int) {
+func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, workers int) []scraperResult {
 	// Create channels
 	jobs := make(chan siteconfig.SiteConfig, len(sites))
 	type result struct {
-		siteName string
-		success  bool
-		err      error
+		siteName   string
+		success    bool
+		err        error
+		eventCount int
 	}
 	results := make(chan result, len(sites))
 
@@ -179,10 +216,10 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 				log.Printf("[Worker %d] Processing: %s (%s)", workerID, site.DisplayName, site.SiteName)
 				log.Printf("[Worker %d] ========================================", workerID)
 
-				err := processSite(&site, loader, mm, yyyy, flags)
+				eventCount, err := processSite(&site, loader, mm, yyyy, flags)
 				if err != nil {
 					log.Printf("[Worker %d] ❌ ERROR scraping %s: %v\n", workerID, site.SiteName, err)
-					results <- result{siteName: site.SiteName, success: false, err: err}
+					results <- result{siteName: site.SiteName, success: false, err: err, eventCount: 0}
 					continue
 				}
 
@@ -192,7 +229,7 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 				}
 
 				log.Printf("[Worker %d] ✅ Successfully processed %s\n", workerID, site.SiteName)
-				results <- result{siteName: site.SiteName, success: true, err: nil}
+				results <- result{siteName: site.SiteName, success: true, err: nil, eventCount: eventCount}
 			}
 		}(w)
 	}
@@ -208,45 +245,54 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 	close(results)
 
 	// Collect results
-	successCount := 0
-	failCount := 0
+	var scraperResults []scraperResult
 	for res := range results {
-		if res.success {
-			successCount++
-		} else {
-			failCount++
-		}
+		scraperResults = append(scraperResults, scraperResult{
+			siteName:   res.siteName,
+			success:    res.success,
+			err:        res.err,
+			eventCount: res.eventCount,
+		})
 	}
 
-	return successCount, failCount
+	return scraperResults
+}
+
+type scraperResult struct {
+	siteName   string
+	success    bool
+	err        error
+	eventCount int
 }
 
 // processSite handles scraping and output for a single site
-func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags) error {
+func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags) (int, error) {
 	// Create scraper
 	s, err := scraper.New(site, loader)
 	if err != nil {
-		return fmt.Errorf("failed to create scraper: %w", err)
+		return 0, fmt.Errorf("failed to create scraper: %w", err)
 	}
 
 	// Perform scraping
 	result, err := s.Scrape(mm, yyyy)
 	if err != nil {
-		return fmt.Errorf("scrape failed: %w", err)
+		return 0, fmt.Errorf("scrape failed: %w", err)
 	}
 
-	if len(result) == 0 {
+	eventCount := len(result)
+
+	if eventCount == 0 {
 		log.Printf("⚠️  Warning: No schedule data found for %s\n", site.SiteName)
-		return nil
+		return 0, nil
 	}
 
-	log.Printf("Retrieved %d schedule entries\n", len(result))
+	log.Printf("Retrieved %d schedule entries\n", eventCount)
 
 	// Import locations if requested
 	if *flags.ImportLocations {
 		log.Printf("Importing locations to database...\n")
 		if err := cmdutil.ImportLocations(site.SiteName, result); err != nil {
-			return fmt.Errorf("failed to import locations: %w", err)
+			return eventCount, fmt.Errorf("failed to import locations: %w", err)
 		}
 		log.Printf("✓ Locations imported\n")
 	}
@@ -259,12 +305,12 @@ func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyy
 		outfile := filepath.Join(dir, fmt.Sprintf("%s_%s", site.SiteName, basename))
 		log.Printf("Writing output to: %s\n", outfile)
 		if err := cmdutil.WriteOutput(outfile, result); err != nil {
-			return fmt.Errorf("failed to write output: %w", err)
+			return eventCount, fmt.Errorf("failed to write output: %w", err)
 		}
 		log.Printf("✓ Output written\n")
 	}
 
-	return nil
+	return eventCount, nil
 }
 
 // getMonthYear returns month and year from date flag or current date
