@@ -39,13 +39,10 @@ func attachSurfaceID(site string, r io.Reader) [][]string {
 			log.Println(err)
 			continue
 		}
-		if sl.SurfaceID != 0 {
-			// log.Println(sl.Location, sl.LocationID)
-			r = append(r, fmt.Sprint(sl.SurfaceID))
-			result = append(result, r)
-		} else {
-			log.Println("skipped site: ", site, ", location: ", sl.Location)
-		}
+
+		r = append(r, strconv.FormatInt(int64(sl.LocationID), 10), strconv.FormatInt(int64(sl.SurfaceID), 10))
+
+		result = append(result, r)
 	}
 
 	return result
@@ -108,10 +105,11 @@ func main() {
 				break
 			}
 			// add 0 surface ID
-			r = append(r, "0")
+			r = append(r, "0", "0")
 			result = append(result, r)
 		}
 	}
+
 	if *insert {
 		log.Println("importing")
 		if err = importEvents(repo, *site, result, cdate); err != nil {
@@ -135,7 +133,11 @@ func importEvents(repo *repository.Repository, site string, result [][]string, c
 
 	m := make([]*model.Event, 0, len(result))
 	for _, rec := range result {
-		sid, err := strconv.Atoi(rec[6])
+		locationId, err := strconv.Atoi(rec[6])
+		if err != nil {
+			return fmt.Errorf("failed to parse surfaceid %s, %w", rec[6], err)
+		}
+		sid, err := strconv.Atoi(rec[7])
 		if err != nil {
 			return fmt.Errorf("failed to parse surfaceid %s, %w", rec[6], err)
 		}
@@ -156,6 +158,7 @@ func importEvents(repo *repository.Repository, site string, result [][]string, c
 			GuestTeam:   rec[3],
 			Location:    rec[4],
 			Division:    rec[5],
+			LocationID:  int32(locationId),
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
 		})
