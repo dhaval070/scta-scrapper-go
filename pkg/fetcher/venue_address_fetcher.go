@@ -1,9 +1,12 @@
 package fetcher
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -158,7 +161,12 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 		log.Println("retry successful for url ", url)
 	}
 
-	doc, err := htmlquery.Parse(resp.Body)
+	htmlContent, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read HTML: %w", err)
+	}
+
+	doc, err := htmlquery.Parse(bytes.NewReader(htmlContent))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse HTML: %w", err)
 	}
@@ -170,6 +178,7 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 	case "remote":
 		item := htmlquery.FindOne(doc, `//div[@class="container"]/div/div/h2/small[2]`)
 		if item == nil {
+			f.logAddressNotFound(url, class, string(htmlContent), "address node not found for remote URL")
 			return "", fmt.Errorf("address node not found for remote URL: %v", url)
 		}
 		address = htmlquery.InnerText(item)
@@ -177,6 +186,7 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 		// local URLs
 		node := htmlquery.FindOne(doc, `//div[@class="month"]/following-sibling::div/div/div`)
 		if node == nil {
+			f.logAddressNotFound(url, class, string(htmlContent), "address node not found for local URL")
 			return "", fmt.Errorf("address node not found for local URL: %v", url)
 		}
 		address = htmlquery.InnerText(node)
@@ -229,4 +239,22 @@ func (f *VenueAddressFetcher) CacheSize() int {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	return len(f.cache)
+}
+
+// logAddressNotFound writes the URL and page HTML to a separate log file when address node is not found
+func (f *VenueAddressFetcher) logAddressNotFound(url string, class string, htmlContent string, errorMsg string) {
+	logFile := "address_not_found.log"
+	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Printf("failed to open address not found log file: %v", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Fprintf(file, "###########\n")
+	fmt.Fprintf(file, "URL: %s\n", url)
+	fmt.Fprintf(file, "Class: %s\n", class)
+	fmt.Fprintf(file, "Error: %s\n", errorMsg)
+	fmt.Fprintf(file, "HTML Content:\n%s\n", htmlContent)
+	fmt.Fprintf(file, "###########\n\n")
 }

@@ -54,10 +54,15 @@ func (adt *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			}
 		}
 
+		t := time.Now()
+		t = t.Add(time.Hour * 48 * -1)
+		val := t.Format("Jan-02 3:4 PM")
+
 		if !hasCookie {
 			cookie := &http.Cookie{
-				Name:     "MBSW_IS_HUMAN",
-				Value:    "Passed Nov-22 1:45 PM",
+				Name:  "MBSW_IS_HUMAN",
+				Value: "Passed " + val,
+				// Value:    "Passed Nov-22 1:45 PM",
 				Path:     "/",
 				Domain:   req.URL.Hostname(),
 				SameSite: http.SameSiteStrictMode,
