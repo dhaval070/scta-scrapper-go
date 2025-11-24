@@ -201,7 +201,7 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 	switch {
 	case r.site == "lugsports":
 		return r.RunMatchLocationsAllStates()
-	case strings.HasSuffix(r.site, "_gs"):
+	case strings.HasPrefix(r.site, "gs_"):
 		return r.MatchGamesheet()
 
 	default:
@@ -239,12 +239,12 @@ func (r *SiteRepository) MatchGamesheet() error {
 		return nil
 	})
 	var locations []model.Location
-	err = r.DB.Raw(`SELECT id, name FROM locations WHERE id NOT in(SELECT location_id FROM sites_locations WHERE site LIKE '%_gs')`).Scan(&locations).Error
+	err = r.DB.Raw(`SELECT id, name FROM locations WHERE id NOT in(SELECT location_id FROM sites_locations WHERE site LIKE 'gs\_%')`).Scan(&locations).Error
 	if err != nil {
 		return err
 	}
 	var siteLoc []model.SitesLocation
-	err = r.DB.Raw(`SELECT site, location FROM sites_locations WHERE site LIKE '%_gs'
+	err = r.DB.Raw(`SELECT site, location FROM sites_locations WHERE site LIKE 'gs\_%'
 		AND surface_id=0`).Scan(&siteLoc).Error
 	if err != nil {
 		return err
