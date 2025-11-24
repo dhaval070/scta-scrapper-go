@@ -55,7 +55,7 @@ func (l *Loader) GetParserConfig(site *SiteConfig) (*ParserConfigJSON, error) {
 	if site.ParserConfig == "" {
 		return &ParserConfigJSON{}, nil
 	}
-	
+
 	var cfg ParserConfigJSON
 	err := json.Unmarshal([]byte(site.ParserConfig), &cfg)
 	if err != nil {
@@ -79,13 +79,13 @@ func (l *Loader) UpdateLastScraped(siteID int) error {
 // GetDueForScraping returns sites that haven't been scraped within their frequency window
 func (l *Loader) GetDueForScraping() ([]SiteConfig, error) {
 	var configs []SiteConfig
-	
+
 	// Sites that have never been scraped OR last scraped more than frequency hours ago
 	err := l.db.Where("enabled = ?", true).
 		Where("last_scraped_at IS NULL OR last_scraped_at < DATE_SUB(NOW(), INTERVAL scrape_frequency_hours HOUR)").
 		Order("last_scraped_at ASC NULLS FIRST").
 		Find(&configs).Error
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to load sites due for scraping: %w", err)
 	}
