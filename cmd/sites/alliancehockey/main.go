@@ -1,8 +1,8 @@
 package main
 
 import (
-	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/cmdutil"
+	"calendar-scrapper/pkg/parser"
 	"flag"
 	"fmt"
 	"log"

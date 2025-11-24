@@ -172,7 +172,7 @@ func parseDate(dateFormat, date, t string) (tt time.Time, err error) {
 		parts[0] = "0" + parts[0]
 	}
 
-	if strings.Index(t, "PM") > -1 {
+	if strings.Contains(t, "PM") {
 		h, err := strconv.ParseInt(parts[0], 10, 32)
 		if err != nil {
 			return tt, fmt.Errorf("failed to convert hours to int %w", err)

@@ -247,12 +247,7 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 	// Collect results
 	var scraperResults []scraperResult
 	for res := range results {
-		scraperResults = append(scraperResults, scraperResult{
-			siteName:   res.siteName,
-			success:    res.success,
-			err:        res.err,
-			eventCount: res.eventCount,
-		})
+		scraperResults = append(scraperResults, scraperResult(res))
 	}
 
 	return scraperResults
@@ -354,7 +349,7 @@ func listConfiguredSites() {
 
 	fmt.Println("\n╔════════════════════════════════════════════════════════════════════╗")
 	fmt.Println("║                    CONFIGURED SITES                                ║")
-	fmt.Println("╚════════════════════════════════════════════════════════════════════╝\n")
+	fmt.Println("╚════════════════════════════════════════════════════════════════════╝")
 
 	enabledCount := 0
 	disabledCount := 0
