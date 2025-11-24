@@ -87,6 +87,10 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			}
 
 			location, err := parser.QueryInnerText(item, `//div[contains(@class,"location")]`)
+			if err != nil {
+				log.Printf("error %v\n", err)
+				continue
+			}
 
 			item = htmlquery.FindOne(parent, `div[1]//a[@class="remote" or @class="local"]`)
 			var url string

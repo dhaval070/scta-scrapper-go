@@ -49,7 +49,9 @@ func init() {
 }
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		log.Printf("gthl import failed %v\n", err)
+	}
 }
 
 func detectContentCharset(body io.Reader) string {
@@ -63,7 +65,7 @@ func detectContentCharset(body io.Reader) string {
 }
 
 func runGthl() error {
-	var cdate = time.Now()
+	var cdate time.Time
 	var err error
 
 	if *sdate != "" {

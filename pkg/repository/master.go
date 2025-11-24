@@ -10,7 +10,7 @@ import (
 )
 
 func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
-	r.DB.Transaction(func(tx *gorm.DB) (err error) {
+	err := r.DB.Transaction(func(tx *gorm.DB) (err error) {
 		for _, loc := range js {
 			log.Println(loc.ID)
 			err = r.MasterImportLoc(tx, loc)
@@ -20,6 +20,9 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 		}
 		return err
 	})
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 func (r *Repository) MasterImportLoc(db *gorm.DB, l entity.JsonLocation) error {

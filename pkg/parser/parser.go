@@ -190,6 +190,11 @@ func ParseId(id string) string {
 
 func GetVenueAddress(url string, class string) string {
 	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
 	resp, err := Client.Do(req)
 
 	if err != nil {
@@ -373,6 +378,10 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 			}
 
 			location, err := QueryInnerText(item, `//div[contains(@class,"location")]`)
+			if err != nil {
+				log.Printf("error %v\n", err)
+				continue
+			}
 
 			items := htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)
 			if len(items) == 0 {

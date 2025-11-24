@@ -137,8 +137,12 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 		}
 
 		ch := subjectText.FirstChild
-		homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+		homeTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 		location, err := parser.QueryInnerText(item, `//div[@class="location remote"]`)
+		if err != nil {
+			log.Printf("parser error %v\n", err)
+			continue
+		}
 
 		item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
 		var url string

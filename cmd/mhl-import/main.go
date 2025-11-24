@@ -17,6 +17,7 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding/unicode"
 	"golang.org/x/text/transform"
@@ -47,7 +48,9 @@ func init() {
 }
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		log.Printf("mhl import failed %v\n", err)
+	}
 }
 
 func detectContentCharset(body io.Reader) string {
@@ -99,11 +102,13 @@ func runMhl() error {
 		return nil
 	}
 
+	var doc *html.Node
+
 	switch path.Ext(*infile) {
 	case ".json":
 		return importer.ImportJson("mhl", data, cdate, m)
 	case ".xlx":
-		b, err := os.ReadFile(*infile)
+		b, err = os.ReadFile(*infile)
 		if err != nil {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}
@@ -111,7 +116,7 @@ func runMhl() error {
 		// convert utf16 to utf8
 		data, _, _ := transform.Bytes(unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewDecoder(), b)
 
-		doc, err := htmlquery.Parse(bytes.NewReader(data))
+		doc, err = htmlquery.Parse(bytes.NewReader(data))
 		if err != nil {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}

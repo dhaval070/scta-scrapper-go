@@ -12,5 +12,6 @@ func TestParseTournament(t *testing.T) {
 	doc, err := htmlquery.LoadDoc("../../testdata/tournament-details.html")
 	assert.NoError(t, err)
 
-	parseTournament(doc, "5636")
+	result := ParseTournament(doc, "5636")
+	assert.NotNil(t, result)
 }

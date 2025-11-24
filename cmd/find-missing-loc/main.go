@@ -54,7 +54,7 @@ func main() {
 
 	wr.Write(append(header, "surface ID", "Location ID"))
 
-	reg := regexp.MustCompile("[^a-zA-Z0-9\\s]")
+	reg := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
 
 	for i := 2; ; i += 1 {
 		row, err := reader.Read()
