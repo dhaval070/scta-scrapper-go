@@ -26,10 +26,6 @@ func main() {
 	repo := repository.NewRepository(cfg)
 	// l := model.Location{}
 
-	if err != nil {
-		panic(err)
-	}
-
 	var js = []entity.JsonLocation{}
 
 	fh, err := os.Open(path)

@@ -192,6 +192,7 @@ func (s *Scraper) scrapeMonthBased(mm, yyyy int) ([][]string, error) {
 			}
 			address, err := parser.VenueFetcher.Fetch(url, class)
 			if err != nil {
+				log.Printf("[%s] Failed to fetch venue address from %s: %v\n", s.config.SiteName, url, err)
 				return ""
 			}
 			return address
