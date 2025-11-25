@@ -52,7 +52,10 @@ func main() {
 		panic(err)
 	}
 
-	wr.Write(append(header, "surface ID", "Location ID"))
+	err = wr.Write(append(header, "surface ID", "Location ID"))
+	if err != nil {
+		panic(err)
+	}
 
 	reg := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
 
@@ -74,12 +77,16 @@ func main() {
 		}
 
 		if loc.ID == 0 {
-			wr.Write(row)
+			if err := wr.Write(row); err != nil {
+				panic(err)
+			}
 			continue
 		}
 		street := reg.ReplaceAllString(row[3], "")
 		if street == "" {
-			wr.Write(row)
+			if err := wr.Write(row); err != nil {
+				panic(err)
+			}
 			continue
 		}
 
@@ -119,7 +126,10 @@ func main() {
 			continue
 		}
 
-		wr.Write(row)
+		err = wr.Write(row)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -138,7 +148,10 @@ func getSurfaceIDs(db *gorm.DB, locId int32) string {
 func writeRow(db *gorm.DB, row []string, locID int32, wr *csv.Writer) {
 	id := getSurfaceIDs(db, locID)
 	row = append(row, id, fmt.Sprintf("%d", locID))
-	wr.Write(row)
+	err := wr.Write(row)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func findByStreet(db *gorm.DB, street string, city string) *model.Location {

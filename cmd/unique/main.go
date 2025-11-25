@@ -38,13 +38,15 @@ func init() {
 	league = cmd.Flags().String("league", "", "league")
 	cmd.Flags().String("root", "./var", "root directory")
 
-	cmd.MarkFlagRequired("from")
-	cmd.MarkFlagRequired("to")
-	cmd.MarkFlagRequired("league")
+	_ = cmd.MarkFlagRequired("from")
+	_ = cmd.MarkFlagRequired("to")
+	_ = cmd.MarkFlagRequired("league")
 }
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		panic(err)
+	}
 }
 
 func report(root string) error {

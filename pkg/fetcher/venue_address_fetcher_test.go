@@ -14,7 +14,7 @@ func TestVenueAddressFetcher_BasicFetch(t *testing.T) {
 	// Create test server that returns HTML with venue address
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html>
 				<body>
 					<div class="container">
@@ -44,7 +44,7 @@ func TestVenueAddressFetcher_Caching(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddInt32(&requestCount, 1)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html><body>
 				<div class="month"></div>
 				<div><div><div>456 Cached Avenue</div></div></div>
@@ -84,7 +84,7 @@ func TestVenueAddressFetcher_ConcurrentRequestDeduplication(t *testing.T) {
 		atomic.AddInt32(&requestCount, 1)
 		time.Sleep(100 * time.Millisecond) // Simulate slow response
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html><body>
 				<div class="container">
 					<div><div><h2><small></small><small>789 Parallel Road</small></h2></div></div>
@@ -156,7 +156,7 @@ func TestVenueAddressFetcher_FetchMultiple(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count := atomic.AddInt32(&requestCount, 1)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`
+		_, _ = w.Write([]byte(fmt.Sprintf(`
 			<html><body>
 				<div class="container">
 					<div><div><h2><small></small><small>Address %d</small></h2></div></div>
@@ -190,7 +190,7 @@ func TestVenueAddressFetcher_FetchMultiple(t *testing.T) {
 func TestVenueAddressFetcher_ClearCache(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html><body>
 				<div class="month"></div>
 				<div><div><div>Clear Test Address</div></div></div>
@@ -232,7 +232,7 @@ func TestVenueAddressFetcher_MultipleURLsConcurrent(t *testing.T) {
 		atomic.AddInt32(count, 1)
 		time.Sleep(50 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`
+		_, _ = w.Write([]byte(fmt.Sprintf(`
 			<html><body>
 				<div class="container">
 					<div><div><h2><small></small><small>Address for %s</small></h2></div></div>
@@ -277,7 +277,7 @@ func TestVenueAddressFetcher_MultipleURLsConcurrent(t *testing.T) {
 func BenchmarkVenueAddressFetcher_ConcurrentSameURL(b *testing.B) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html><body>
 				<div class="month"></div>
 				<div><div><div>Benchmark Address</div></div></div>

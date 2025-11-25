@@ -1,0 +1,3184 @@
+###########
+URL: https://www.theonedb.com/Venues/FindForGame/1998542
+Class: remote
+Error: address node not found for remote URL
+HTML Content:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="Sports,Hockey,Ringette,Soccer,Baseball,Minor,Youth,League,Schedules,Standings,Stats,TheOneDB,MBSportsWeb,MicroAge,Basics" />
+  <meta name="description" content="The official source for league-wide schedules and standings across several minor hockey, ringette, and soccer leagues throughout Ontario, Canada, and beyond." />
+  <meta name="application-name" content="TheOneDB" />
+  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileImage" content="d2f09529-c397-4869-a923-80d8210eac8b.png" />
+  <meta name="author" content="MicroAge Basics">
+  <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+  <title>
+    
+
+  
+  Home
+
+
+
+    
+
+    :: TheOneDB
+  </title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="/_wwwroot/css/public.css" />
+
+<script src="/_wwwroot/js/adglare.js"></script>
+
+
+
+
+  
+
+  
+
+
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript"> var clicky_custom = {}; </script>
+
+</head>
+
+<body>
+  
+
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">THEONEDB</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        
+
+<ul class="nav navbar-nav">
+  <li><a href="/"><span class="glyphicon glyphicon-home"></span> <span class="visible-xs-inline">Home</span></a></li>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Sports <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+          <li><a href="/Sports/100/Hockey/">Hockey</a></li>
+          <li><a href="/Sports/400/Baseball/">Baseball</a></li>
+          <li><a href="/Sports/500/Softball/">Softball</a></li>
+          <li><a href="/Sports/600/Box-Lacrosse/">Box Lacrosse</a></li>
+          <li><a href="/Sports/200/Soccer/">Soccer</a></li>
+    </ul>
+  </li>
+    </ul>
+
+        
+<ul class="nav navbar-nav navbar-right">
+    <li><p class="navbar-btn"><a href="/Account/Login?returnUrl=%2F" class="btn btn-default" title="Login"><i class="fa fa-sign-in"></i>&nbsp;&nbsp;<span class="hidden-sm">Login</span></a></p></li>
+</ul>
+
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+  
+
+  <!-- Begin page content -->
+  <header class="bg-danger hidden-print">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-9">
+          <div class="row">
+            <div class="col-xs-3 col-sm-12 entity">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+            <div class="col-xs-9 col-sm-12 league">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="row">
+            <div class="col-xs-4 col-sm-12 season"></div>
+            <div class="col-xs-4 col-sm-12 group"></div>
+            <div class="col-xs-4 col-sm-12 round"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <header class="visible-print-block">
+
+    
+
+
+  </header>
+
+
+
+  <!-- Begin page content -->
+  <div class="container">
+    <div class="row">
+
+          <div class="col-lg-3" id="page_menu">
+
+            
+
+  <aside class="visible-xs-block visible-sm-block visible-md-block hidden-lg hidden-print">
+
+      
+
+<select class="form-control select-navigation">
+  <option value="" selected="selected">Navigation...</option>
+  <optgroup label="Main Menu"></optgroup>
+    
+  <option value="/" class="list-group-item active">Home</option>
+  <option value="/Home/About" class="list-group-item ">About</option>
+  <option value="" class="list-group-item ">Sports</option>
+<option value="/Sports/100/Hockey/" class="level-2 list-group-item ">Hockey</option>
+<option value="/Sports/400/Baseball/" class="level-2 list-group-item ">Baseball</option>
+<option value="/Sports/500/Softball/" class="level-2 list-group-item ">Softball</option>
+<option value="/Sports/600/Box-Lacrosse/" class="level-2 list-group-item ">Box Lacrosse</option>
+<option value="/Sports/700/Field-Lacrosse/" class="level-2 list-group-item ">Field Lacrosse</option>
+<option value="/Sports/300/Ringette/" class="level-2 list-group-item ">Ringette</option>
+<option value="/Sports/200/Soccer/" class="level-2 list-group-item ">Soccer</option>
+  <option value="/Flip" class="list-group-item ">Coin Flip</option>
+  <option value="https://mbsportsweb.hotelplanner.com" class="list-group-item ">Book Team Hotels</option>
+  <option value="/Home/Advertise" class="list-group-item ">Advertise</option>
+
+</select>
+
+
+
+
+  </aside>
+  <aside class="hidden-xs hidden-sm hidden-md visible-lg-block hidden-print">
+
+      
+<!-- List group -->
+  <div class="panel panel-default">
+    <div class="panel-heading">Main Menu</div>
+
+    <div class="list-group menu-items">
+        <a href="/" target="" class="list-group-item active">Home</a>
+        <a href="/Home/About" target="" class="list-group-item ">About</a>
+        <div class="list-group-item ">Sports</div>
+        <a href="/Sports/100/Hockey/" target="" class="level-2 list-group-item ">Hockey</a>
+        <a href="/Sports/400/Baseball/" target="" class="level-2 list-group-item ">Baseball</a>
+        <a href="/Sports/500/Softball/" target="" class="level-2 list-group-item ">Softball</a>
+        <a href="/Sports/600/Box-Lacrosse/" target="" class="level-2 list-group-item ">Box Lacrosse</a>
+        <a href="/Sports/700/Field-Lacrosse/" target="" class="level-2 list-group-item ">Field Lacrosse</a>
+        <a href="/Sports/300/Ringette/" target="" class="level-2 list-group-item ">Ringette</a>
+        <a href="/Sports/200/Soccer/" target="" class="level-2 list-group-item ">Soccer</a>
+        <a href="/Flip" target="" class="list-group-item ">Coin Flip</a>
+        <a href="https://mbsportsweb.hotelplanner.com" target="_blank" class="list-group-item "><span class="badge">New!</span><i class="fa fa-external-link"></i>&nbsp;&nbsp;Book Team Hotels</a>
+        <a href="/Home/Advertise" target="" class="list-group-item ">Advertise</a>
+    </div>
+  </div>
+
+
+
+
+  </aside>
+
+
+
+            <section id="side_ad_unit" class="hidden-print">
+              <div class="ad-unit skyscraper">
+                Sidebar Ad Unit
+              </div>
+            </section>
+
+          </div>
+          <div class="col-lg-9" id="page_body">
+
+            <section>
+              <ol class="breadcrumb hidden-print">
+                <li> <a href="/"> Home</a></li>
+                
+
+  
+
+
+
+
+              </ol>
+
+              <section id="top_ad_unit" class="hidden-print">
+                <div class="ad-unit">
+                  Header Ad Unit
+                </div>
+              </section>
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2>Find Your League</h2>
+
+    <h4>Hockey Leagues</h4>
+    <div class="panel-group" id="accordion100" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10009" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10009" aria-expanded="true" aria-controls="collapse10009">
+              <h4 class="panel-title">
+                Ontario Minor Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10009" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10009">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1024/Bluewater-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Bluewater Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1034/Eastern-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Eastern Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1039/Lakeshore-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lakeshore Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1135/Mid-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Mid Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1033/Niagara-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Niagara District Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1015/Shamrock-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Shamrock Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1032/Southern-Counties-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Southern Counties League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1025/Tri-County-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1035/Victoria-Durham-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Victoria Durham League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1030/York-Simcoe-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1126/Clarington-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Clarington Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1102/Dufferin-Wellington-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Dufferin Wellington Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1038/Essex-County-Minor-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Essex County Minor Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1057/Four-Counties-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Four Counties Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1037/Georgian-Bay-Triangle-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgian Bay Triangle Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1105/Georgina-East-Gwillimbury-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgina East Gwillimbury Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1048/Grand-River-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Grand River Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1041/Haldimand-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Haldimand Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1145/Halton-Hills-_-Milton-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Hills / Milton Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1071/Inter-Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Inter-Community Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1049/Intertown-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Intertown Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1017/Lambton-Middlesex-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lambton-Middlesex Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1073/League-of-Eastern-Ontario/">
+                        <span class="label label-success pull-right">Active</span>
+                      League of Eastern Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1058/MPS-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      MPS Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1047/Niagara-District-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1056/North-Peel-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      North Peel Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1050/Simcoe-Region-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Simcoe Region Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1067/Three-County-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Three County Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1152/Tri-County-Advanced-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Advanced League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1146/Tri-County-MD-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County MD League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1125/West-Niagara-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      West Niagara Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1154/York-Simcoe-House-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe House League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1051/Beechey-Juvenile-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Beechey Juvenile League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10023" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10023" aria-expanded="true" aria-controls="collapse10023">
+              <h4 class="panel-title">
+                Hockey Eastern Ontario
+              </h4>
+            </div>
+            <div id="collapse10023" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10023">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1127/HEO-Minor-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      HEO Minor AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1138/Upper-Canada-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Canada Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1120/Upper-Ottawa-Valley-Competitive/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Competitive
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1153/Greater-Nepean-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Nepean Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1149/Lanark-Carleton-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lanark Carleton Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1121/Upper-Ottawa-Valley-Houseleague/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Houseleague
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10002" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10002" aria-expanded="true" aria-controls="collapse10002">
+              <h4 class="panel-title">
+                Ontario Women&#39;s Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10002" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10002">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1044/Western-Ontario-Girls-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Western Ontario Girls Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1124/Essex-Kent-Girls-Interlock/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Essex-Kent Girls Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1096/Greater-Dufferin-Peel-Female-Travel-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Dufferin-Peel Female Travel League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1151/Halton-Female-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Female Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1059/Niagara-District-Girls-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Girls Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10012" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10012" aria-expanded="true" aria-controls="collapse10012">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10012" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10012">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1004/Minor-Hockey---Rep/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - Rep
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1026/Minor-Hockey---LL/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - LL
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1014/Women%27s-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Women&#39;s League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10017" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10017" aria-expanded="true" aria-controls="collapse10017">
+              <h4 class="panel-title">
+                Northern Ontario Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10017" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10017">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1150/Northern-Ontario-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Northern Ontario AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1075/Nickel-District-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nickel District Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1077/Nipissing-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nipissing District Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10000" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10000" aria-expanded="true" aria-controls="collapse10000">
+              <h4 class="panel-title">
+                Minor Hockey Alliance of Ontario
+              </h4>
+            </div>
+            <div id="collapse10000" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10000">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1134/Representative-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Representative Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1093/Recreational-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Recreational Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10001" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10001" aria-expanded="true" aria-controls="collapse10001">
+              <h4 class="panel-title">
+                Kitchener Girls Local League
+              </h4>
+            </div>
+            <div id="collapse10001" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10001">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1003/Kitchener-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Kitchener Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10008" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10008" aria-expanded="true" aria-controls="collapse10008">
+              <h4 class="panel-title">
+                Greater London Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10008" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10008">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1011/Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Community Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Baseball Leagues</h4>
+    <div class="panel-group" id="accordion400" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10014" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10014" aria-expanded="true" aria-controls="collapse10014">
+              <h4 class="panel-title">
+                Ontario Baseball Association
+              </h4>
+            </div>
+            <div id="collapse10014" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10014">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1095/Premier-Baseball-League-of-Ontario/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Premier Baseball League of Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1070/Central-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Central Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1147/Inter-County-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Inter-County Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1053/London-District-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      London District Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1118/South-Simcoe-Minor-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      South Simcoe Minor Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1086/Southern-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southern Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1091/Western-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1068/Western-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1123/York-Simcoe-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      York Simcoe Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1084/LDBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      LDBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1092/SCBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      SCBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1107/WCBA-River-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      WCBA River League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1141/Southwestern-Senior-Baseball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southwestern Senior Baseball League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10013" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10013" aria-expanded="true" aria-controls="collapse10013">
+              <h4 class="panel-title">
+                Little League Baseball Ontario
+              </h4>
+            </div>
+            <div id="collapse10013" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10013">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1052/District-5-Little-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 5 Little League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1142/District-8-Upper-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Upper League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1148/District-8-Lower-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Lower League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Box Lacrosse Leagues</h4>
+    <div class="panel-group" id="accordion600" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10018" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion600" data-target="#collapse10018" aria-expanded="true" aria-controls="collapse10018">
+              <h4 class="panel-title">
+                Ontario Lacrosse Association
+              </h4>
+            </div>
+            <div id="collapse10018" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10018">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1080/Zone-7-Lacrosse-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Zone 7 Lacrosse League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Soccer Leagues</h4>
+    <div class="panel-group" id="accordion200" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10007" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion200" data-target="#collapse10007" aria-expanded="true" aria-controls="collapse10007">
+              <h4 class="panel-title">
+                North Perth Soccer
+              </h4>
+            </div>
+            <div id="collapse10007" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10007">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1009/North-Perth-Soccer-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      North Perth Soccer League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Softball Leagues</h4>
+    <div class="panel-group" id="accordion500" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10019" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10019" aria-expanded="true" aria-controls="collapse10019">
+              <h4 class="panel-title">
+                Softball Ontario
+              </h4>
+            </div>
+            <div id="collapse10019" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10019">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1133/Georgian-Bay-Minor-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Georgian Bay Minor Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1090/Huron-Perth-Girls-Fastball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Huron Perth Girls Fastball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1136/Lambton-Central-Girls-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Lambton Central Girls Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1082/Tri-County-Minor-Softball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Tri-County Minor Softball Association
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10016" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10016" aria-expanded="true" aria-controls="collapse10016">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10016" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10016">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1069/Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Softball League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+
+<div class="alert alert-warning hidden-print">
+  This page is cached and updates about every 120 minutes.  Last updated 2:49 PM.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </section>
+
+          </div>
+
+
+    </div>
+  </div>
+
+  
+
+
+  <div class="visible-print">Printed From TheOneDB.com Nov 24, 2025 2:49 PM</div>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  <script src="/_wwwroot/js/ie10-viewport-bug-workaround.js"></script>
+
+  
+
+  
+
+
+
+
+
+<script type="text/javascript">
+  var clicky_site_ids = clicky_site_ids || [];
+  clicky_site_ids.push(66445933);
+  (function () {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = '//static.getclicky.com/js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+  })();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"cddfadd043cf47468aa1ff04cf278ac4","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
+###########
+
+###########
+URL: https://www.theonedb.com/Venues/FindForGame/1998542
+Class: remote
+Error: address node not found for remote URL
+HTML Content:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="Sports,Hockey,Ringette,Soccer,Baseball,Minor,Youth,League,Schedules,Standings,Stats,TheOneDB,MBSportsWeb,MicroAge,Basics" />
+  <meta name="description" content="The official source for league-wide schedules and standings across several minor hockey, ringette, and soccer leagues throughout Ontario, Canada, and beyond." />
+  <meta name="application-name" content="TheOneDB" />
+  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileImage" content="d2f09529-c397-4869-a923-80d8210eac8b.png" />
+  <meta name="author" content="MicroAge Basics">
+  <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+  <title>
+    
+
+  
+  Home
+
+
+
+    
+
+    :: TheOneDB
+  </title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="/_wwwroot/css/public.css" />
+
+<script src="/_wwwroot/js/adglare.js"></script>
+
+
+
+
+  
+
+  
+
+
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript"> var clicky_custom = {}; </script>
+
+</head>
+
+<body>
+  
+
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">THEONEDB</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        
+
+<ul class="nav navbar-nav">
+  <li><a href="/"><span class="glyphicon glyphicon-home"></span> <span class="visible-xs-inline">Home</span></a></li>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Sports <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+          <li><a href="/Sports/100/Hockey/">Hockey</a></li>
+          <li><a href="/Sports/400/Baseball/">Baseball</a></li>
+          <li><a href="/Sports/500/Softball/">Softball</a></li>
+          <li><a href="/Sports/600/Box-Lacrosse/">Box Lacrosse</a></li>
+          <li><a href="/Sports/200/Soccer/">Soccer</a></li>
+    </ul>
+  </li>
+    </ul>
+
+        
+<ul class="nav navbar-nav navbar-right">
+    <li><p class="navbar-btn"><a href="/Account/Login?returnUrl=%2F" class="btn btn-default" title="Login"><i class="fa fa-sign-in"></i>&nbsp;&nbsp;<span class="hidden-sm">Login</span></a></p></li>
+</ul>
+
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+  
+
+  <!-- Begin page content -->
+  <header class="bg-danger hidden-print">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-9">
+          <div class="row">
+            <div class="col-xs-3 col-sm-12 entity">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+            <div class="col-xs-9 col-sm-12 league">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="row">
+            <div class="col-xs-4 col-sm-12 season"></div>
+            <div class="col-xs-4 col-sm-12 group"></div>
+            <div class="col-xs-4 col-sm-12 round"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <header class="visible-print-block">
+
+    
+
+
+  </header>
+
+
+
+  <!-- Begin page content -->
+  <div class="container">
+    <div class="row">
+
+          <div class="col-lg-3" id="page_menu">
+
+            
+
+  <aside class="visible-xs-block visible-sm-block visible-md-block hidden-lg hidden-print">
+
+      
+
+<select class="form-control select-navigation">
+  <option value="" selected="selected">Navigation...</option>
+  <optgroup label="Main Menu"></optgroup>
+    
+  <option value="/" class="list-group-item active">Home</option>
+  <option value="/Home/About" class="list-group-item ">About</option>
+  <option value="" class="list-group-item ">Sports</option>
+<option value="/Sports/100/Hockey/" class="level-2 list-group-item ">Hockey</option>
+<option value="/Sports/400/Baseball/" class="level-2 list-group-item ">Baseball</option>
+<option value="/Sports/500/Softball/" class="level-2 list-group-item ">Softball</option>
+<option value="/Sports/600/Box-Lacrosse/" class="level-2 list-group-item ">Box Lacrosse</option>
+<option value="/Sports/700/Field-Lacrosse/" class="level-2 list-group-item ">Field Lacrosse</option>
+<option value="/Sports/300/Ringette/" class="level-2 list-group-item ">Ringette</option>
+<option value="/Sports/200/Soccer/" class="level-2 list-group-item ">Soccer</option>
+  <option value="/Flip" class="list-group-item ">Coin Flip</option>
+  <option value="https://mbsportsweb.hotelplanner.com" class="list-group-item ">Book Team Hotels</option>
+  <option value="/Home/Advertise" class="list-group-item ">Advertise</option>
+
+</select>
+
+
+
+
+  </aside>
+  <aside class="hidden-xs hidden-sm hidden-md visible-lg-block hidden-print">
+
+      
+<!-- List group -->
+  <div class="panel panel-default">
+    <div class="panel-heading">Main Menu</div>
+
+    <div class="list-group menu-items">
+        <a href="/" target="" class="list-group-item active">Home</a>
+        <a href="/Home/About" target="" class="list-group-item ">About</a>
+        <div class="list-group-item ">Sports</div>
+        <a href="/Sports/100/Hockey/" target="" class="level-2 list-group-item ">Hockey</a>
+        <a href="/Sports/400/Baseball/" target="" class="level-2 list-group-item ">Baseball</a>
+        <a href="/Sports/500/Softball/" target="" class="level-2 list-group-item ">Softball</a>
+        <a href="/Sports/600/Box-Lacrosse/" target="" class="level-2 list-group-item ">Box Lacrosse</a>
+        <a href="/Sports/700/Field-Lacrosse/" target="" class="level-2 list-group-item ">Field Lacrosse</a>
+        <a href="/Sports/300/Ringette/" target="" class="level-2 list-group-item ">Ringette</a>
+        <a href="/Sports/200/Soccer/" target="" class="level-2 list-group-item ">Soccer</a>
+        <a href="/Flip" target="" class="list-group-item ">Coin Flip</a>
+        <a href="https://mbsportsweb.hotelplanner.com" target="_blank" class="list-group-item "><span class="badge">New!</span><i class="fa fa-external-link"></i>&nbsp;&nbsp;Book Team Hotels</a>
+        <a href="/Home/Advertise" target="" class="list-group-item ">Advertise</a>
+    </div>
+  </div>
+
+
+
+
+  </aside>
+
+
+
+            <section id="side_ad_unit" class="hidden-print">
+              <div class="ad-unit skyscraper">
+                Sidebar Ad Unit
+              </div>
+            </section>
+
+          </div>
+          <div class="col-lg-9" id="page_body">
+
+            <section>
+              <ol class="breadcrumb hidden-print">
+                <li> <a href="/"> Home</a></li>
+                
+
+  
+
+
+
+
+              </ol>
+
+              <section id="top_ad_unit" class="hidden-print">
+                <div class="ad-unit">
+                  Header Ad Unit
+                </div>
+              </section>
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2>Find Your League</h2>
+
+    <h4>Hockey Leagues</h4>
+    <div class="panel-group" id="accordion100" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10009" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10009" aria-expanded="true" aria-controls="collapse10009">
+              <h4 class="panel-title">
+                Ontario Minor Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10009" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10009">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1024/Bluewater-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Bluewater Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1034/Eastern-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Eastern Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1039/Lakeshore-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lakeshore Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1135/Mid-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Mid Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1033/Niagara-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Niagara District Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1015/Shamrock-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Shamrock Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1032/Southern-Counties-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Southern Counties League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1025/Tri-County-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1035/Victoria-Durham-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Victoria Durham League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1030/York-Simcoe-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1126/Clarington-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Clarington Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1102/Dufferin-Wellington-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Dufferin Wellington Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1038/Essex-County-Minor-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Essex County Minor Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1057/Four-Counties-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Four Counties Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1037/Georgian-Bay-Triangle-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgian Bay Triangle Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1105/Georgina-East-Gwillimbury-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgina East Gwillimbury Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1048/Grand-River-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Grand River Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1041/Haldimand-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Haldimand Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1145/Halton-Hills-_-Milton-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Hills / Milton Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1071/Inter-Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Inter-Community Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1049/Intertown-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Intertown Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1017/Lambton-Middlesex-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lambton-Middlesex Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1073/League-of-Eastern-Ontario/">
+                        <span class="label label-success pull-right">Active</span>
+                      League of Eastern Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1058/MPS-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      MPS Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1047/Niagara-District-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1056/North-Peel-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      North Peel Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1050/Simcoe-Region-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Simcoe Region Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1067/Three-County-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Three County Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1152/Tri-County-Advanced-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Advanced League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1146/Tri-County-MD-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County MD League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1125/West-Niagara-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      West Niagara Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1154/York-Simcoe-House-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe House League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1051/Beechey-Juvenile-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Beechey Juvenile League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10023" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10023" aria-expanded="true" aria-controls="collapse10023">
+              <h4 class="panel-title">
+                Hockey Eastern Ontario
+              </h4>
+            </div>
+            <div id="collapse10023" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10023">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1127/HEO-Minor-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      HEO Minor AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1138/Upper-Canada-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Canada Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1120/Upper-Ottawa-Valley-Competitive/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Competitive
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1153/Greater-Nepean-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Nepean Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1149/Lanark-Carleton-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lanark Carleton Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1121/Upper-Ottawa-Valley-Houseleague/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Houseleague
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10002" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10002" aria-expanded="true" aria-controls="collapse10002">
+              <h4 class="panel-title">
+                Ontario Women&#39;s Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10002" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10002">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1044/Western-Ontario-Girls-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Western Ontario Girls Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1124/Essex-Kent-Girls-Interlock/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Essex-Kent Girls Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1096/Greater-Dufferin-Peel-Female-Travel-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Dufferin-Peel Female Travel League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1151/Halton-Female-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Female Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1059/Niagara-District-Girls-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Girls Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10012" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10012" aria-expanded="true" aria-controls="collapse10012">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10012" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10012">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1004/Minor-Hockey---Rep/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - Rep
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1026/Minor-Hockey---LL/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - LL
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1014/Women%27s-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Women&#39;s League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10017" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10017" aria-expanded="true" aria-controls="collapse10017">
+              <h4 class="panel-title">
+                Northern Ontario Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10017" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10017">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1150/Northern-Ontario-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Northern Ontario AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1075/Nickel-District-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nickel District Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1077/Nipissing-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nipissing District Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10000" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10000" aria-expanded="true" aria-controls="collapse10000">
+              <h4 class="panel-title">
+                Minor Hockey Alliance of Ontario
+              </h4>
+            </div>
+            <div id="collapse10000" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10000">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1134/Representative-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Representative Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1093/Recreational-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Recreational Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10001" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10001" aria-expanded="true" aria-controls="collapse10001">
+              <h4 class="panel-title">
+                Kitchener Girls Local League
+              </h4>
+            </div>
+            <div id="collapse10001" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10001">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1003/Kitchener-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Kitchener Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10008" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10008" aria-expanded="true" aria-controls="collapse10008">
+              <h4 class="panel-title">
+                Greater London Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10008" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10008">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1011/Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Community Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Baseball Leagues</h4>
+    <div class="panel-group" id="accordion400" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10014" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10014" aria-expanded="true" aria-controls="collapse10014">
+              <h4 class="panel-title">
+                Ontario Baseball Association
+              </h4>
+            </div>
+            <div id="collapse10014" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10014">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1095/Premier-Baseball-League-of-Ontario/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Premier Baseball League of Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1070/Central-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Central Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1147/Inter-County-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Inter-County Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1053/London-District-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      London District Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1118/South-Simcoe-Minor-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      South Simcoe Minor Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1086/Southern-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southern Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1091/Western-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1068/Western-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1123/York-Simcoe-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      York Simcoe Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1084/LDBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      LDBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1092/SCBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      SCBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1107/WCBA-River-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      WCBA River League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1141/Southwestern-Senior-Baseball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southwestern Senior Baseball League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10013" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10013" aria-expanded="true" aria-controls="collapse10013">
+              <h4 class="panel-title">
+                Little League Baseball Ontario
+              </h4>
+            </div>
+            <div id="collapse10013" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10013">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1052/District-5-Little-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 5 Little League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1142/District-8-Upper-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Upper League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1148/District-8-Lower-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Lower League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Box Lacrosse Leagues</h4>
+    <div class="panel-group" id="accordion600" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10018" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion600" data-target="#collapse10018" aria-expanded="true" aria-controls="collapse10018">
+              <h4 class="panel-title">
+                Ontario Lacrosse Association
+              </h4>
+            </div>
+            <div id="collapse10018" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10018">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1080/Zone-7-Lacrosse-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Zone 7 Lacrosse League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Soccer Leagues</h4>
+    <div class="panel-group" id="accordion200" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10007" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion200" data-target="#collapse10007" aria-expanded="true" aria-controls="collapse10007">
+              <h4 class="panel-title">
+                North Perth Soccer
+              </h4>
+            </div>
+            <div id="collapse10007" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10007">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1009/North-Perth-Soccer-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      North Perth Soccer League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Softball Leagues</h4>
+    <div class="panel-group" id="accordion500" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10019" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10019" aria-expanded="true" aria-controls="collapse10019">
+              <h4 class="panel-title">
+                Softball Ontario
+              </h4>
+            </div>
+            <div id="collapse10019" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10019">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1133/Georgian-Bay-Minor-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Georgian Bay Minor Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1090/Huron-Perth-Girls-Fastball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Huron Perth Girls Fastball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1136/Lambton-Central-Girls-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Lambton Central Girls Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1082/Tri-County-Minor-Softball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Tri-County Minor Softball Association
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10016" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10016" aria-expanded="true" aria-controls="collapse10016">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10016" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10016">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1069/Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Softball League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+
+<div class="alert alert-warning hidden-print">
+  This page is cached and updates about every 120 minutes.  Last updated 2:49 PM.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </section>
+
+          </div>
+
+
+    </div>
+  </div>
+
+  
+
+
+  <div class="visible-print">Printed From TheOneDB.com Nov 24, 2025 2:49 PM</div>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  <script src="/_wwwroot/js/ie10-viewport-bug-workaround.js"></script>
+
+  
+
+  
+
+
+
+
+
+<script type="text/javascript">
+  var clicky_site_ids = clicky_site_ids || [];
+  clicky_site_ids.push(66445933);
+  (function () {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = '//static.getclicky.com/js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+  })();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"cddfadd043cf47468aa1ff04cf278ac4","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
+###########
+
+###########
+URL: https://www.theonedb.com/Venues/FindForGame/1998542
+Class: remote
+Error: address node not found for remote URL
+HTML Content:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="Sports,Hockey,Ringette,Soccer,Baseball,Minor,Youth,League,Schedules,Standings,Stats,TheOneDB,MBSportsWeb,MicroAge,Basics" />
+  <meta name="description" content="The official source for league-wide schedules and standings across several minor hockey, ringette, and soccer leagues throughout Ontario, Canada, and beyond." />
+  <meta name="application-name" content="TheOneDB" />
+  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileImage" content="d2f09529-c397-4869-a923-80d8210eac8b.png" />
+  <meta name="author" content="MicroAge Basics">
+  <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+  <title>
+    
+
+  
+  Home
+
+
+
+    
+
+    :: TheOneDB
+  </title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="/_wwwroot/css/public.css" />
+
+<script src="/_wwwroot/js/adglare.js"></script>
+
+
+
+
+  
+
+  
+
+
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript"> var clicky_custom = {}; </script>
+
+</head>
+
+<body>
+  
+
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">THEONEDB</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        
+
+<ul class="nav navbar-nav">
+  <li><a href="/"><span class="glyphicon glyphicon-home"></span> <span class="visible-xs-inline">Home</span></a></li>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Sports <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+          <li><a href="/Sports/100/Hockey/">Hockey</a></li>
+          <li><a href="/Sports/400/Baseball/">Baseball</a></li>
+          <li><a href="/Sports/500/Softball/">Softball</a></li>
+          <li><a href="/Sports/600/Box-Lacrosse/">Box Lacrosse</a></li>
+          <li><a href="/Sports/200/Soccer/">Soccer</a></li>
+    </ul>
+  </li>
+    </ul>
+
+        
+<ul class="nav navbar-nav navbar-right">
+    <li><p class="navbar-btn"><a href="/Account/Login?returnUrl=%2F" class="btn btn-default" title="Login"><i class="fa fa-sign-in"></i>&nbsp;&nbsp;<span class="hidden-sm">Login</span></a></p></li>
+</ul>
+
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+  
+
+  <!-- Begin page content -->
+  <header class="bg-danger hidden-print">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-9">
+          <div class="row">
+            <div class="col-xs-3 col-sm-12 entity">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+            <div class="col-xs-9 col-sm-12 league">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="row">
+            <div class="col-xs-4 col-sm-12 season"></div>
+            <div class="col-xs-4 col-sm-12 group"></div>
+            <div class="col-xs-4 col-sm-12 round"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <header class="visible-print-block">
+
+    
+
+
+  </header>
+
+
+
+  <!-- Begin page content -->
+  <div class="container">
+    <div class="row">
+
+          <div class="col-lg-3" id="page_menu">
+
+            
+
+  <aside class="visible-xs-block visible-sm-block visible-md-block hidden-lg hidden-print">
+
+      
+
+<select class="form-control select-navigation">
+  <option value="" selected="selected">Navigation...</option>
+  <optgroup label="Main Menu"></optgroup>
+    
+  <option value="/" class="list-group-item active">Home</option>
+  <option value="/Home/About" class="list-group-item ">About</option>
+  <option value="" class="list-group-item ">Sports</option>
+<option value="/Sports/100/Hockey/" class="level-2 list-group-item ">Hockey</option>
+<option value="/Sports/400/Baseball/" class="level-2 list-group-item ">Baseball</option>
+<option value="/Sports/500/Softball/" class="level-2 list-group-item ">Softball</option>
+<option value="/Sports/600/Box-Lacrosse/" class="level-2 list-group-item ">Box Lacrosse</option>
+<option value="/Sports/700/Field-Lacrosse/" class="level-2 list-group-item ">Field Lacrosse</option>
+<option value="/Sports/300/Ringette/" class="level-2 list-group-item ">Ringette</option>
+<option value="/Sports/200/Soccer/" class="level-2 list-group-item ">Soccer</option>
+  <option value="/Flip" class="list-group-item ">Coin Flip</option>
+  <option value="https://mbsportsweb.hotelplanner.com" class="list-group-item ">Book Team Hotels</option>
+  <option value="/Home/Advertise" class="list-group-item ">Advertise</option>
+
+</select>
+
+
+
+
+  </aside>
+  <aside class="hidden-xs hidden-sm hidden-md visible-lg-block hidden-print">
+
+      
+<!-- List group -->
+  <div class="panel panel-default">
+    <div class="panel-heading">Main Menu</div>
+
+    <div class="list-group menu-items">
+        <a href="/" target="" class="list-group-item active">Home</a>
+        <a href="/Home/About" target="" class="list-group-item ">About</a>
+        <div class="list-group-item ">Sports</div>
+        <a href="/Sports/100/Hockey/" target="" class="level-2 list-group-item ">Hockey</a>
+        <a href="/Sports/400/Baseball/" target="" class="level-2 list-group-item ">Baseball</a>
+        <a href="/Sports/500/Softball/" target="" class="level-2 list-group-item ">Softball</a>
+        <a href="/Sports/600/Box-Lacrosse/" target="" class="level-2 list-group-item ">Box Lacrosse</a>
+        <a href="/Sports/700/Field-Lacrosse/" target="" class="level-2 list-group-item ">Field Lacrosse</a>
+        <a href="/Sports/300/Ringette/" target="" class="level-2 list-group-item ">Ringette</a>
+        <a href="/Sports/200/Soccer/" target="" class="level-2 list-group-item ">Soccer</a>
+        <a href="/Flip" target="" class="list-group-item ">Coin Flip</a>
+        <a href="https://mbsportsweb.hotelplanner.com" target="_blank" class="list-group-item "><span class="badge">New!</span><i class="fa fa-external-link"></i>&nbsp;&nbsp;Book Team Hotels</a>
+        <a href="/Home/Advertise" target="" class="list-group-item ">Advertise</a>
+    </div>
+  </div>
+
+
+
+
+  </aside>
+
+
+
+            <section id="side_ad_unit" class="hidden-print">
+              <div class="ad-unit skyscraper">
+                Sidebar Ad Unit
+              </div>
+            </section>
+
+          </div>
+          <div class="col-lg-9" id="page_body">
+
+            <section>
+              <ol class="breadcrumb hidden-print">
+                <li> <a href="/"> Home</a></li>
+                
+
+  
+
+
+
+
+              </ol>
+
+              <section id="top_ad_unit" class="hidden-print">
+                <div class="ad-unit">
+                  Header Ad Unit
+                </div>
+              </section>
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2>Find Your League</h2>
+
+    <h4>Hockey Leagues</h4>
+    <div class="panel-group" id="accordion100" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10009" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10009" aria-expanded="true" aria-controls="collapse10009">
+              <h4 class="panel-title">
+                Ontario Minor Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10009" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10009">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1024/Bluewater-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Bluewater Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1034/Eastern-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Eastern Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1039/Lakeshore-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lakeshore Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1135/Mid-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Mid Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1033/Niagara-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Niagara District Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1015/Shamrock-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Shamrock Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1032/Southern-Counties-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Southern Counties League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1025/Tri-County-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1035/Victoria-Durham-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Victoria Durham League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1030/York-Simcoe-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1126/Clarington-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Clarington Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1102/Dufferin-Wellington-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Dufferin Wellington Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1038/Essex-County-Minor-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Essex County Minor Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1057/Four-Counties-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Four Counties Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1037/Georgian-Bay-Triangle-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgian Bay Triangle Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1105/Georgina-East-Gwillimbury-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgina East Gwillimbury Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1048/Grand-River-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Grand River Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1041/Haldimand-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Haldimand Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1145/Halton-Hills-_-Milton-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Hills / Milton Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1071/Inter-Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Inter-Community Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1049/Intertown-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Intertown Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1017/Lambton-Middlesex-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lambton-Middlesex Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1073/League-of-Eastern-Ontario/">
+                        <span class="label label-success pull-right">Active</span>
+                      League of Eastern Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1058/MPS-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      MPS Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1047/Niagara-District-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1056/North-Peel-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      North Peel Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1050/Simcoe-Region-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Simcoe Region Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1067/Three-County-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Three County Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1152/Tri-County-Advanced-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Advanced League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1146/Tri-County-MD-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County MD League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1125/West-Niagara-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      West Niagara Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1154/York-Simcoe-House-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe House League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1051/Beechey-Juvenile-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Beechey Juvenile League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10023" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10023" aria-expanded="true" aria-controls="collapse10023">
+              <h4 class="panel-title">
+                Hockey Eastern Ontario
+              </h4>
+            </div>
+            <div id="collapse10023" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10023">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1127/HEO-Minor-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      HEO Minor AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1138/Upper-Canada-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Canada Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1120/Upper-Ottawa-Valley-Competitive/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Competitive
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1153/Greater-Nepean-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Nepean Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1149/Lanark-Carleton-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lanark Carleton Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1121/Upper-Ottawa-Valley-Houseleague/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Houseleague
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10002" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10002" aria-expanded="true" aria-controls="collapse10002">
+              <h4 class="panel-title">
+                Ontario Women&#39;s Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10002" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10002">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1044/Western-Ontario-Girls-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Western Ontario Girls Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1124/Essex-Kent-Girls-Interlock/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Essex-Kent Girls Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1096/Greater-Dufferin-Peel-Female-Travel-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Dufferin-Peel Female Travel League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1151/Halton-Female-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Female Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1059/Niagara-District-Girls-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Girls Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10012" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10012" aria-expanded="true" aria-controls="collapse10012">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10012" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10012">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1004/Minor-Hockey---Rep/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - Rep
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1026/Minor-Hockey---LL/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - LL
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1014/Women%27s-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Women&#39;s League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10017" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10017" aria-expanded="true" aria-controls="collapse10017">
+              <h4 class="panel-title">
+                Northern Ontario Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10017" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10017">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1150/Northern-Ontario-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Northern Ontario AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1075/Nickel-District-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nickel District Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1077/Nipissing-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nipissing District Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10000" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10000" aria-expanded="true" aria-controls="collapse10000">
+              <h4 class="panel-title">
+                Minor Hockey Alliance of Ontario
+              </h4>
+            </div>
+            <div id="collapse10000" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10000">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1134/Representative-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Representative Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1093/Recreational-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Recreational Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10001" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10001" aria-expanded="true" aria-controls="collapse10001">
+              <h4 class="panel-title">
+                Kitchener Girls Local League
+              </h4>
+            </div>
+            <div id="collapse10001" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10001">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1003/Kitchener-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Kitchener Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10008" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10008" aria-expanded="true" aria-controls="collapse10008">
+              <h4 class="panel-title">
+                Greater London Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10008" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10008">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1011/Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Community Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Baseball Leagues</h4>
+    <div class="panel-group" id="accordion400" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10014" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10014" aria-expanded="true" aria-controls="collapse10014">
+              <h4 class="panel-title">
+                Ontario Baseball Association
+              </h4>
+            </div>
+            <div id="collapse10014" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10014">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1095/Premier-Baseball-League-of-Ontario/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Premier Baseball League of Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1070/Central-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Central Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1147/Inter-County-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Inter-County Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1053/London-District-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      London District Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1118/South-Simcoe-Minor-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      South Simcoe Minor Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1086/Southern-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southern Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1091/Western-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1068/Western-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1123/York-Simcoe-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      York Simcoe Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1084/LDBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      LDBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1092/SCBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      SCBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1107/WCBA-River-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      WCBA River League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1141/Southwestern-Senior-Baseball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southwestern Senior Baseball League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10013" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10013" aria-expanded="true" aria-controls="collapse10013">
+              <h4 class="panel-title">
+                Little League Baseball Ontario
+              </h4>
+            </div>
+            <div id="collapse10013" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10013">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1052/District-5-Little-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 5 Little League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1142/District-8-Upper-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Upper League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1148/District-8-Lower-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Lower League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Box Lacrosse Leagues</h4>
+    <div class="panel-group" id="accordion600" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10018" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion600" data-target="#collapse10018" aria-expanded="true" aria-controls="collapse10018">
+              <h4 class="panel-title">
+                Ontario Lacrosse Association
+              </h4>
+            </div>
+            <div id="collapse10018" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10018">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1080/Zone-7-Lacrosse-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Zone 7 Lacrosse League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Soccer Leagues</h4>
+    <div class="panel-group" id="accordion200" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10007" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion200" data-target="#collapse10007" aria-expanded="true" aria-controls="collapse10007">
+              <h4 class="panel-title">
+                North Perth Soccer
+              </h4>
+            </div>
+            <div id="collapse10007" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10007">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1009/North-Perth-Soccer-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      North Perth Soccer League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Softball Leagues</h4>
+    <div class="panel-group" id="accordion500" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10019" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10019" aria-expanded="true" aria-controls="collapse10019">
+              <h4 class="panel-title">
+                Softball Ontario
+              </h4>
+            </div>
+            <div id="collapse10019" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10019">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1133/Georgian-Bay-Minor-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Georgian Bay Minor Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1090/Huron-Perth-Girls-Fastball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Huron Perth Girls Fastball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1136/Lambton-Central-Girls-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Lambton Central Girls Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1082/Tri-County-Minor-Softball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Tri-County Minor Softball Association
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10016" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10016" aria-expanded="true" aria-controls="collapse10016">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10016" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10016">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1069/Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Softball League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+
+<div class="alert alert-warning hidden-print">
+  This page is cached and updates about every 120 minutes.  Last updated 2:49 PM.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </section>
+
+          </div>
+
+
+    </div>
+  </div>
+
+  
+
+
+  <div class="visible-print">Printed From TheOneDB.com Nov 24, 2025 2:49 PM</div>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  <script src="/_wwwroot/js/ie10-viewport-bug-workaround.js"></script>
+
+  
+
+  
+
+
+
+
+
+<script type="text/javascript">
+  var clicky_site_ids = clicky_site_ids || [];
+  clicky_site_ids.push(66445933);
+  (function () {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = '//static.getclicky.com/js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+  })();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"cddfadd043cf47468aa1ff04cf278ac4","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
+###########
+
+###########
+URL: https://www.theonedb.com/Venues/FindForGame/1998542
+Class: remote
+Error: address node not found for remote URL
+HTML Content:
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="Sports,Hockey,Ringette,Soccer,Baseball,Minor,Youth,League,Schedules,Standings,Stats,TheOneDB,MBSportsWeb,MicroAge,Basics" />
+  <meta name="description" content="The official source for league-wide schedules and standings across several minor hockey, ringette, and soccer leagues throughout Ontario, Canada, and beyond." />
+  <meta name="application-name" content="TheOneDB" />
+  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileImage" content="d2f09529-c397-4869-a923-80d8210eac8b.png" />
+  <meta name="author" content="MicroAge Basics">
+  <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+  <title>
+    
+
+  
+  Home
+
+
+
+    
+
+    :: TheOneDB
+  </title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="/_wwwroot/css/public.css" />
+
+<script src="/_wwwroot/js/adglare.js"></script>
+
+
+
+
+  
+
+  
+
+
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript"> var clicky_custom = {}; </script>
+
+</head>
+
+<body>
+  
+
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">THEONEDB</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        
+
+<ul class="nav navbar-nav">
+  <li><a href="/"><span class="glyphicon glyphicon-home"></span> <span class="visible-xs-inline">Home</span></a></li>
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Sports <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+          <li><a href="/Sports/100/Hockey/">Hockey</a></li>
+          <li><a href="/Sports/400/Baseball/">Baseball</a></li>
+          <li><a href="/Sports/500/Softball/">Softball</a></li>
+          <li><a href="/Sports/600/Box-Lacrosse/">Box Lacrosse</a></li>
+          <li><a href="/Sports/200/Soccer/">Soccer</a></li>
+    </ul>
+  </li>
+    </ul>
+
+        
+<ul class="nav navbar-nav navbar-right">
+    <li><p class="navbar-btn"><a href="/Account/Login?returnUrl=%2F" class="btn btn-default" title="Login"><i class="fa fa-sign-in"></i>&nbsp;&nbsp;<span class="hidden-sm">Login</span></a></p></li>
+</ul>
+
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+
+  
+
+  <!-- Begin page content -->
+  <header class="bg-danger hidden-print">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-9">
+          <div class="row">
+            <div class="col-xs-3 col-sm-12 entity">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+            <div class="col-xs-9 col-sm-12 league">
+              <span class="visible-xs-inline hidden-sm hidden-md hidden-lg"></span>
+              <span class="hidden-xs visible-sm-inline visible-md-inline visible-lg-inline"></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="row">
+            <div class="col-xs-4 col-sm-12 season"></div>
+            <div class="col-xs-4 col-sm-12 group"></div>
+            <div class="col-xs-4 col-sm-12 round"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <header class="visible-print-block">
+
+    
+
+
+  </header>
+
+
+
+  <!-- Begin page content -->
+  <div class="container">
+    <div class="row">
+
+          <div class="col-lg-3" id="page_menu">
+
+            
+
+  <aside class="visible-xs-block visible-sm-block visible-md-block hidden-lg hidden-print">
+
+      
+
+<select class="form-control select-navigation">
+  <option value="" selected="selected">Navigation...</option>
+  <optgroup label="Main Menu"></optgroup>
+    
+  <option value="/" class="list-group-item active">Home</option>
+  <option value="/Home/About" class="list-group-item ">About</option>
+  <option value="" class="list-group-item ">Sports</option>
+<option value="/Sports/100/Hockey/" class="level-2 list-group-item ">Hockey</option>
+<option value="/Sports/400/Baseball/" class="level-2 list-group-item ">Baseball</option>
+<option value="/Sports/500/Softball/" class="level-2 list-group-item ">Softball</option>
+<option value="/Sports/600/Box-Lacrosse/" class="level-2 list-group-item ">Box Lacrosse</option>
+<option value="/Sports/700/Field-Lacrosse/" class="level-2 list-group-item ">Field Lacrosse</option>
+<option value="/Sports/300/Ringette/" class="level-2 list-group-item ">Ringette</option>
+<option value="/Sports/200/Soccer/" class="level-2 list-group-item ">Soccer</option>
+  <option value="/Flip" class="list-group-item ">Coin Flip</option>
+  <option value="https://mbsportsweb.hotelplanner.com" class="list-group-item ">Book Team Hotels</option>
+  <option value="/Home/Advertise" class="list-group-item ">Advertise</option>
+
+</select>
+
+
+
+
+  </aside>
+  <aside class="hidden-xs hidden-sm hidden-md visible-lg-block hidden-print">
+
+      
+<!-- List group -->
+  <div class="panel panel-default">
+    <div class="panel-heading">Main Menu</div>
+
+    <div class="list-group menu-items">
+        <a href="/" target="" class="list-group-item active">Home</a>
+        <a href="/Home/About" target="" class="list-group-item ">About</a>
+        <div class="list-group-item ">Sports</div>
+        <a href="/Sports/100/Hockey/" target="" class="level-2 list-group-item ">Hockey</a>
+        <a href="/Sports/400/Baseball/" target="" class="level-2 list-group-item ">Baseball</a>
+        <a href="/Sports/500/Softball/" target="" class="level-2 list-group-item ">Softball</a>
+        <a href="/Sports/600/Box-Lacrosse/" target="" class="level-2 list-group-item ">Box Lacrosse</a>
+        <a href="/Sports/700/Field-Lacrosse/" target="" class="level-2 list-group-item ">Field Lacrosse</a>
+        <a href="/Sports/300/Ringette/" target="" class="level-2 list-group-item ">Ringette</a>
+        <a href="/Sports/200/Soccer/" target="" class="level-2 list-group-item ">Soccer</a>
+        <a href="/Flip" target="" class="list-group-item ">Coin Flip</a>
+        <a href="https://mbsportsweb.hotelplanner.com" target="_blank" class="list-group-item "><span class="badge">New!</span><i class="fa fa-external-link"></i>&nbsp;&nbsp;Book Team Hotels</a>
+        <a href="/Home/Advertise" target="" class="list-group-item ">Advertise</a>
+    </div>
+  </div>
+
+
+
+
+  </aside>
+
+
+
+            <section id="side_ad_unit" class="hidden-print">
+              <div class="ad-unit skyscraper">
+                Sidebar Ad Unit
+              </div>
+            </section>
+
+          </div>
+          <div class="col-lg-9" id="page_body">
+
+            <section>
+              <ol class="breadcrumb hidden-print">
+                <li> <a href="/"> Home</a></li>
+                
+
+  
+
+
+
+
+              </ol>
+
+              <section id="top_ad_unit" class="hidden-print">
+                <div class="ad-unit">
+                  Header Ad Unit
+                </div>
+              </section>
+
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2>Find Your League</h2>
+
+    <h4>Hockey Leagues</h4>
+    <div class="panel-group" id="accordion100" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10009" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10009" aria-expanded="true" aria-controls="collapse10009">
+              <h4 class="panel-title">
+                Ontario Minor Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10009" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10009">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1024/Bluewater-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Bluewater Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1034/Eastern-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Eastern Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1039/Lakeshore-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lakeshore Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1135/Mid-Ontario-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Mid Ontario Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1033/Niagara-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Niagara District Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1015/Shamrock-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Shamrock Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1032/Southern-Counties-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Southern Counties League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1025/Tri-County-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1035/Victoria-Durham-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Victoria Durham League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1030/York-Simcoe-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1126/Clarington-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Clarington Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1102/Dufferin-Wellington-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Dufferin Wellington Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1038/Essex-County-Minor-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Essex County Minor Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1057/Four-Counties-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Four Counties Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1037/Georgian-Bay-Triangle-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgian Bay Triangle Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1105/Georgina-East-Gwillimbury-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Georgina East Gwillimbury Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1048/Grand-River-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Grand River Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1041/Haldimand-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Haldimand Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1145/Halton-Hills-_-Milton-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Hills / Milton Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1071/Inter-Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Inter-Community Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1049/Intertown-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Intertown Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1017/Lambton-Middlesex-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lambton-Middlesex Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1073/League-of-Eastern-Ontario/">
+                        <span class="label label-success pull-right">Active</span>
+                      League of Eastern Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1058/MPS-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      MPS Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1047/Niagara-District-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1056/North-Peel-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      North Peel Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1050/Simcoe-Region-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Simcoe Region Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1067/Three-County-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Three County Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1152/Tri-County-Advanced-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County Advanced League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1146/Tri-County-MD-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Tri-County MD League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1125/West-Niagara-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      West Niagara Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1154/York-Simcoe-House-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      York Simcoe House League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1051/Beechey-Juvenile-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Beechey Juvenile League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10023" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10023" aria-expanded="true" aria-controls="collapse10023">
+              <h4 class="panel-title">
+                Hockey Eastern Ontario
+              </h4>
+            </div>
+            <div id="collapse10023" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10023">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1127/HEO-Minor-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      HEO Minor AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1138/Upper-Canada-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Canada Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1120/Upper-Ottawa-Valley-Competitive/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Competitive
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1153/Greater-Nepean-Interlock/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Nepean Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1149/Lanark-Carleton-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Lanark Carleton Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1121/Upper-Ottawa-Valley-Houseleague/">
+                        <span class="label label-success pull-right">Active</span>
+                      Upper Ottawa Valley Houseleague
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10002" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10002" aria-expanded="true" aria-controls="collapse10002">
+              <h4 class="panel-title">
+                Ontario Women&#39;s Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10002" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10002">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1044/Western-Ontario-Girls-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Western Ontario Girls Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1124/Essex-Kent-Girls-Interlock/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Essex-Kent Girls Interlock
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1096/Greater-Dufferin-Peel-Female-Travel-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Greater Dufferin-Peel Female Travel League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1151/Halton-Female-Hockey-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Halton Female Hockey Local League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1059/Niagara-District-Girls-Local-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Niagara District Girls Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10012" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10012" aria-expanded="true" aria-controls="collapse10012">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10012" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10012">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1004/Minor-Hockey---Rep/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - Rep
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1026/Minor-Hockey---LL/">
+                        <span class="label label-success pull-right">Active</span>
+                      Minor Hockey - LL
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1014/Women%27s-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Women&#39;s League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10017" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10017" aria-expanded="true" aria-controls="collapse10017">
+              <h4 class="panel-title">
+                Northern Ontario Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10017" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10017">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1150/Northern-Ontario-AAA-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Northern Ontario AAA League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1075/Nickel-District-Minor-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nickel District Minor Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1077/Nipissing-District-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Nipissing District Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10000" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10000" aria-expanded="true" aria-controls="collapse10000">
+              <h4 class="panel-title">
+                Minor Hockey Alliance of Ontario
+              </h4>
+            </div>
+            <div id="collapse10000" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10000">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1134/Representative-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Representative Hockey League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1093/Recreational-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Recreational Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10001" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10001" aria-expanded="true" aria-controls="collapse10001">
+              <h4 class="panel-title">
+                Kitchener Girls Local League
+              </h4>
+            </div>
+            <div id="collapse10001" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10001">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1003/Kitchener-Local-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Kitchener Local League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10008" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion100" data-target="#collapse10008" aria-expanded="true" aria-controls="collapse10008">
+              <h4 class="panel-title">
+                Greater London Hockey Association
+              </h4>
+            </div>
+            <div id="collapse10008" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10008">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1011/Community-Hockey-League/">
+                        <span class="label label-success pull-right">Active</span>
+                      Community Hockey League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Baseball Leagues</h4>
+    <div class="panel-group" id="accordion400" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10014" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10014" aria-expanded="true" aria-controls="collapse10014">
+              <h4 class="panel-title">
+                Ontario Baseball Association
+              </h4>
+            </div>
+            <div id="collapse10014" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10014">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1095/Premier-Baseball-League-of-Ontario/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Premier Baseball League of Ontario
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1070/Central-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Central Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1147/Inter-County-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Inter-County Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1053/London-District-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      London District Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1118/South-Simcoe-Minor-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      South Simcoe Minor Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1086/Southern-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southern Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1091/Western-Counties-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Counties Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1068/Western-Ontario-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Western Ontario Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1123/York-Simcoe-Baseball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      York Simcoe Baseball Association
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1084/LDBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      LDBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1092/SCBA-Houseleague/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      SCBA Houseleague
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1107/WCBA-River-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      WCBA River League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1141/Southwestern-Senior-Baseball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Southwestern Senior Baseball League
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10013" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion400" data-target="#collapse10013" aria-expanded="true" aria-controls="collapse10013">
+              <h4 class="panel-title">
+                Little League Baseball Ontario
+              </h4>
+            </div>
+            <div id="collapse10013" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10013">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1052/District-5-Little-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 5 Little League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1142/District-8-Upper-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Upper League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1148/District-8-Lower-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      District 8 Lower League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Box Lacrosse Leagues</h4>
+    <div class="panel-group" id="accordion600" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10018" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion600" data-target="#collapse10018" aria-expanded="true" aria-controls="collapse10018">
+              <h4 class="panel-title">
+                Ontario Lacrosse Association
+              </h4>
+            </div>
+            <div id="collapse10018" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10018">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1080/Zone-7-Lacrosse-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Zone 7 Lacrosse League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Soccer Leagues</h4>
+    <div class="panel-group" id="accordion200" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10007" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion200" data-target="#collapse10007" aria-expanded="true" aria-controls="collapse10007">
+              <h4 class="panel-title">
+                North Perth Soccer
+              </h4>
+            </div>
+            <div id="collapse10007" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10007">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1009/North-Perth-Soccer-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      North Perth Soccer League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+    <h4>Softball Leagues</h4>
+    <div class="panel-group" id="accordion500" role="tablist" aria-multiselectable="true">
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10019" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10019" aria-expanded="true" aria-controls="collapse10019">
+              <h4 class="panel-title">
+                Softball Ontario
+              </h4>
+            </div>
+            <div id="collapse10019" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10019">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1133/Georgian-Bay-Minor-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Georgian Bay Minor Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1090/Huron-Perth-Girls-Fastball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Huron Perth Girls Fastball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1136/Lambton-Central-Girls-Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Lambton Central Girls Softball League
+                    </a>
+                    <a class="list-group-item" href="/Leagues/1082/Tri-County-Minor-Softball-Association/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Tri-County Minor Softball Association
+                    </a>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading10016" style="cursor: pointer;" data-toggle="collapse" data-parent="#accordion500" data-target="#collapse10016" aria-expanded="true" aria-controls="collapse10016">
+              <h4 class="panel-title">
+                Western Ontario Athletic Association
+              </h4>
+            </div>
+            <div id="collapse10016" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading10016">
+              <div class="list-group">
+                    <a class="list-group-item" href="/Leagues/1069/Softball-League/">
+                        <span class="label label-default pull-right">Inactive</span>
+                      Softball League
+                    </a>
+              </div>
+            </div>
+          </div>
+    </div>
+
+<div class="alert alert-warning hidden-print">
+  This page is cached and updates about every 120 minutes.  Last updated 11:55 AM.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </section>
+
+          </div>
+
+
+    </div>
+  </div>
+
+  
+
+
+  <div class="visible-print">Printed From TheOneDB.com Nov 25, 2025 11:55 AM</div>
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  <script src="/_wwwroot/js/ie10-viewport-bug-workaround.js"></script>
+
+  
+
+  
+
+
+
+
+
+<script type="text/javascript">
+  var clicky_site_ids = clicky_site_ids || [];
+  clicky_site_ids.push(66445933);
+  (function () {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = '//static.getclicky.com/js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);
+  })();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"cddfadd043cf47468aa1ff04cf278ac4","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
+###########
+

@@ -70,7 +70,7 @@ func WriteOutput(outfile string, result [][]string) error {
 			}
 			defer fh.Close()
 		}
-		writer.WriteCsv(fh, result)
+		return writer.WriteCsv(fh, result)
 	} else {
 		log.Println(result)
 	}

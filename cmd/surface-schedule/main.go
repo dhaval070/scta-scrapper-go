@@ -61,9 +61,12 @@ func processCsv(r io.Reader) {
 	}
 
 	ww := csv.NewWriter(os.Stdout)
-	ww.Write([]string{
+	err := ww.Write([]string{
 		"surface ID", "surface name", "date", "site", "home team", "GuestTeam", "Location",
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	for _, recs := range result {
 		sort.Sort(Schedules(recs))
@@ -71,9 +74,12 @@ func processCsv(r io.Reader) {
 		for _, r := range recs {
 			id := fmt.Sprint(r.SurfaceId)
 
-			ww.Write([]string{
+			err := ww.Write([]string{
 				id, r.SurfaceName, r.Datetime, r.Site, r.HomeTeam, r.GuestTeam, r.Location,
 			})
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	ww.Flush()

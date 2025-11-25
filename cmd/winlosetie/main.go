@@ -6,5 +6,7 @@ import (
 
 func main() {
 	win.InitCmd()
-	win.Cmd.Execute()
+	if err := win.Cmd.Execute(); err != nil {
+		panic(err)
+	}
 }

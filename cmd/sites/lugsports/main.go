@@ -42,7 +42,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Error:", err)
 	}
-	defer service.Stop()
+	defer func() {
+		if err := service.Stop(); err != nil {
+			log.Println("error stopping selenium service %w", err)
+		}
+	}()
 
 	driver = webdriver.GetWebDriver()
 
@@ -75,7 +79,9 @@ func main() {
 			}
 			defer fh.Close()
 		}
-		WriteEvents(fh, result)
+		if err = WriteEvents(fh, result); err != nil {
+			panic(err)
+		}
 	}
 }
 

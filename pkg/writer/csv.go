@@ -7,15 +7,20 @@ import (
 	"io"
 )
 
-func WriteCsv(fh io.WriteCloser, data [][]string) {
-
+func WriteCsv(fh io.WriteCloser, data [][]string) error {
+	var err error
 	csv := csv.NewWriter(fh)
-	csv.WriteAll(data)
+
+	if err = csv.WriteAll(data); err != nil {
+		return err
+	}
+
 	csv.Flush()
 
 	if err := csv.Error(); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 func WriteEvents(w io.Writer, data []*model.Event) error {
