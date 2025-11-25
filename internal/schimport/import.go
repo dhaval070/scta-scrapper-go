@@ -153,7 +153,9 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 		r[9] = strings.ReplaceAll(r[9], "HC ", "")
 		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
-		ww.Write(r)
+		if err = ww.Write(r); err != nil {
+			return fmt.Errorf("failed to write csv %w", err)
+		}
 	}
 	ww.Flush()
 
@@ -258,7 +260,11 @@ func (i *Importer) Importxls(site string, root *html.Node, cutOffDate time.Time,
 		r[3] = dt.Format("2006-01-02")
 		r[10] = fmt.Sprint(sid)
 
-		ww.Write(r)
+		err = ww.Write(r)
+		if err != nil {
+			return err
+		}
+
 	}
 	ww.Flush()
 

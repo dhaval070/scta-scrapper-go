@@ -59,7 +59,7 @@ func unformatted(r io.Reader) ([]DataRec, error) {
 	return data, nil
 }
 
-//NYHL format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	l
+// NYHL format required: GameID	League	Season	Division	Tier	group HomeTeam	Tier group	VisitorTeam	Location	l
 func formatNyhl(r io.Reader) (data []DataRec, err error) {
 	data = make([]DataRec, 0)
 	csvr := csv.NewReader(r)
@@ -83,6 +83,9 @@ func formatNyhl(r io.Reader) (data []DataRec, err error) {
 		}
 
 		tt, err := time.Parse("3:04 PM", rec[12])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse time %w", err)
+		}
 
 		data = append(data, DataRec{
 			Id:        id,

@@ -43,15 +43,17 @@ func InitCmd() {
 	infile = Cmd.Flags().StringP("file", "f", "", "input file path (required)")
 	site = Cmd.Flags().StringP("site", "s", "", "site name(e.g. nyhl)")
 	client = &http.Client{}
-	Cmd.MarkFlagRequired("file")
+
+	if err := Cmd.MarkFlagRequired("file"); err != nil {
+		panic(err)
+	}
 }
 
 func run(r io.Reader) error {
 	var ids = make([]string, 0)
 	var records []DataRec
-	var err error
 
-	records, err = formatInput(r, *site)
+	records, _ = formatInput(r, *site)
 
 	for _, rec := range records {
 		url := fmt.Sprintf("https://livebarn.com/en/video/%s/%s/%s", rec.SurfaceID, rec.Date, rec.Time)
