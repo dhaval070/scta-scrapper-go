@@ -7,6 +7,7 @@ import (
 	"calendar-scrapper/pkg/cmdutil"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -110,9 +111,15 @@ func main() {
 		for i := range siteNames {
 			siteNames[i] = strings.TrimSpace(siteNames[i])
 		}
+		if siteNames[0] == "all" {
+			if err := db.Where("is_active = 1").Find(&seasonsToProcess).Error; err != nil {
+				log.Fatalf("Failed to fetch seasons for sites: %v", err)
+			}
 
-		if err := db.Where("site IN ? AND is_active = ?", siteNames, 1).Find(&seasonsToProcess).Error; err != nil {
-			log.Fatalf("Failed to fetch seasons for sites: %v", err)
+		} else {
+			if err := db.Where("site IN ? AND is_active = ?", siteNames, 1).Find(&seasonsToProcess).Error; err != nil {
+				log.Fatalf("Failed to fetch seasons for sites: %v", err)
+			}
 		}
 		log.Printf("Found %d active seasons for sites %v", len(seasonsToProcess), siteNames)
 	} else if *seasonsFlag == "all" {
@@ -147,6 +154,10 @@ func main() {
 		result, err := fetchSchedules(db, &cfg, season)
 		if err != nil {
 			log.Printf("Error fetching schedules for season %d: %v", season.ID, err)
+			continue
+		}
+
+		if len(result) == 0 {
 			continue
 		}
 
@@ -217,6 +228,11 @@ func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeaso
 	totalGames := 0
 
 	var result = [][]string{}
+
+	if len(scheduleResp.Data) == 0 {
+		log.Println("no games found")
+		return nil, nil
+	}
 
 	for _, dayData := range scheduleResp.Data {
 		for _, gameRaw := range dayData.Games {

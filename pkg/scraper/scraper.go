@@ -265,7 +265,34 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 
 	// Execute the binary
 	cmd := exec.Command(s.parserCfg.BinaryPath, args...)
-	output, err := cmd.Output()
+
+	errpipe, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	outpipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start external command")
+	}
+
+	errout, err := io.ReadAll(errpipe)
+	if err != nil {
+		return nil, err
+	}
+
+	output, err := io.ReadAll(outpipe)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println(string(errout))
+
+	err = cmd.Wait()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			return nil, fmt.Errorf("external binary failed: %s\nstderr: %s", err, string(exitErr.Stderr))
