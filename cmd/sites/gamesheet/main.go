@@ -123,8 +123,7 @@ func main() {
 		log.Printf("Found %d active seasons", len(seasonsToProcess))
 	} else {
 		// Parse comma-separated season IDs
-		seasonIDStrs := strings.Split(*seasonsFlag, ",")
-		for _, idStr := range seasonIDStrs {
+		for idStr := range strings.SplitSeq(*seasonsFlag, ",") {
 			idStr = strings.TrimSpace(idStr)
 			seasonID, err := strconv.ParseUint(idStr, 10, 32)
 			if err != nil {
@@ -145,7 +144,7 @@ func main() {
 	for _, season := range seasonsToProcess {
 		log.Printf("Processing Season: ID=%d, Title=%s, LeagueID=%d", season.ID, season.Title, season.LeagueID)
 
-		result, err := fetchSchedules(db, &cfg, season, *importLocationsFlag)
+		result, err := fetchSchedules(db, &cfg, season)
 		if err != nil {
 			log.Printf("Error fetching schedules for season %d: %v", season.ID, err)
 			continue
@@ -182,7 +181,7 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason, importLocations bool) ([][]string, error) {
+func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason) ([][]string, error) {
 	seasonID := season.ID
 	// Build the API URL
 	url := fmt.Sprintf(URL, fmt.Sprintf("%d", seasonID))

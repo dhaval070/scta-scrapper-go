@@ -10,7 +10,8 @@ import (
 )
 
 var ErrUnsupportedSite = errors.New("Unsupported site")
-var barnUrl = "https://livebarn.com/en/video/%s/%s/%s"
+
+// var barnUrl = "https://livebarn.com/en/video/%s/%s/%s"
 
 type DataRec struct {
 	Id        int

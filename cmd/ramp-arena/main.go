@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var url = "https://api3.rampinteractive.com/livebarn/arenas/updatelist"
+// var url = "https://api3.rampinteractive.com/livebarn/arenas/updatelist"
 var client = &http.Client{}
 
 type Result struct {
