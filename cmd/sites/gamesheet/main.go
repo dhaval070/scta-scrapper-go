@@ -218,9 +218,15 @@ func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeaso
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
+	// Read response body
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
 	// Parse response
 	var scheduleResp ScheduleResponse
-	if err := jsoniter.NewDecoder(resp.Body).Decode(&scheduleResp); err != nil {
+	if err := jsoniter.Unmarshal(bodyBytes, &scheduleResp); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
@@ -231,6 +237,7 @@ func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeaso
 
 	if len(scheduleResp.Data) == 0 {
 		log.Println("no games found")
+		log.Printf("url: %s, Response body: %s", url, string(bodyBytes))
 		return nil, nil
 	}
 

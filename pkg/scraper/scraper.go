@@ -276,20 +276,29 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 		return nil, err
 	}
 
+	log.Println("starting external binary")
+
 	if err = cmd.Start(); err != nil {
 		return nil, fmt.Errorf("failed to start external command")
 	}
 
-	errout, err := io.ReadAll(errpipe)
-	if err != nil {
-		return nil, err
-	}
+	chStdErr := make(chan string)
+
+	go func() {
+		defer close(chStdErr)
+		errout, err := io.ReadAll(errpipe)
+		if err != nil {
+			chStdErr <- err.Error()
+		}
+		chStdErr <- string(errout)
+	}()
 
 	output, err := io.ReadAll(outpipe)
 	if err != nil {
 		return nil, err
 	}
 
+	errout := <-chStdErr
 	log.Println(string(errout))
 
 	err = cmd.Wait()
