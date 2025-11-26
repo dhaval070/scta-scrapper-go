@@ -1,20 +1,23 @@
 #!/bin/bash
-# usage: sh run.sh <sites> [date]
+# usage: sh run.sh <sites> [date] [workers]
 # sites: mandatory - can be --all or comma-separated list (e.g., site1,site2,site3)
 # date: optional - defaults to current date (format: YYYY-MM-DD)
+# workers: optional - number of concurrent workers (default: uses scraper default)
 # Examples:
 #   sh run.sh --all              # all sites, current date
 #   sh run.sh site1,site2        # specific sites, current date
 #   sh run.sh --all 2024-12-01   # all sites, specific date
 #   sh run.sh site1 2024-12-01   # specific site, specific date
+#   sh run.sh --all 2024-12-01 4 # all sites, specific date, 4 workers
 
 # Sites is mandatory
 sites="$1"
 if [ -z "$sites" ]; then
     echo "Error: sites parameter is required"
-    echo "Usage: sh run.sh <sites> [date]"
+    echo "Usage: sh run.sh <sites> [date] [workers]"
     echo "  sites: --all or comma-separated list (e.g., site1,site2,site3)"
     echo "  date: optional, defaults to current date (YYYY-MM-DD)"
+    echo "  workers: optional, number of concurrent workers"
     exit 1
 fi
 
@@ -25,6 +28,13 @@ fi
 dt="$2"
 if [ -z "$dt" ]; then
     dt=`date +%Y-%m-%d`
+fi
+
+# Workers is optional
+workers="$3"
+workers_flag=""
+if [ -n "$workers" ]; then
+    workers_flag="--workers $workers"
 fi
 
 sd=`echo $dt|sed 's/-//g'`
@@ -46,7 +56,7 @@ tmpdir=$(mktemp -d /tmp/calendar-scraper.XXXXXX)
 # Use new universal scraper instead of individual site binaries
 echo "Running universal scraper for sites: $sites with date: $mmyyyy"
 
-./scraper $sites --import-locations --date $mmyyyy --outfile $tmpdir/schedules.csv
+./scraper $sites --import-locations --date $mmyyyy --outfile $tmpdir/schedules.csv $workers_flag
 
 if [ $? -ne 0 ]; then
     echo "Scraper failed"

@@ -130,6 +130,10 @@ func main() {
 func importEvents(repo *repository.Repository, site string, result [][]string, cutOffDate time.Time) error {
 	var err error
 	var SourceType = "scrape"
+	// if gamesheet season
+	if strings.HasPrefix(site, "gs_") {
+		SourceType = ""
+	}
 
 	m := make([]*model.Event, 0, len(result))
 	for _, rec := range result {
