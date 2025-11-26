@@ -28,7 +28,6 @@ INSERT INTO `gamesheet_seasons` (`id`, `title`, `site`, `league_id`, `is_active`
 (10358, 'Eastern Junior Elite Prospects League 2025-2026', 'gs_EJEPL20252026', NULL, 1, NULL, NULL),
 (10397, 'SESCL - Southeastern Showcase League - 2025/2026', 'gs_SSSL20252026', NULL, 1, NULL, NULL),
 (10399, 'SYTHL - Southern Youth Travel Hockey League - 2025/2026', 'gs_SSYTHL20252026', NULL, 1, NULL, NULL),
-(10425, 'Premier Hockey League of New England (Season 1) 2025-2026', 'gs_PHLONES120252026', NULL, 1, NULL, NULL),
 (10450, 'Inter County Scholastic Hockey League - 2025', 'gs_ICSHL2025', NULL, 1, NULL, NULL),
 (10482, 'Carolinas Hockey League - CHL - 2025/2026', 'gs_CHLC20252026', NULL, 1, NULL, NULL),
 (10548, 'Alaska State Hockey Association - Regular Season 2025/2026', 'gs_ASHARS20252026', NULL, 1, NULL, NULL),
@@ -76,7 +75,7 @@ INSERT INTO `gamesheet_seasons` (`id`, `title`, `site`, `league_id`, `is_active`
 (11666, 'Flin Flon Minor Hockey - Season 2025-2026', 'gs_FFMHS20252026', NULL, 1, NULL, NULL),
 (11708, 'Hockey Tonk (AAA & AA) - Nov 7-10, 2025', 'gs_HTAAN7102025', NULL, 1, NULL, NULL),
 (11719, 'Ice House Adult League - Fall/Winter 2025', 'gs_IHALFW2025', NULL, 1, NULL, NULL),
-(11761, 'South Jersey High School Hockey League - 2025/2026 Season', 'gs_SJHSHL20252026S', NULL, 1, NULL, NULL),
+
 (11769, 'Charleston Youth Hockey - Regular Season 2025-2026', 'gs_CYHRS20252026', NULL, 1, NULL, NULL),
 (11790, 'AACPS MS Hockey - 2025-2026', 'gs_AMH20252026', NULL, 1, NULL, NULL),
 (11837, 'Granite State League - 2025-2026 Playoff Season', 'gs_GSL20252026PS', NULL, 1, NULL, NULL),
@@ -131,7 +130,6 @@ INSERT INTO `sites_config` (`site_name`, `display_name`, `base_url`, `home_team`
 ('gs_EJEPL20252026', 'Eastern Junior Elite Prospects League 2025-2026', '', NULL, 'external', '{\"season_id\": 10358, \"extra_args\": [\"--sites=gs_EJEPL20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_SSSL20252026', 'SESCL - Southeastern Showcase League - 2025/2026', '', NULL, 'external', '{\"season_id\": 10397, \"extra_args\": [\"--sites=gs_SSSL20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_SSYTHL20252026', 'SYTHL - Southern Youth Travel Hockey League - 2025/2026', '', NULL, 'external', '{\"season_id\": 10399, \"extra_args\": [\"--sites=gs_SSYTHL20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
-('gs_PHLONES120252026', 'Premier Hockey League of New England (Season 1) 2025-2026', '', NULL, 'external', '{\"season_id\": 10425, \"extra_args\": [\"--sites=gs_PHLONES120252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_ICSHL2025', 'Inter County Scholastic Hockey League - 2025', '', NULL, 'external', '{\"season_id\": 10450, \"extra_args\": [\"--sites=gs_ICSHL2025 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_CHLC20252026', 'Carolinas Hockey League - CHL - 2025/2026', '', NULL, 'external', '{\"season_id\": 10482, \"extra_args\": [\"--sites=gs_CHLC20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_ASHARS20252026', 'Alaska State Hockey Association - Regular Season 2025/2026', '', NULL, 'external', '{\"season_id\": 10548, \"extra_args\": [\"--sites=gs_ASHARS20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
@@ -179,7 +177,7 @@ INSERT INTO `sites_config` (`site_name`, `display_name`, `base_url`, `home_team`
 ('gs_FFMHS20252026', 'Flin Flon Minor Hockey - Season 2025-2026', '', NULL, 'external', '{\"season_id\": 11666, \"extra_args\": [\"--sites=gs_FFMHS20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_HTAAN7102025', 'Hockey Tonk (AAA & AA) - Nov 7-10, 2025', '', NULL, 'external', '{\"season_id\": 11708, \"extra_args\": [\"--sites=gs_HTAAN7102025 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_IHALFW2025', 'Ice House Adult League - Fall/Winter 2025', '', NULL, 'external', '{\"season_id\": 11719, \"extra_args\": [\"--sites=gs_IHALFW2025 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
-('gs_SJHSHL20252026S', 'South Jersey High School Hockey League - 2025/2026 Season', '', NULL, 'external', '{\"season_id\": 11761, \"extra_args\": [\"--sites=gs_SJHSHL20252026S \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
+
 ('gs_CYHRS20252026', 'Charleston Youth Hockey - Regular Season 2025-2026', '', NULL, 'external', '{\"season_id\": 11769, \"extra_args\": [\"--sites=gs_CYHRS20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_AMH20252026', 'AACPS MS Hockey - 2025-2026', '', NULL, 'external', '{\"season_id\": 11790, \"extra_args\": [\"--sites=gs_AMH20252026 \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
 ('gs_GSL20252026PS', 'Granite State League - 2025-2026 Playoff Season', '', NULL, 'external', '{\"season_id\": 11837, \"extra_args\": [\"--sites=gs_GSL20252026PS \"], \"binary_path\": \"./bin/gamesheet\"}', 1, NULL, 24, NULL, '2025-11-26 10:08:10', '2025-11-26 10:08:10'),
