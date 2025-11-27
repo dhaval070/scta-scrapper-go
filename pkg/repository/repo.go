@@ -3,7 +3,6 @@ package repository
 import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/dao/model"
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -134,11 +133,6 @@ type SiteRepository struct {
 }
 
 func (r *Repository) Site(site string) *SiteRepository {
-	if err := r.DB.First(&model.Site{}, "site=?", site).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Println("inserting site", site)
-		r.DB.Save(&model.Site{Site: site, URL: ""})
-	}
-
 	return &SiteRepository{
 		site,
 		Repository{r.DB},
