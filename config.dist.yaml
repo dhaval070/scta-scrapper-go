@@ -1,0 +1,2 @@
+DB_DSN: "root:bitnami@(127.0.0.1:5506)/sh"
+port: 8000
