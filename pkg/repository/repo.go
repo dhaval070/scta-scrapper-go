@@ -299,6 +299,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 	return nil
 }
 
+// splits slite location words and match with each livebarn location. also sets surface id by matching last word in site location.
 func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []model.Location, smap map[int32][]model.Surface) (bool, bool, error) {
 	var err error
 	tokens := strings.Split(sl.Location, " ")
