@@ -70,9 +70,8 @@ for csv_file in $tmpdir/*_schedules.csv; do
         echo "Processing $site"
 
         f="$dir/$site.csv"
-        csvtool --encoding utf8 -c 1-6 "$csv_file" > $f
-
-        go run ./cmd/site-schedule/main.go -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
+        ./bin/csv-trim-last -infile "$csv_file" > $f
+        ./bin/site-schedule -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
     fi
 done
 
