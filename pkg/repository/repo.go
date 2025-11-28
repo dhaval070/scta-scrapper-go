@@ -203,20 +203,32 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 	}
 }
 
+// Matches gamesheet season locations with livebarn locations and surfaces
 func (r *SiteRepository) MatchGamesheet() error {
 	var err error
 
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
 		var queries = []string{
-			`UPDATE sites_locations sl, locations l SET sl.location_id=l.id WHERE
-			(sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND sl.site =?`,
+			// set livebarn location name contains site location name (prefer longest match)
+			`UPDATE sites_locations sl 
+			JOIN (
+				SELECT sl2.location, MAX(LENGTH(l2.name)) as max_len
+				FROM sites_locations sl2, locations l2
+				WHERE (sl2.location LIKE l2.name OR locate(l2.name, sl2.location)>0) AND sl2.site =?
+				GROUP BY sl2.location
+			) max_matches ON sl.location = max_matches.location
+			JOIN locations l ON (sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND LENGTH(l.name) = max_matches.max_len
+			SET sl.location_id=l.id
+			WHERE sl.site =?`,
 
+			// set surface id if matched location has just 1 surface.
 			`UPDATE sites_locations sl, locations l, surfaces s
 			SET sl.surface_id=s.id
 			WHERE
 			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
 			AND 1=(select count(*) FROM surfaces WHERE location_id=l.id)`,
 
+			// set surface id where remaining part of surface location matches with surface name
 			`UPDATE sites_locations sl, locations l, surfaces s
 			SET sl.surface_id=s.id
 			WHERE
@@ -224,7 +236,14 @@ func (r *SiteRepository) MatchGamesheet() error {
 			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`,
 		}
 
-		for _, q := range queries {
+		// Execute first query with two site parameters
+		err = tx.Exec(queries[0], r.site, r.site).Error
+		if err != nil {
+			return err
+		}
+
+		// Execute remaining queries with single site parameter
+		for _, q := range queries[1:] {
 			err = tx.Exec(q, r.site).Error
 			if err != nil {
 				return err
