@@ -14,6 +14,15 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+var blackList = map[string]bool{
+	"ice": true, "arena": true, "pavilion": true, "centennial": true,
+	"arctic": true, "national": true, "sports": true, "sportplex": true,
+	"bell": true, "center": true, "centre": true, "field": true,
+	"fields": true, "livebarn": true, "convention": true,
+}
+
+var reNonAlphaNum = regexp.MustCompile("[^0-9A-Za-z]")
+
 type Repository struct {
 	DB *gorm.DB
 }
@@ -207,57 +216,78 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 func (r *SiteRepository) MatchGamesheet() error {
 	var err error
 
+	// Load all locations and unmatched sites_locations into memory for efficient matching
+	var allLocations []model.Location
+	if err = r.DB.Find(&allLocations).Error; err != nil {
+		return err
+	}
+
+	var unmatchedSiteLocs []model.SitesLocation
+	if err = r.DB.Where("site = ? AND location_id = 0", r.site).Find(&unmatchedSiteLocs).Error; err != nil {
+		return err
+	}
+
+	// Match in memory - find best (longest) location name match for each site location
+	type matchResult struct {
+		siteLocation string
+		locationID   int32
+	}
+	var matches []matchResult
+
+	for _, sl := range unmatchedSiteLocs {
+		var bestMatch *model.Location
+		var bestLen int
+		for i := range allLocations {
+			loc := &allLocations[i]
+			if strings.Contains(sl.Location, loc.Name) {
+				if len(loc.Name) > bestLen {
+					bestMatch = loc
+					bestLen = len(loc.Name)
+				}
+			}
+		}
+		if bestMatch != nil {
+			matches = append(matches, matchResult{sl.Location, bestMatch.ID})
+		}
+	}
+
+	log.Printf("gamesheet: in-memory matching found %d location matches\n", len(matches))
+	// Batch update matched location_ids
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
-		var queries = []string{
-			// set livebarn location name contains site location name (prefer longest match)
-			`UPDATE sites_locations sl 
-			JOIN (
-				SELECT sl2.location, MAX(LENGTH(l2.name)) as max_len
-				FROM sites_locations sl2, locations l2
-				WHERE (sl2.location LIKE l2.name OR locate(l2.name, sl2.location)>0) AND sl2.site =?
-				GROUP BY sl2.location
-			) max_matches ON sl.location = max_matches.location
-			JOIN locations l ON (sl.location LIKE l.name OR locate(l.name, sl.location)>0) AND LENGTH(l.name) = max_matches.max_len
-			SET sl.location_id=l.id
-			WHERE sl.site =?`,
-
-			// set surface id if matched location has just 1 surface.
-			`UPDATE sites_locations sl, locations l, surfaces s
-			SET sl.surface_id=s.id
-			WHERE
-			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
-			AND 1=(select count(*) FROM surfaces WHERE location_id=l.id)`,
-
-			// set surface id where remaining part of surface location matches with surface name
-			`UPDATE sites_locations sl, locations l, surfaces s
-			SET sl.surface_id=s.id
-			WHERE
-			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
-			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`,
+		for _, m := range matches {
+			if err := tx.Exec("UPDATE sites_locations SET location_id = ? WHERE site = ? AND location = ?",
+				m.locationID, r.site, m.siteLocation).Error; err != nil {
+				return err
+			}
 		}
 
-		// Execute first query with two site parameters
-		err = tx.Exec(queries[0], r.site, r.site).Error
+		// set surface id if matched location has just 1 surface.
+		err = tx.Exec(`UPDATE sites_locations sl
+			JOIN surfaces s ON sl.location_id = s.location_id
+			JOIN (SELECT location_id FROM surfaces GROUP BY location_id HAVING COUNT(*) = 1) single 
+				ON sl.location_id = single.location_id
+			SET sl.surface_id = s.id
+			WHERE sl.site = ?`, r.site).Error
 		if err != nil {
 			return err
 		}
 
-		// Execute remaining queries with single site parameter
-		for _, q := range queries[1:] {
-			err = tx.Exec(q, r.site).Error
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+		// set surface id where remaining part of surface location matches with surface name
+		err = tx.Exec(`UPDATE sites_locations sl, locations l, surfaces s
+			SET sl.surface_id=s.id
+			WHERE
+			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
+			AND locate(trim(replace(sl.location, l.name, '')), s.name)>0`, r.site).Error
+		return err
 	})
+
 	var locations []model.Location
-	err = r.DB.Raw(`SELECT id, name FROM locations WHERE id NOT in(SELECT location_id FROM sites_locations WHERE site LIKE 'gs\_%')`).Scan(&locations).Error
+	err = r.DB.Raw(`SELECT id, name FROM locations l WHERE NOT EXISTS(SELECT 1 FROM sites_locations WHERE location_id=l.id AND site LIKE 'gs\_%')`).Scan(&locations).Error
 	if err != nil {
 		return err
 	}
 	var siteLoc []model.SitesLocation
-	err = r.DB.Raw(`SELECT site, location FROM sites_locations WHERE site LIKE 'gs\_%'
+	err = r.DB.Raw(`SELECT site, location, location_id FROM sites_locations WHERE site LIKE 'gs\_%'
 		AND surface_id=0`).Scan(&siteLoc).Error
 	if err != nil {
 		return err
@@ -303,22 +333,43 @@ func (r *SiteRepository) MatchGamesheet() error {
 func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []model.Location, smap map[int32][]model.Surface) (bool, bool, error) {
 	var err error
 	tokens := strings.Split(sl.Location, " ")
-	re := regexp.MustCompile("[^0-9A-Za-z]")
 
 	locMatch := false
 	surfaceMatch := false
 
-	blackList := map[string]bool{
-		"ice": true, "arena": true, "pavilion": true, "centennial": true,
-		"arctic": true, "national": true, "sports": true, "sportplex": true,
-		"bell": true, "center": true, "centre": true, "field": true,
-		"fields": true, "livebarn": true, "convention": true,
+	// If location_id is already set, use it directly for surface matching
+	if sl.LocationID != 0 {
+		id := int32(sl.LocationID)
+		if len(smap[id]) == 1 {
+			surfaceMatch = true
+			log.Printf("gamesheet matched surface: single (existing loc), site=%s, location=%s\n", sl.Site, sl.Location)
+			err = r.DB.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`, smap[id][0].ID, sl.Site, sl.Location).Error
+			if err != nil {
+				return false, false, fmt.Errorf("failed to set surface id, %w", err)
+			}
+		} else {
+			lastWord := tokens[len(tokens)-1]
+			lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
+			if lastWord != "" {
+				for _, s := range smap[id] {
+					if strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
+						surfaceMatch = true
+						log.Printf("gamesheet matched surface: lastword (existing loc), site=%s, location=%s\n", sl.Site, sl.Location)
+						err = r.DB.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
+						if err != nil {
+							return false, false, fmt.Errorf("failed to set surface id, %w", err)
+						}
+						break
+					}
+				}
+			}
+		}
+		return false, surfaceMatch, nil
 	}
 
 TOKENS_LOOP:
 	for _, t := range tokens {
-		if len(t) < 2 || re.MatchString(t) || blackList[strings.ToLower(t)] {
-			log.Println("skipping location ", sl.Location)
+		if len(t) < 2 || reNonAlphaNum.MatchString(t) || blackList[strings.ToLower(t)] {
 			continue
 		}
 		var id int32 = 0
@@ -358,7 +409,7 @@ TOKENS_LOOP:
 				}
 			} else {
 				lastWord := tokens[len(tokens)-1]
-				lastWord = re.ReplaceAllString(lastWord, "")
+				lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
 				if lastWord == "" {
 					return nil
 				}
@@ -393,27 +444,23 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 
 		`UPDATE
 			sites_locations s,
-			locations l,
-			provinces p
+			locations l
 		SET
 			s.location_id = l.id,
 			s.match_type='postal code'
 		WHERE
 			l.postal_code<>'' AND
 			position(l.postal_code in s.address) AND
-			p.id=l.province_id AND
 			s.site=? AND
 			s.location_id=0`,
 
 		`UPDATE
 			sites_locations s,
-			locations l,
-			provinces p
+			locations l
 		SET
 			s.location_id = l.id,
 			s.match_type="partial"
 		WHERE
-			p.id=l.province_id AND
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
 			position(left(l.postal_code,3) in s.address) AND
 			site=? AND
@@ -421,14 +468,12 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 
 		`UPDATE
 			sites_locations s,
-			locations l,
-			provinces p
+			locations l
 		SET
 			s.location_id = l.id,
 			s.match_type='address'
 		WHERE
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
-			p.id=l.province_id AND
 			s.site=? AND
 			s.location_id=0`,
 	}
@@ -444,8 +489,9 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
 		// set surface id
-		db.Exec(`update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and s.location_id=b.id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
-		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=l.id and l.total_surfaces=1 and s.surface_id=0 and s.site=? and s.surface_id=0`, r.site)
+		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
+
+		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=?`, r.site)
 		return nil
 	})
 }
@@ -510,26 +556,38 @@ func (r *SiteRepository) RunMatchLocations() error {
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
 		// set surface id
-		db.Exec(`update sites_locations a, locations b, surfaces s set a.surface_id=s.id where a.location_id=b.id and s.location_id=b.id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
-		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=l.id and l.total_surfaces=1 and s.surface_id=0 and s.site=? and s.surface_id=0`, r.site)
+		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
+		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=?`, r.site)
 		return nil
 	})
 }
 
 func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDate time.Time) error {
 	log.Println(site, ":importing events", site, cutOffDate)
-	return r.DB.Transaction(func(db *gorm.DB) error {
-		if err := db.Exec("delete from events where site=? and datetime > ?", site, cutOffDate).Error; err != nil {
-			return err
-		}
-		var err error
-		for _, rec := range records {
-			if err = db.Create(rec).Error; err != nil {
+
+	// retry to avoid dead lock by multiple sites events import in parallel. that is done by run.sh line: ./bin/site-schedule -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
+	maxRetries := 3
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		err := r.DB.Transaction(func(db *gorm.DB) error {
+			if err := db.Exec("DELETE FROM events WHERE site=? AND datetime > ?", site, cutOffDate).Error; err != nil {
 				return err
 			}
+			return db.CreateInBatches(records, 50).Error
+		})
+
+		if err == nil {
+			return nil
 		}
-		return nil
-	})
+
+		// Check if it's a deadlock error (MySQL error 1213)
+		if strings.Contains(err.Error(), "Deadlock") || strings.Contains(err.Error(), "1213") {
+			log.Printf("%s: deadlock detected, attempt %d/%d, retrying...\n", site, attempt, maxRetries)
+			time.Sleep(time.Duration(attempt*100) * time.Millisecond)
+			continue
+		}
+		return err
+	}
+	return fmt.Errorf("%s: failed after %d retries due to deadlock", site, maxRetries)
 }
 
 func (r *Repository) ImportMappings(site string, m map[string]int32) error {
