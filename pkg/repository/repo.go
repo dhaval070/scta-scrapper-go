@@ -17,7 +17,8 @@ import (
 var blackList = map[string]bool{
 	"ice": true, "arena": true, "pavilion": true, "centennial": true,
 	"arctic": true, "national": true, "sports": true, "sportplex": true,
-	"bell": true, "center": true, "centre": true, "field": true,
+	"sportsplex": true,
+	"bell":       true, "center": true, "centre": true, "field": true,
 	"fields": true, "livebarn": true, "convention": true,
 }
 
