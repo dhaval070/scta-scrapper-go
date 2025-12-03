@@ -41,8 +41,6 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 			item := htmlquery.FindOne(parent, `div[2]`)
 			content := htmlquery.OutputHTML(item, true)
 
-			var homeGame = true
-
 			gameType := htmlquery.InnerText(htmlquery.FindOne(item, `div[2]/div/div`))
 			if gameType == "Event" ||
 				gameType == "tryOut" ||
@@ -51,39 +49,45 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 				continue
 			}
 
-			if strings.Contains(strings.ToUpper(content), "AWAY GAME") ||
-				strings.Contains(strings.ToUpper(content), "AWAY TOURNAMENT") ||
-				strings.Contains(strings.ToUpper(content), "AWAY EXHIBITION") {
-				homeGame = false
-			}
-
 			timeval, err := parser.ParseTime(content)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 
-			division, err := parser.QueryInnerText(item, `div[3]/div[1]`)
-			if err != nil {
-				log.Println(err)
+			var division string
+
+			subjectOwner := htmlquery.FindOne(item, `//div[contains(@class, "subject-owner")]`)
+			if subjectOwner == nil {
+				log.Println("subject-owner not found")
 				continue
 			}
 
-			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
+			subjectGroup := htmlquery.FindOne(item, `//div[contains(@class, "subject-group")]`)
+			if subjectGroup == nil {
+				division = htmlquery.InnerText(subjectOwner)
+			} else {
+				division = htmlquery.InnerText(subjectGroup)
+			}
 
-			if err != nil {
-				log.Println(err)
+			subjectText := htmlquery.FindOne(item, `//div[contains(@class, "subject-text")]`)
+			if subjectText == nil {
+				log.Println("subjec-text not found")
 				continue
 			}
 
 			ch := subjectText.FirstChild
-			guestTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", 1)
-			guestTeam = strings.Replace(guestTeam, "vs ", "", 1)
+			subjectStr := htmlquery.InnerText(ch)
 
-			hm := homeTeam
-
-			if !homeGame {
-				hm, guestTeam = guestTeam, homeTeam
+			var homeTeam, guestTeam string
+			if strings.Contains(subjectStr, "@") {
+				// "@" means subject is away, so homeTeam is subjectText (without @), guestTeam is subject-owner
+				homeTeam = strings.Replace(subjectStr, "@ ", "", 1)
+				guestTeam = htmlquery.InnerText(subjectOwner)
+			} else {
+				// "vs" means subject is home, so homeTeam is subject-owner, guestTeam is subjectText
+				guestTeam = strings.Replace(subjectStr, "vs ", "", 1)
+				homeTeam = htmlquery.InnerText(subjectOwner)
 			}
 
 			location, err := parser.QueryInnerText(item, `//div[contains(@class,"location")]`)
@@ -125,11 +129,11 @@ func ParseSchedules(doc *html.Node, Site, baseURL, homeTeam string) [][]string {
 					address = strings.Replace(address, location, "", 1)
 
 					lock.Lock()
-					result = append(result, []string{ymd + " " + timeval, Site, hm, guestTeam, location, division, address})
+					result = append(result, []string{ymd + " " + timeval, Site, homeTeam, guestTeam, location, division, address})
 					lock.Unlock()
 				}(url, location, wg, lock)
 			} else {
-				result = append(result, []string{ymd + " " + timeval, Site, hm, guestTeam, location, division, ""})
+				result = append(result, []string{ymd + " " + timeval, Site, homeTeam, guestTeam, location, division, ""})
 			}
 		}
 	}
