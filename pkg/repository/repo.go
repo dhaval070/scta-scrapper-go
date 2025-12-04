@@ -283,7 +283,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 	})
 
 	var locations []model.Location
-	err = r.DB.Raw(`SELECT id, name FROM locations l WHERE NOT EXISTS(SELECT 1 FROM sites_locations WHERE location_id=l.id AND site LIKE 'gs\_%')`).Scan(&locations).Error
+	err = r.DB.Raw(`SELECT id, name FROM locations l WHERE NOT EXISTS(SELECT 1 FROM sites_locations WHERE location_id=l.id AND site=?)`, r.site).Scan(&locations).Error
 	if err != nil {
 		return err
 	}
