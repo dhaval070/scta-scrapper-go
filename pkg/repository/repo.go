@@ -288,8 +288,8 @@ func (r *SiteRepository) MatchGamesheet() error {
 		return err
 	}
 	var siteLoc []model.SitesLocation
-	err = r.DB.Raw(`SELECT site, location, location_id FROM sites_locations WHERE site LIKE 'gs\_%'
-		AND surface_id=0`).Scan(&siteLoc).Error
+	err = r.DB.Raw(`SELECT site, location, location_id FROM sites_locations WHERE site =?
+		AND surface_id=0`, r.site).Scan(&siteLoc).Error
 	if err != nil {
 		return err
 	}
