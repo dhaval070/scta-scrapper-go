@@ -309,6 +309,12 @@ func (r *SiteRepository) MatchGamesheet() error {
 		smap[s.LocationID] = append(smap[s.LocationID], s)
 	}
 
+	// Create location map for fast lookup
+	locMap := map[int32]*model.Location{}
+	for i := range allLocations {
+		locMap[allLocations[i].ID] = &allLocations[i]
+	}
+
 	var totalLocMatch, totalSurfaceMatch = 0, 0
 	for _, sl := range siteLoc {
 		if sl.LocationID != 0 {
@@ -320,7 +326,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 			}
 
 			err := r.DB.Transaction(func(tx *gorm.DB) error {
-				_, err = r.SetGamesheetSurface(sl, id, smap, words[len(words)-1], tx)
+				_, err = r.SetGamesheetSurface(sl, id, smap, locMap, words[len(words)-1], tx)
 				return err
 			})
 
@@ -330,7 +336,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 			continue
 		}
 
-		locMatched, surfaceMatched, err := r.MatchLocByTokens(sl, allLocations, smap)
+		locMatched, surfaceMatched, err := r.MatchLocByTokens(sl, allLocations, smap, locMap)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -350,7 +356,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 }
 
 // splits slite location words and match with each livebarn location. also sets surface id by matching last word in site location.
-func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []model.Location, smap map[int32][]model.Surface) (bool, bool, error) {
+func (r *SiteRepository) MatchLocByTokens(sl model.SitesLocation, locations []model.Location, smap map[int32][]model.Surface, locMap map[int32]*model.Location) (bool, bool, error) {
 	var err error
 
 	tokens := strings.Split(sl.Location, " ")
@@ -391,7 +397,7 @@ TOKENS_LOOP:
 
 			log.Printf("gamesheet matched location. site=%s, location=%s, locId=%d, token=%s\n", sl.Site, sl.Location, id, t)
 
-			surfaceMatched, err = r.SetGamesheetSurface(sl, id, smap, lastWord, tx)
+			surfaceMatched, err = r.SetGamesheetSurface(sl, id, smap, locMap, lastWord, tx)
 			if err != nil {
 				return err
 			}
@@ -405,76 +411,78 @@ TOKENS_LOOP:
 	return locMatched, surfaceMatched, nil
 }
 
-func (r *SiteRepository) SetGamesheetSurface(sl model.SitesLocation, locId int32, smap map[int32][]model.Surface, lastWord string, tx *gorm.DB) (bool, error) {
-	surfaceMatch := false
-	var err error
-
-	// if livebarn location has only one surface
+func (r *SiteRepository) SetGamesheetSurface(sl model.SitesLocation, locId int32, smap map[int32][]model.Surface, locMap map[int32]*model.Location, lastWord string, tx *gorm.DB) (bool, error) {
 	if len(smap[locId]) == 1 {
-		surfaceMatch = true
-		log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
-		err = tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE
-				site=? AND location=?`, smap[locId][0].ID, sl.Site, sl.Location).Error
-		if err != nil {
-			return false, fmt.Errorf("failed to set location id, %w", err)
-		}
-	} else {
-		// Try matching by sanitized surface name in site location
-		var location model.Location
-		if err = tx.First(&location, locId).Error; err == nil {
-			// Extract non-matching part: remove location name from site location
-			remainingPart := strings.ReplaceAll(sl.Location, location.Name, "")
-			remainingPart = strings.TrimSpace(remainingPart)
-			
-			// Sanitize: remove all non-alphanumeric characters
-			sanitizedLocName := reNonAlphaNum.ReplaceAllString(remainingPart, "")
-			sanitizedLocName = strings.ToLower(sanitizedLocName)
-			
-			if sanitizedLocName != "" {
-				for _, s := range smap[locId] {
-					// Sanitize surface name
-					sanitizedSurfaceName := reNonAlphaNum.ReplaceAllString(s.Name, "")
-					sanitizedSurfaceName = strings.ToLower(sanitizedSurfaceName)
-					
-					// Check if sanitized surface name is part of sanitized location name
-					if sanitizedSurfaceName != "" && strings.Contains(sanitizedLocName, sanitizedSurfaceName) {
-						surfaceMatch = true
-						log.Printf("gamesheet matched surface: sanitized, site=%s, location=%s, surface=%s\n", sl.Site, sl.Location, s.Name)
-						
-						err = tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE
-								site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
-						if err != nil {
-							return false, fmt.Errorf("failed to set surface id, %w", err)
-						}
-						break
-					}
-				}
-			}
-		}
+		return r.setSingleSurface(sl, smap[locId][0].ID, tx)
+	}
+
+	if matched, err := r.matchBySanitizedName(sl, locId, smap, locMap, tx); err != nil || matched {
+		return matched, err
+	}
+
+	return r.matchByLastWord(sl, locId, smap, lastWord, tx)
+}
+
+func (r *SiteRepository) setSingleSurface(sl model.SitesLocation, surfaceID int32, tx *gorm.DB) (bool, error) {
+	log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
+	err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+		surfaceID, sl.Site, sl.Location).Error
+	if err != nil {
+		return false, fmt.Errorf("failed to set location id, %w", err)
+	}
+	return true, nil
+}
+
+func (r *SiteRepository) matchBySanitizedName(sl model.SitesLocation, locId int32, smap map[int32][]model.Surface, locMap map[int32]*model.Location, tx *gorm.DB) (bool, error) {
+	location, ok := locMap[locId]
+	if !ok {
+		return false, nil
+	}
+
+	remainingPart := strings.TrimSpace(strings.ReplaceAll(sl.Location, location.Name, ""))
+	sanitizedLocName := strings.ToLower(reNonAlphaNum.ReplaceAllString(remainingPart, ""))
+	
+	if sanitizedLocName == "" {
+		return false, nil
+	}
+
+	for _, s := range smap[locId] {
+		sanitizedSurfaceName := strings.ToLower(reNonAlphaNum.ReplaceAllString(s.Name, ""))
 		
-		// If not matched by sanitized name, try last word matching
-		if !surfaceMatch {
-			lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
-			if lastWord == "" {
-				return false, nil
+		if sanitizedSurfaceName != "" && strings.Contains(sanitizedLocName, sanitizedSurfaceName) {
+			log.Printf("gamesheet matched surface: sanitized, site=%s, location=%s, surface=%s\n", sl.Site, sl.Location, s.Name)
+			
+			err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+				s.ID, sl.Site, sl.Location).Error
+			if err != nil {
+				return false, fmt.Errorf("failed to set surface id, %w", err)
 			}
-
-			for _, s := range smap[locId] {
-				if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
-					continue
-				}
-				surfaceMatch = true
-				log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
-
-				err = tx.Exec(`UPDATE sites_locations sET surface_id=? WHERE
-						site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
-				if err != nil {
-					return false, fmt.Errorf("failed to set surface id, %w", err)
-				}
-			}
+			return true, nil
 		}
 	}
-	return surfaceMatch, nil
+	return false, nil
+}
+
+func (r *SiteRepository) matchByLastWord(sl model.SitesLocation, locId int32, smap map[int32][]model.Surface, lastWord string, tx *gorm.DB) (bool, error) {
+	lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
+	if lastWord == "" {
+		return false, nil
+	}
+
+	for _, s := range smap[locId] {
+		if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
+			continue
+		}
+		
+		log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
+		err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+			s.ID, sl.Site, sl.Location).Error
+		if err != nil {
+			return false, fmt.Errorf("failed to set surface id, %w", err)
+		}
+		return true, nil
+	}
+	return false, nil
 }
 
 func (r *SiteRepository) RunMatchLocationsAllStates() error {
