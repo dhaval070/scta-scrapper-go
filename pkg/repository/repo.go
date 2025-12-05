@@ -253,6 +253,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 	}
 
 	log.Printf("gamesheet: in-memory matching found %d location matches\n", len(matches))
+
 	// Batch update matched location_ids
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
 		for _, m := range matches {
@@ -418,22 +419,58 @@ func (r *SiteRepository) SetGamesheetSurface(sl model.SitesLocation, locId int32
 			return false, fmt.Errorf("failed to set location id, %w", err)
 		}
 	} else {
-		lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
-		if lastWord == "" {
-			return false, nil
-		}
-
-		for _, s := range smap[locId] {
-			if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
-				continue
+		// Try matching by sanitized surface name in site location
+		var location model.Location
+		if err = tx.First(&location, locId).Error; err == nil {
+			// Extract non-matching part: remove location name from site location
+			remainingPart := strings.ReplaceAll(sl.Location, location.Name, "")
+			remainingPart = strings.TrimSpace(remainingPart)
+			
+			// Sanitize: remove all non-alphanumeric characters
+			sanitizedLocName := reNonAlphaNum.ReplaceAllString(remainingPart, "")
+			sanitizedLocName = strings.ToLower(sanitizedLocName)
+			
+			if sanitizedLocName != "" {
+				for _, s := range smap[locId] {
+					// Sanitize surface name
+					sanitizedSurfaceName := reNonAlphaNum.ReplaceAllString(s.Name, "")
+					sanitizedSurfaceName = strings.ToLower(sanitizedSurfaceName)
+					
+					// Check if sanitized surface name is part of sanitized location name
+					if sanitizedSurfaceName != "" && strings.Contains(sanitizedLocName, sanitizedSurfaceName) {
+						surfaceMatch = true
+						log.Printf("gamesheet matched surface: sanitized, site=%s, location=%s, surface=%s\n", sl.Site, sl.Location, s.Name)
+						
+						err = tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE
+								site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
+						if err != nil {
+							return false, fmt.Errorf("failed to set surface id, %w", err)
+						}
+						break
+					}
+				}
 			}
-			surfaceMatch = true
-			log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
+		}
+		
+		// If not matched by sanitized name, try last word matching
+		if !surfaceMatch {
+			lastWord = reNonAlphaNum.ReplaceAllString(lastWord, "")
+			if lastWord == "" {
+				return false, nil
+			}
 
-			err = tx.Exec(`UPDATE sites_locations sET surface_id=? WHERE
-					site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
-			if err != nil {
-				return false, fmt.Errorf("failed to set location id, %w", err)
+			for _, s := range smap[locId] {
+				if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
+					continue
+				}
+				surfaceMatch = true
+				log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
+
+				err = tx.Exec(`UPDATE sites_locations sET surface_id=? WHERE
+						site=? AND location=?`, s.ID, sl.Site, sl.Location).Error
+				if err != nil {
+					return false, fmt.Errorf("failed to set surface id, %w", err)
+				}
 			}
 		}
 	}
