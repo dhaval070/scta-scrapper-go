@@ -72,6 +72,15 @@ func (r *Repository) MasterImportLoc(db *gorm.DB, l entity.JsonLocation) error {
 		}
 	}
 
+	// Recalculate total_surfaces from actual database to ensure accuracy
+	var count int64
+	if err = db.Model(&model.Surface{}).Where("location_id = ?", l.ID).Count(&count).Error; err != nil {
+		return err
+	}
+	if err = db.Model(&model.Location{}).Where("id = ?", l.ID).Update("total_surfaces", count).Error; err != nil {
+		return err
+	}
+
 	return err
 }
 
