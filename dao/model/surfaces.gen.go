@@ -14,12 +14,12 @@ type Surface struct {
 	UUID           string `gorm:"column:uuid;not null" json:"uuid"`
 	OrderIndex     int32  `gorm:"column:orderIndex;not null" json:"orderIndex"`
 	VenueID        int32  `gorm:"column:venue_id;not null" json:"venue_id"`
-	ClosedFrom     int64  `gorm:"column:closed_from;not null" json:"closed_from"`
+	ClosedFrom     uint64  `gorm:"column:closed_from;not null" json:"closed_from"`
 	ComingSoon     bool   `gorm:"column:coming_soon;not null" json:"coming_soon"`
 	Online         bool   `gorm:"column:online;not null" json:"online"`
 	Status         string `gorm:"column:status;not null" json:"status"`
 	Sports         string `gorm:"column:sports;not null" json:"sports"`
-	FirstMediaDate int64  `gorm:"column:first_media_date;not null" json:"first_media_date"`
+	FirstMediaDate uint64  `gorm:"column:first_media_date;not null" json:"first_media_date"`
 }
 
 // TableName Surface's table name

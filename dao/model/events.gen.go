@@ -12,7 +12,7 @@ const TableNameEvent = "events"
 
 // Event mapped from table <events>
 type Event struct {
-	ID          int64     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	ID          uint64    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	Site        string    `gorm:"column:site;not null" json:"site"`
 	SourceType  string    `gorm:"column:source_type" json:"source_type"`
 	Datetime    time.Time `gorm:"column:datetime;not null" json:"datetime"`
@@ -22,7 +22,7 @@ type Event struct {
 	OidGuest    string    `gorm:"column:oid_guest" json:"oid_guest"`
 	Location    string    `gorm:"column:location;not null" json:"location"`
 	Division    string    `gorm:"column:division;not null" json:"division"`
-	LocationID  int32
+	LocationID  int32     `gorm:"column:location_id;not null" json:"location_id"`
 	SurfaceID   int32     `gorm:"column:surface_id;not null" json:"surface_id"`
 	DateCreated time.Time `gorm:"column:date_created;not null;default:current_timestamp()" json:"date_created"`
 }

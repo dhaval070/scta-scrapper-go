@@ -26,7 +26,7 @@ type JsonProvince struct {
 
 type JsonSurfaceMedia struct {
 	// SurfaceUuid string
-	FirstMediaDate int64 `json:"firstMediaDate"`
+	FirstMediaDate uint64 `json:"firstMediaDate"`
 }
 
 type JsonFreeMode struct {
@@ -40,7 +40,7 @@ type JsonSurface struct {
 	UUID       string           `json:"uuid"`
 	OrderIndex int32            `json:"orderIndex"`
 	VenueID    int32            `json:"venueId"`
-	ClosedFrom int64            `json:"closedFrom"`
+	ClosedFrom uint64           `json:"closedFrom"`
 	ComingSoon bool             `json:"comingSoon"`
 	Online     bool             `json:"online"`
 	Status     map[string]any   `json:"surfaceStatus"`
