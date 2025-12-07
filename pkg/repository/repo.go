@@ -219,7 +219,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 
 	// Load all locations and unmatched sites_locations into memory for efficient matching
 	var allLocations []model.Location
-	if err = r.DB.Find(&allLocations).Error; err != nil {
+	if err = r.DB.Where("deleted_at IS NULL").Find(&allLocations).Error; err != nil {
 		return err
 	}
 
@@ -265,8 +265,8 @@ func (r *SiteRepository) MatchGamesheet() error {
 
 		// set surface id if matched location has just 1 surface.
 		err = tx.Exec(`UPDATE sites_locations sl
-			JOIN surfaces s ON sl.location_id = s.location_id
-			JOIN (SELECT location_id FROM surfaces GROUP BY location_id HAVING COUNT(*) = 1) single 
+			JOIN surfaces s ON sl.location_id = s.location_id AND s.deleted_at IS NULL
+			JOIN (SELECT location_id FROM surfaces WHERE deleted_at IS NULL GROUP BY location_id HAVING COUNT(*) = 1) single 
 				ON sl.location_id = single.location_id
 			SET sl.surface_id = s.id
 			WHERE sl.site = ?`, r.site).Error
@@ -279,6 +279,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 			SET sl.surface_id=s.id
 			WHERE
 			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
+			AND s.deleted_at IS NULL
 			AND locate(s.name, trim(replace(sl.location, l.name, '')))>0`, r.site).Error
 		return err
 	})
@@ -301,7 +302,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 
 	var surfaces = []model.Surface{}
 
-	err = r.DB.Where("location_id in ?", ids).Find(&surfaces).Error
+	err = r.DB.Where("location_id in ? AND deleted_at IS NULL", ids).Find(&surfaces).Error
 
 	smap := map[int32][]model.Surface{}
 

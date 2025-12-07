@@ -4,22 +4,25 @@
 
 package model
 
+import "time"
+
 const TableNameSurface = "surfaces"
 
 // Surface mapped from table <surfaces>
 type Surface struct {
-	ID             int32  `gorm:"column:id;primaryKey" json:"id"`
-	LocationID     int32  `gorm:"column:location_id;not null" json:"location_id"`
-	Name           string `gorm:"column:name;not null" json:"name"`
-	UUID           string `gorm:"column:uuid;not null" json:"uuid"`
-	OrderIndex     int32  `gorm:"column:orderIndex;not null" json:"orderIndex"`
-	VenueID        int32  `gorm:"column:venue_id;not null" json:"venue_id"`
-	ClosedFrom     uint64  `gorm:"column:closed_from;not null" json:"closed_from"`
-	ComingSoon     bool   `gorm:"column:coming_soon;not null" json:"coming_soon"`
-	Online         bool   `gorm:"column:online;not null" json:"online"`
-	Status         string `gorm:"column:status;not null" json:"status"`
-	Sports         string `gorm:"column:sports;not null" json:"sports"`
-	FirstMediaDate uint64  `gorm:"column:first_media_date;not null" json:"first_media_date"`
+	ID             int32      `gorm:"column:id;primaryKey" json:"id"`
+	LocationID     int32      `gorm:"column:location_id;not null" json:"location_id"`
+	Name           string     `gorm:"column:name;not null" json:"name"`
+	UUID           string     `gorm:"column:uuid;not null" json:"uuid"`
+	OrderIndex     int32      `gorm:"column:orderIndex;not null" json:"orderIndex"`
+	VenueID        int32      `gorm:"column:venue_id;not null" json:"venue_id"`
+	ClosedFrom     uint64     `gorm:"column:closed_from;not null" json:"closed_from"`
+	ComingSoon     bool       `gorm:"column:coming_soon;not null" json:"coming_soon"`
+	Online         bool       `gorm:"column:online;not null" json:"online"`
+	Status         string     `gorm:"column:status;not null" json:"status"`
+	Sports         string     `gorm:"column:sports;not null" json:"sports"`
+	FirstMediaDate uint64     `gorm:"column:first_media_date;not null" json:"first_media_date"`
+	DeletedAt      *time.Time `gorm:"column:deleted_at"`
 }
 
 // TableName Surface's table name

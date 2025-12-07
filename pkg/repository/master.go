@@ -19,7 +19,12 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 		surfaceFeedModes := []model.SurfaceFeedMode{}
 		renditions := []model.Rendition{}
 
+		// Track IDs from JSON to identify deleted records
+		jsonLocationIDs := make(map[int32]bool)
+		jsonSurfaceIDs := make(map[int32]bool)
+
 		for _, loc := range js {
+			jsonLocationIDs[loc.ID] = true
 			log.Println(loc.ID)
 
 			// Collect provinces
@@ -47,6 +52,7 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 				ProvinceID:          loc.Province.ID,
 				VenueStatus:         loc.VenueStatus["name"].(string),
 				Zone:                loc.Zone["name"].(string),
+				DeletedAt:           nil,
 			}
 			b, _ := json.Marshal(loc.LogoURL)
 			location.LogoURL = string(b)
@@ -54,6 +60,7 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 
 			// Build surfaces
 			for _, surface := range loc.Surfaces {
+				jsonSurfaceIDs[surface.ID] = true
 				s := model.Surface{
 					ID:         surface.ID,
 					LocationID: loc.ID,
@@ -65,6 +72,7 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 					ComingSoon: surface.ComingSoon,
 					Online:     surface.Online,
 					Status:     surface.Status["name"].(string),
+					DeletedAt:  nil,
 				}
 				if len(surface.Sports) > 0 {
 					s.Sports = surface.Sports[0]["name"].(string)
@@ -159,6 +167,46 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 			end = min(end, len(renditions))
 			batch := renditions[i:end]
 			if err = tx.Save(&batch).Error; err != nil {
+				return err
+			}
+		}
+
+		// Mark locations not in JSON as deleted
+		var existingLocations []model.Location
+		if err = tx.Where("deleted_at IS NULL").Find(&existingLocations).Error; err != nil {
+			return err
+		}
+		deletedLocationIDs := []int32{}
+		for _, loc := range existingLocations {
+			if !jsonLocationIDs[loc.ID] {
+				deletedLocationIDs = append(deletedLocationIDs, loc.ID)
+			}
+		}
+		if len(deletedLocationIDs) > 0 {
+			// Batch update deleted locations
+			if err = tx.Model(&model.Location{}).Where("id IN ?", deletedLocationIDs).Update("deleted_at", gorm.Expr("NOW()")).Error; err != nil {
+				return err
+			}
+			// Batch update surfaces of deleted locations
+			if err = tx.Model(&model.Surface{}).Where("location_id IN ? AND deleted_at IS NULL", deletedLocationIDs).Update("deleted_at", gorm.Expr("NOW()")).Error; err != nil {
+				return err
+			}
+		}
+
+		// Mark surfaces not in JSON as deleted (for non-deleted locations)
+		var existingSurfaces []model.Surface
+		if err = tx.Where("deleted_at IS NULL").Find(&existingSurfaces).Error; err != nil {
+			return err
+		}
+		deletedSurfaceIDs := []int32{}
+		for _, surface := range existingSurfaces {
+			if !jsonSurfaceIDs[surface.ID] {
+				deletedSurfaceIDs = append(deletedSurfaceIDs, surface.ID)
+			}
+		}
+		if len(deletedSurfaceIDs) > 0 {
+			// Batch update deleted surfaces
+			if err = tx.Model(&model.Surface{}).Where("id IN ?", deletedSurfaceIDs).Update("deleted_at", gorm.Expr("NOW()")).Error; err != nil {
 				return err
 			}
 		}
