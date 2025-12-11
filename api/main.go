@@ -93,6 +93,7 @@ func main() {
 	r.GET("/ramp-provinces", rampProvinces)
 	r.POST("/set-ramp-mapping", SetRampMappings)
 	r.GET("/locations", getLocations)
+	r.GET("/events", getEvents)
 
 	// Sites config CRUD routes
 	r.GET("/sites-config", getSitesConfig)
@@ -120,7 +121,7 @@ func downloadReport(c *gin.Context) {
 				FROM
 				events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
 				GROUP BY l.name, s.name, e.surface_id, date(e.datetime)
-				ORDER BY location_name, surface_name, surface_id,dayofweek(e.datetime) `
+				ORDER BY location_name, surface_name, surface_id,dayofweek(e.datetime),start_time, end_time`
 
 	dbh, err := db.DB()
 	if err != nil {
@@ -658,6 +659,63 @@ func getLocations(c *gin.Context) {
 
 	var result []LocationWithSurfaces
 	if err := baseQuery.Preload("Surfaces").Limit(perPageNum).Offset(offset).Find(&result).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":    result,
+		"page":    pageNum,
+		"perPage": perPageNum,
+		"total":   total,
+	})
+}
+
+// getEvents returns all events with pagination
+func getEvents(c *gin.Context) {
+	page := c.DefaultQuery("page", "1")
+	perPage := c.DefaultQuery("perPage", "10")
+	site := c.Query("site")
+	surfaceID := c.Query("surface_id")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	var pageNum, perPageNum int
+	fmt.Sscanf(page, "%d", &pageNum)
+	fmt.Sscanf(perPage, "%d", &perPageNum)
+
+	if pageNum < 1 {
+		pageNum = 1
+	}
+	if perPageNum < 1 || perPageNum > 100 {
+		perPageNum = 10
+	}
+
+	offset := (pageNum - 1) * perPageNum
+
+	baseQuery := db.Model(&model.Event{}).Order("datetime DESC")
+
+	if site != "" {
+		baseQuery = baseQuery.Where("site = ?", site)
+	}
+	if surfaceID != "" {
+		baseQuery = baseQuery.Where("surface_id = ?", surfaceID)
+	}
+	if startDate != "" {
+		baseQuery = baseQuery.Where("datetime >= ?", startDate)
+	}
+	if endDate != "" {
+		baseQuery = baseQuery.Where("datetime <= ?", endDate)
+	}
+
+	var total int64
+	if err := baseQuery.Count(&total).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	var result []model.Event
+	if err := baseQuery.Limit(perPageNum).Offset(offset).Find(&result).Error; err != nil {
 		sendError(c, err)
 		return
 	}
