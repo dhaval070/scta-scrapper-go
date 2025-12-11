@@ -94,6 +94,7 @@ func main() {
 	r.POST("/set-ramp-mapping", SetRampMappings)
 	r.GET("/locations", getLocations)
 	r.GET("/events", getEvents)
+	r.PUT("/events/:id", updateEvent)
 
 	// Sites config CRUD routes
 	r.GET("/sites-config", getSitesConfig)
@@ -726,4 +727,82 @@ func getEvents(c *gin.Context) {
 		"perPage": perPageNum,
 		"total":   total,
 	})
+}
+
+type UpdateEventInput struct {
+	SurfaceID    int32 `json:"surface_id"`
+	UpdateFuture bool  `json:"update_future"`
+}
+
+// updateEvent updates the surface_id and location_id of an event
+func updateEvent(c *gin.Context) {
+	id := c.Param("id")
+	var input UpdateEventInput
+
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var event model.Event
+	if err := db.First(&event, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
+
+	var locationID int32 = 0
+
+	if input.SurfaceID != 0 {
+		var surface model.Surface
+		if err := db.First(&surface, input.SurfaceID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Surface not found"})
+				return
+			}
+			sendError(c, err)
+			return
+		}
+		locationID = surface.LocationID
+	}
+
+	if input.UpdateFuture {
+		result := db.Model(&model.Event{}).
+			Where("site = ? AND location = ? AND datetime >= ?", event.Site, event.Location, event.Datetime).
+			Updates(map[string]interface{}{
+				"surface_id":  input.SurfaceID,
+				"location_id": locationID,
+			})
+
+		if result.Error != nil {
+			sendError(c, result.Error)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":       "Events updated successfully",
+			"updated_count": result.RowsAffected,
+			"surface_id":    input.SurfaceID,
+			"location_id":   locationID,
+			"update_future": true,
+		})
+	} else {
+		event.SurfaceID = input.SurfaceID
+		event.LocationID = locationID
+
+		if err := db.Save(&event).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message":     "Event updated successfully",
+			"event":       event,
+			"surface_id":  input.SurfaceID,
+			"location_id": locationID,
+		})
+	}
 }

@@ -22,6 +22,7 @@ type Event struct {
 	OidGuest    string    `gorm:"column:oid_guest" json:"oid_guest"`
 	Location    string    `gorm:"column:location;not null" json:"location"`
 	Division    string    `gorm:"column:division;not null" json:"division"`
+	LocationID  int32     `gorm:"column:location_id" json:"location_id"`
 	SurfaceID   int32     `gorm:"column:surface_id;not null" json:"surface_id"`
 	DateCreated time.Time `gorm:"column:date_created;not null;default:current_timestamp()" json:"date_created"`
 }
