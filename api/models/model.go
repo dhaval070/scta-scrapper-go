@@ -110,3 +110,12 @@ type SitesConfigResponse struct {
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 }
+
+type SurfaceReport struct {
+	SurfaceID    string `json:"surface_id"`
+	LocationName string `json:"location_name"`
+	SurfaceName  string `json:"surface_name"`
+	DayOfWeek    string `json:"day_of_week"`
+	StartTime    string `json:"start_time"`
+	EndTime      string `json:"end_time"`
+}

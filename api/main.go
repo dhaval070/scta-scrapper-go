@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,8 +13,6 @@ import (
 	"net/http"
 	"surface-api/dao/model"
 	"surface-api/models"
-
-	"encoding/csv"
 
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/mysql"
@@ -88,7 +87,8 @@ func main() {
 	r.POST("/login", login)
 	r.GET("/logout", logout)
 	r.GET("/session", checkSession)
-	r.GET("/report", downloadReport)
+	r.GET("/report", surfaceReport)
+	r.GET("/report/download", downloadReportCSV)
 	r.GET("/ramp-mappings/:province", rampMappings)
 	r.GET("/ramp-provinces", rampProvinces)
 	r.POST("/set-ramp-mapping", SetRampMappings)
@@ -111,54 +111,104 @@ func main() {
 	}
 }
 
-func downloadReport(c *gin.Context) {
+func surfaceReport(c *gin.Context) {
+	page := c.DefaultQuery("page", "1")
+	perPage := c.DefaultQuery("perPage", "10")
+
+	var pageNum, perPageNum int
+	fmt.Sscanf(page, "%d", &pageNum)
+	fmt.Sscanf(perPage, "%d", &perPageNum)
+
+	if pageNum < 1 {
+		pageNum = 1
+	}
+	if perPageNum < 1 || perPageNum > 100 {
+		perPageNum = 10
+	}
+
+	offset := (pageNum - 1) * perPageNum
+
+	countQuery := `SELECT COUNT(*) FROM (
+		SELECT e.surface_id, l.name location_name, s.name surface_name, date(e.datetime)
+		FROM events e 
+		JOIN surfaces s ON e.surface_id=s.id 
+		JOIN locations l ON l.id=s.location_id
+		GROUP BY e.surface_id, l.name, s.name, date(e.datetime)
+	) AS subquery`
+
+	var total int64
+	if err := db.Raw(countQuery).Scan(&total).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
 	query := `SELECT
-					e.surface_id,
-					l.name location_name,
-					s.name surface_name,
-					date_format(e.datetime, "%W") dow,
-					date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
-					date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
-				FROM
-				events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
-				GROUP BY l.name, s.name, e.surface_id, date(e.datetime)
-				ORDER BY location_name, surface_name, surface_id,dayofweek(e.datetime),start_time, end_time`
+		e.surface_id,
+		l.name location_name,
+		s.name surface_name,
+		date_format(e.datetime, "%W") day_of_week,
+		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
+		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
+	FROM
+		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
+	GROUP BY e.surface_id, l.name, s.name, date_format(e.datetime, "%W"), e.datetime
+	ORDER BY location_name, surface_name, surface_id, dayofweek(e.datetime), start_time, end_time
+	LIMIT ? OFFSET ?`
 
-	dbh, err := db.DB()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+	var result []models.SurfaceReport
+	if err := db.Raw(query, perPageNum, offset).Scan(&result).Error; err != nil {
+		sendError(c, err)
+		return
 	}
 
-	result, err := dbh.Query(query)
+	c.JSON(http.StatusOK, gin.H{
+		"data":    result,
+		"page":    pageNum,
+		"perPage": perPageNum,
+		"total":   total,
+	})
+}
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+func downloadReportCSV(c *gin.Context) {
+	query := `SELECT
+		e.surface_id,
+		l.name location_name,
+		s.name surface_name,
+		date_format(e.datetime, "%W") day_of_week,
+		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
+		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
+	FROM
+		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
+	GROUP BY e.surface_id, l.name, s.name, date_format(e.datetime, "%W"), e.datetime
+	ORDER BY location_name, surface_name, surface_id, dayofweek(e.datetime), start_time, end_time`
+
+	var result []models.SurfaceReport
+	if err := db.Raw(query).Scan(&result).Error; err != nil {
+		sendError(c, err)
+		return
 	}
 
-	var surfaceId, locationName, surfaceName, dow, startTime, endTime string
 	var b = &bytes.Buffer{}
 	w := csv.NewWriter(b)
+
 	w.Write([]string{
-		"Surface ID", "Location Name", "Surface Name", "day of week", "start time", "end time",
+		"Surface ID", "Location Name", "Surface Name", "Day of Week", "Start Time", "End Time",
 	})
 
-	for result.Next() {
-		if err := result.Scan(&surfaceId, &locationName, &surfaceName, &dow, &startTime, &endTime); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		w.Write([]string{surfaceId, locationName, surfaceName, dow, startTime, endTime})
+	for _, row := range result {
+		w.Write([]string{
+			row.SurfaceID,
+			row.LocationName,
+			row.SurfaceName,
+			row.DayOfWeek,
+			row.StartTime,
+			row.EndTime,
+		})
 	}
 	w.Flush()
 
 	c.Writer.Header().Add("content-type", "text/csv")
-	c.Writer.Header().Add("content-disposition", "attachment;filename=report.csv")
+	c.Writer.Header().Add("content-disposition", "attachment;filename=surface_report.csv")
 	c.Writer.Write(b.Bytes())
 }
 
