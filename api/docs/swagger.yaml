@@ -1,0 +1,310 @@
+basePath: /
+definitions:
+  models.CreateUserInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.Login:
+    properties:
+      created_at:
+        type: string
+      password:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  models.SitesConfigResponse:
+    properties:
+      base_url:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      enabled:
+        type: boolean
+      home_team:
+        type: string
+      id:
+        type: integer
+      last_scraped_at:
+        type: string
+      notes:
+        type: string
+      parser_config:
+        additionalProperties: {}
+        type: object
+      parser_type:
+        type: string
+      scrape_frequency_hours:
+        type: integer
+      site_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.SurfaceResult:
+    properties:
+      id:
+        type: integer
+      location_address:
+        type: string
+      location_city:
+        type: string
+      location_id:
+        type: integer
+      location_name:
+        type: string
+      name:
+        type: string
+      sports:
+        type: string
+    type: object
+host: localhost:8000
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: API for managing hockey rink schedules, surfaces, locations, and events
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Surface API
+  version: "1.0"
+paths:
+  /events:
+    get:
+      description: Get paginated list of events with optional filters
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Results per page
+        in: query
+        name: perPage
+        type: integer
+      - description: Filter by site
+        in: query
+        name: site
+        type: string
+      - description: Filter by surface ID
+        in: query
+        name: surface_id
+        type: integer
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data, page, perPage, total
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get events
+      tags:
+      - Events
+  /logout:
+    get:
+      description: Destroy current session
+      responses:
+        "200":
+          description: OK
+      security:
+      - CookieAuth: []
+      summary: Logout
+      tags:
+      - Authentication
+  /session:
+    get:
+      description: Get current session information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: username
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Check session
+      tags:
+      - Authentication
+  /sites:
+    get:
+      description: Get list of all configured sites
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SitesConfigResponse'
+            type: array
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get sites
+      tags:
+      - Sites
+  /surfaces:
+    get:
+      description: Get list of all surfaces with location details, optionally filtered
+        by province
+      parameters:
+      - description: Province name
+        in: query
+        name: province
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SurfaceResult'
+            type: array
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get surfaces
+      tags:
+      - Surfaces
+  /users:
+    get:
+      description: Get list of all users (passwords are masked)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Login'
+            type: array
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: List users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Login'
+        "400":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Add user
+      tags:
+      - Users
+  /users/{username}:
+    delete:
+      description: Delete a user and invalidate their sessions (cannot delete currently
+        logged in user)
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Delete user
+      tags:
+      - Users
+schemes:
+- http
+- https
+securityDefinitions:
+  CookieAuth:
+    in: cookie
+    name: gosession
+    type: apiKey
+swagger: "2.0"
