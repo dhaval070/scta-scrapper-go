@@ -1,6 +1,9 @@
 package models
 
-import "surface-api/dao/model"
+import (
+	"surface-api/dao/model"
+	"time"
+)
 
 type Config struct {
 	DB_DSN string `mapstructure:"DB_DSN"`
@@ -53,12 +56,19 @@ type SetSurfaceInput struct {
 }
 
 type Login struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username  string     `json:"username" gorm:"primaryKey"`
+	Password  string     `json:"password" gorm:"not null"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 func (Login) TableName() string {
 	return "users"
+}
+
+type CreateUserInput struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 type RampLocation struct {

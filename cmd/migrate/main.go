@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"calendar-scrapper/config"
 
@@ -46,10 +48,19 @@ var versionCmd = &cobra.Command{
 	Run:   runVersion,
 }
 
+var createCmd = &cobra.Command{
+	Use:   "create <name>",
+	Short: "Create new migration files",
+	Long:  `Create a new pair of up and down migration files with timestamp prefix.`,
+	Args:  cobra.ExactArgs(1),
+	Run:   runCreate,
+}
+
 func init() {
 	rootCmd.AddCommand(upCmd)
 	rootCmd.AddCommand(downCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(createCmd)
 }
 
 func main() {
@@ -156,5 +167,40 @@ func runVersion(cmd *cobra.Command, args []string) {
 	fmt.Printf("Current version: %d\n", version)
 	if dirty {
 		fmt.Println("Warning: Database is in dirty state")
+	}
+}
+
+func runCreate(cmd *cobra.Command, args []string) {
+	name := args[0]
+	migrationsDir := "database/migrations"
+	ext := "sql"
+	
+	version := time.Now().Format("20060102150405")
+	
+	if err := os.MkdirAll(migrationsDir, 0755); err != nil {
+		log.Fatalf("Failed to create migrations directory: %v", err)
+	}
+	
+	versionGlob := filepath.Join(migrationsDir, version+"_*."+ext)
+	matches, err := filepath.Glob(versionGlob)
+	if err != nil {
+		log.Fatalf("Failed to check for duplicate versions: %v", err)
+	}
+	if len(matches) > 0 {
+		log.Fatalf("Duplicate migration version: %s", version)
+	}
+	
+	for _, direction := range []string{"up", "down"} {
+		basename := fmt.Sprintf("%s_%s.%s.%s", version, name, direction, ext)
+		filename := filepath.Join(migrationsDir, basename)
+		
+		f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
+		if err != nil {
+			log.Fatalf("Failed to create migration file: %v", err)
+		}
+		f.Close()
+		
+		absPath, _ := filepath.Abs(filename)
+		fmt.Println(absPath)
 	}
 }

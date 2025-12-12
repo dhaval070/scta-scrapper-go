@@ -14,14 +14,37 @@ import (
 	"surface-api/dao/model"
 	"surface-api/models"
 
+	_ "surface-api/docs"
+
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/mysql"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
+
+// @title Surface API
+// @version 1.0
+// @description API for managing hockey rink schedules, surfaces, locations, and events
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@example.com
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8000
+// @BasePath /
+// @schemes http https
+
+// @securityDefinitions.apikey CookieAuth
+// @in cookie
+// @name gosession
 
 var db *gorm.DB
 var cfg models.Config
@@ -97,6 +120,11 @@ func main() {
 	r.GET("/events", getEvents)
 	r.PUT("/events/:id", updateEvent)
 
+	// User management routes
+	r.GET("/users", listUsers)
+	r.POST("/users", addUser)
+	r.DELETE("/users/:username", deleteUser)
+
 	// Sites config CRUD routes
 	r.GET("/sites-config", getSitesConfig)
 	r.GET("/parser-types", getParserTypes)
@@ -104,6 +132,9 @@ func main() {
 	r.POST("/sites-config", createSitesConfig)
 	r.PUT("/sites-config/:id", updateSitesConfig)
 	r.DELETE("/sites-config/:id", deleteSitesConfig)
+
+	// Swagger documentation endpoint
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	log.Println("starting server on ", cfg.Port)
 
@@ -332,6 +363,15 @@ func setMapping(c *gin.Context) {
 	getMappings(c)
 }
 
+// @Summary Get surfaces
+// @Description Get list of all surfaces with location details, optionally filtered by province
+// @Tags Surfaces
+// @Produce json
+// @Param province query string false "Province name"
+// @Success 200 {array} models.SurfaceResult
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /surfaces [get]
 func getSurfaces(c *gin.Context) {
 	var surfaces = []models.SurfaceResult{}
 	province := c.Query("province")
@@ -358,6 +398,14 @@ func getSurfaces(c *gin.Context) {
 	c.JSON(http.StatusOK, surfaces)
 }
 
+// @Summary Get sites
+// @Description Get list of all configured sites
+// @Tags Sites
+// @Produce json
+// @Success 200 {array} models.SitesConfigResponse
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /sites [get]
 func getSites(c *gin.Context) {
 	var sites = []model.SitesConfig{}
 
@@ -467,6 +515,13 @@ func AuthMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+// @Summary Check session
+// @Description Get current session information
+// @Tags Authentication
+// @Produce json
+// @Success 200 {object} map[string]interface{} "username"
+// @Security CookieAuth
+// @Router /session [get]
 func checkSession(c *gin.Context) {
 	s, _ := c.Get("sess")
 	sess := s.(session.Store)
@@ -477,6 +532,12 @@ func checkSession(c *gin.Context) {
 	})
 }
 
+// @Summary Logout
+// @Description Destroy current session
+// @Tags Authentication
+// @Success 200 "OK"
+// @Security CookieAuth
+// @Router /logout [get]
 func logout(c *gin.Context) {
 	sess.SessionDestroy(c.Writer, c.Request)
 	c.Status(http.StatusOK)
@@ -735,6 +796,18 @@ func getParserTypes(c *gin.Context) {
 	c.JSON(http.StatusOK, parserTypes)
 }
 
+// @Summary Get locations
+// @Description Get paginated list of locations with their surfaces
+// @Tags Locations
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param perPage query int false "Results per page" default(10)
+// @Param name query string false "Filter by location name"
+// @Param postal_code query string false "Filter by postal code"
+// @Success 200 {object} map[string]interface{} "data, page, perPage, total"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /locations [get]
 // LocationWithSurfaces represents a location with its associated surfaces
 type LocationWithSurfaces struct {
 	model.Location
@@ -790,6 +863,20 @@ func getLocations(c *gin.Context) {
 	})
 }
 
+// @Summary Get events
+// @Description Get paginated list of events with optional filters
+// @Tags Events
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param perPage query int false "Results per page" default(10)
+// @Param site query string false "Filter by site"
+// @Param surface_id query int false "Filter by surface ID"
+// @Param start_date query string false "Filter by start date (YYYY-MM-DD)"
+// @Param end_date query string false "Filter by end date (YYYY-MM-DD)"
+// @Success 200 {object} map[string]interface{} "data, page, perPage, total"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /events [get]
 // getEvents returns all events with pagination
 func getEvents(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
@@ -922,5 +1009,144 @@ func updateEvent(c *gin.Context) {
 			"surface_id":  input.SurfaceID,
 			"location_id": locationID,
 		})
+	}
+}
+
+// @Summary List users
+// @Description Get list of all users (passwords are masked)
+// @Tags Users
+// @Produce json
+// @Success 200 {array} models.Login
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /users [get]
+func listUsers(c *gin.Context) {
+	var users []models.Login
+
+	if err := db.Find(&users).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	for i := range users {
+		users[i].Password = ""
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// @Summary Add user
+// @Description Create a new user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body models.CreateUserInput true "User information"
+// @Success 201 {object} models.Login
+// @Failure 400 {object} map[string]interface{} "error"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /users [post]
+func addUser(c *gin.Context) {
+	var input models.CreateUserInput
+
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hash := sha256.Sum256([]byte(input.Password))
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(hash)))
+	base64.StdEncoding.Encode(dst, hash[:])
+
+	user := models.Login{
+		Username: input.Username,
+		Password: string(dst),
+	}
+
+	if err := db.Create(&user).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	user.Password = ""
+	c.JSON(http.StatusCreated, user)
+}
+
+// @Summary Delete user
+// @Description Delete a user and invalidate their sessions (cannot delete currently logged in user)
+// @Tags Users
+// @Produce json
+// @Param username path string true "Username"
+// @Success 200 {object} map[string]interface{} "message"
+// @Failure 400 {object} map[string]interface{} "error"
+// @Failure 404 {object} map[string]interface{} "error"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /users/{username} [delete]
+func deleteUser(c *gin.Context) {
+	username := c.Param("username")
+	
+	// Get current logged in user
+	s, _ := c.Get("sess")
+	sess := s.(session.Store)
+	currentUser := sess.Get("username")
+	
+	// Prevent self-deletion
+	if currentUser != nil && currentUser.(string) == username {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete currently logged in user"})
+		return
+	}
+	
+	var user models.Login
+
+	if err := db.First(&user, "username = ?", username).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
+
+	usernameToDelete := user.Username
+
+	if err := db.Delete(&user).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	go invalidateUserSessions(usernameToDelete)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+func invalidateUserSessions(username string) {
+	type sessionRecord struct {
+		SessionKey  string `gorm:"column:session_key"`
+		SessionData []byte `gorm:"column:session_data"`
+	}
+
+	var sessions []sessionRecord
+	if err := db.Table("session").Find(&sessions).Error; err != nil {
+		log.Println("Warning: Failed to fetch sessions:", err)
+		return
+	}
+
+	var keysToDelete []string
+	for _, session := range sessions {
+		sessionDataStr := string(session.SessionData)
+		if len(sessionDataStr) > 0 && (string(session.SessionData)[0] == 0x0D || session.SessionData[0] == 0x00) {
+			if bytes.Contains(session.SessionData, []byte(username)) {
+				keysToDelete = append(keysToDelete, session.SessionKey)
+			}
+		}
+	}
+
+	if len(keysToDelete) > 0 {
+		if err := db.Table("session").Where("session_key IN ?", keysToDelete).Delete(nil).Error; err != nil {
+			log.Println("Warning: Failed to delete sessions:", err)
+		} else {
+			log.Printf("Invalidated %d session(s) for user: %s", len(keysToDelete), username)
+		}
 	}
 }
