@@ -115,6 +115,7 @@ func main() {
 func surfaceReport(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
 	perPage := c.DefaultQuery("perPage", "10")
+	locationName := c.Query("location_name")
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -129,16 +130,25 @@ func surfaceReport(c *gin.Context) {
 
 	offset := (pageNum - 1) * perPageNum
 
+	whereClause := ""
+	var args []interface{}
+	if locationName != "" {
+		whereClause = " WHERE l.name LIKE ?"
+		args = append(args, "%"+locationName+"%")
+	}
+
 	countQuery := `SELECT COUNT(*) FROM (
 		SELECT e.surface_id, l.name location_name, s.name surface_name, date(e.datetime)
 		FROM events e 
 		JOIN surfaces s ON e.surface_id=s.id 
-		JOIN locations l ON l.id=s.location_id
+		JOIN locations l ON l.id=s.location_id` +
+		whereClause +
+		`
 		GROUP BY e.surface_id, l.name, s.name, date(e.datetime)
 	) AS subquery`
 
 	var total int64
-	if err := db.Raw(countQuery).Scan(&total).Error; err != nil {
+	if err := db.Raw(countQuery, args...).Scan(&total).Error; err != nil {
 		sendError(c, err)
 		return
 	}
@@ -152,13 +162,16 @@ func surfaceReport(c *gin.Context) {
 		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
-		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
+		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id` +
+		whereClause +
+		`
 	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
 	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time
 	LIMIT ? OFFSET ?`
 
+	queryArgs := append(args, perPageNum, offset)
 	var result []models.SurfaceReport
-	if err := db.Raw(query, perPageNum, offset).Scan(&result).Error; err != nil {
+	if err := db.Raw(query, queryArgs...).Scan(&result).Error; err != nil {
 		sendError(c, err)
 		return
 	}
