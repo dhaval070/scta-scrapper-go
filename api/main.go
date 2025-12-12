@@ -89,6 +89,7 @@ func main() {
 	r.GET("/session", checkSession)
 	r.GET("/report", surfaceReport)
 	r.GET("/report/download", downloadReportCSV)
+	r.GET("/events-by-date", getEventsByDateRange)
 	r.GET("/ramp-mappings/:province", rampMappings)
 	r.GET("/ramp-provinces", rampProvinces)
 	r.POST("/set-ramp-mapping", SetRampMappings)
@@ -144,6 +145,7 @@ func surfaceReport(c *gin.Context) {
 
 	query := `SELECT
 		e.surface_id,
+		s.location_id,
 		l.name location_name,
 		s.name surface_name,
 		date_format(e.datetime, "%W") day_of_week,
@@ -151,8 +153,8 @@ func surfaceReport(c *gin.Context) {
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
 		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
-	GROUP BY e.surface_id, l.name, s.name, date_format(e.datetime, "%W"), e.datetime
-	ORDER BY location_name, surface_name, surface_id, dayofweek(e.datetime), start_time, end_time
+	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
+	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time
 	LIMIT ? OFFSET ?`
 
 	var result []models.SurfaceReport
@@ -172,6 +174,7 @@ func surfaceReport(c *gin.Context) {
 func downloadReportCSV(c *gin.Context) {
 	query := `SELECT
 		e.surface_id,
+		s.location_id,
 		l.name location_name,
 		s.name surface_name,
 		date_format(e.datetime, "%W") day_of_week,
@@ -179,8 +182,8 @@ func downloadReportCSV(c *gin.Context) {
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
 		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
-	GROUP BY e.surface_id, l.name, s.name, date_format(e.datetime, "%W"), e.datetime
-	ORDER BY location_name, surface_name, surface_id, dayofweek(e.datetime), start_time, end_time`
+	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
+	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time`
 
 	var result []models.SurfaceReport
 	if err := db.Raw(query).Scan(&result).Error; err != nil {
@@ -210,6 +213,47 @@ func downloadReportCSV(c *gin.Context) {
 	c.Writer.Header().Add("content-type", "text/csv")
 	c.Writer.Header().Add("content-disposition", "attachment;filename=surface_report.csv")
 	c.Writer.Write(b.Bytes())
+}
+
+func getEventsByDateRange(c *gin.Context) {
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+	locationID := c.Query("location_id")
+
+	if startDate == "" || endDate == "" || locationID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "start_date, end_date, and location_id are required parameters",
+		})
+		return
+	}
+
+	var location model.Location
+	if err := db.First(&location, locationID).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	var results []models.EventWithLocation
+	if err := db.Table("events").
+		Select("events.*, locations.name as location_name, surfaces.name as surface_name, sites_config.display_name as display_name").
+		Joins("LEFT JOIN locations ON events.location_id = locations.id").
+		Joins("LEFT JOIN surfaces ON events.surface_id = surfaces.id").
+		Joins("LEFT JOIN sites_config ON events.site = sites_config.site_name").
+		Where("events.datetime >= ? AND events.datetime <= ? AND events.location_id = ?", startDate, endDate, locationID).
+		Order("events.datetime ASC").
+		Scan(&results).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":          results,
+		"start_date":    startDate,
+		"end_date":      endDate,
+		"location_id":   locationID,
+		"location_name": location.Name,
+		"count":         len(results),
+	})
 }
 
 func setSurface(c *gin.Context) {

@@ -113,9 +113,17 @@ type SitesConfigResponse struct {
 
 type SurfaceReport struct {
 	SurfaceID    string `json:"surface_id"`
+	LocationID   string `json:"location_id"`
 	LocationName string `json:"location_name"`
 	SurfaceName  string `json:"surface_name"`
 	DayOfWeek    string `json:"day_of_week"`
 	StartTime    string `json:"start_time"`
 	EndTime      string `json:"end_time"`
+}
+
+type EventWithLocation struct {
+	model.Event
+	LocationName string `json:"location_name"`
+	SurfaceName  string `json:"surface_name"`
+	DisplayName  string `json:"display_name"`
 }
