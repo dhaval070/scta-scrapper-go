@@ -185,6 +185,15 @@ func surfaceReport(c *gin.Context) {
 }
 
 func downloadReportCSV(c *gin.Context) {
+	locationName := c.Query("location_name")
+
+	whereClause := ""
+	var args []interface{}
+	if locationName != "" {
+		whereClause = " WHERE l.name LIKE ?"
+		args = append(args, "%"+locationName+"%")
+	}
+
 	query := `SELECT
 		e.surface_id,
 		s.location_id,
@@ -194,12 +203,14 @@ func downloadReportCSV(c *gin.Context) {
 		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
-		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id
+		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id` +
+		whereClause +
+		`
 	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
 	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time`
 
 	var result []models.SurfaceReport
-	if err := db.Raw(query).Scan(&result).Error; err != nil {
+	if err := db.Raw(query, args...).Scan(&result).Error; err != nil {
 		sendError(c, err)
 		return
 	}
