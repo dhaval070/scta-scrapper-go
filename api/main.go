@@ -162,20 +162,23 @@ func surfaceReport(c *gin.Context) {
 	offset := (pageNum - 1) * perPageNum
 
 	whereClause := ""
-	var args []interface{}
+	var args []any
 	if locationName != "" {
 		whereClause = " WHERE l.name LIKE ?"
 		args = append(args, "%"+locationName+"%")
 	}
 
 	countQuery := `SELECT COUNT(*) FROM (
-		SELECT e.surface_id, l.name location_name, s.name surface_name, date(e.datetime)
+		SELECT e.surface_id,
+			any_value(l.name) location_name,
+			any_value(s.name) surface_name,
+			date(e.datetime)
 		FROM events e 
 		JOIN surfaces s ON e.surface_id=s.id 
 		JOIN locations l ON l.id=s.location_id` +
 		whereClause +
 		`
-		GROUP BY e.surface_id, l.name, s.name, date(e.datetime)
+		GROUP BY e.surface_id, date(e.datetime)
 	) AS subquery`
 
 	var total int64
@@ -186,18 +189,18 @@ func surfaceReport(c *gin.Context) {
 
 	query := `SELECT
 		e.surface_id,
-		s.location_id,
-		l.name location_name,
-		s.name surface_name,
-		date_format(e.datetime, "%W") day_of_week,
+		any_value(s.location_id) as location_id,
+		any_value(l.name) location_name,
+		any_value(s.name) surface_name,
+		any_value(date_format(e.datetime, "%W")) day_of_week,
 		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
 		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id` +
 		whereClause +
 		`
-	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
-	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time
+	GROUP BY e.surface_id, date(e.datetime)
+	ORDER BY location_name, surface_name, day_of_week,  start_time, end_time
 	LIMIT ? OFFSET ?`
 
 	queryArgs := append(args, perPageNum, offset)
@@ -227,18 +230,18 @@ func downloadReportCSV(c *gin.Context) {
 
 	query := `SELECT
 		e.surface_id,
-		s.location_id,
-		l.name location_name,
-		s.name surface_name,
-		date_format(e.datetime, "%W") day_of_week,
+		any_value(s.location_id),
+		any_value(l.name) location_name,
+		any_value(s.name) surface_name,
+		any_value(date_format(e.datetime, "%W")) day_of_week,
 		date_format(min(e.datetime), "%Y-%m-%d %T") start_time,
 		date_format(max( date_add(e.datetime, INTERVAL 150 minute)), "%Y-%m-%d %T") end_time
 	FROM
 		events e JOIN surfaces s on e.surface_id=s.id JOIN locations l on l.id=s.location_id` +
 		whereClause +
 		`
-	GROUP BY e.surface_id, s.location_id, l.name, s.name, date_format(e.datetime, "%W")
-	ORDER BY location_name, surface_name, surface_id, date_format(e.datetime, "%W"), start_time, end_time`
+	GROUP BY e.surface_id, date(e.datetime)
+	ORDER BY location_name, surface_name, surface_id, day_of_week, start_time, end_time`
 
 	var result []models.SurfaceReport
 	if err := db.Raw(query, args...).Scan(&result).Error; err != nil {
@@ -503,7 +506,7 @@ func AuthMiddleware(c *gin.Context) {
 	defer s.SessionRelease(c.Writer)
 
 	url := c.Request.URL.String()
-	if url != "/login" && url != "/logout" {
+	if url != "/swagger/" && url != "/login" && url != "/logout" {
 		if s.Get("username") == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "Session expired",
@@ -1085,18 +1088,18 @@ func addUser(c *gin.Context) {
 // @Router /users/{username} [delete]
 func deleteUser(c *gin.Context) {
 	username := c.Param("username")
-	
+
 	// Get current logged in user
 	s, _ := c.Get("sess")
 	sess := s.(session.Store)
 	currentUser := sess.Get("username")
-	
+
 	// Prevent self-deletion
 	if currentUser != nil && currentUser.(string) == username {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot delete currently logged in user"})
 		return
 	}
-	
+
 	var user models.Login
 
 	if err := db.First(&user, "username = ?", username).Error; err != nil {
