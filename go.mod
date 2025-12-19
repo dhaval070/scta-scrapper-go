@@ -5,6 +5,7 @@ go 1.25.3
 require (
 	github.com/antchfx/htmlquery v1.2.5
 	github.com/go-sql-driver/mysql v1.7.0
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/go-cmp v0.6.0
 	github.com/json-iterator/go v1.1.12
 	github.com/labstack/echo/v4 v4.13.4
@@ -25,7 +26,6 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
