@@ -416,7 +416,7 @@ func getProvinces(c *gin.Context) {
 		ProvinceName string `json:"province_name"`
 	}{}
 
-	err := db.Raw(`select id, province_name from provinces where country="Canada" order by province_name`).
+	err := db.Raw(`select id, province_name from provinces order by province_name`).
 		Scan(&result).Error
 
 	if err != nil {
