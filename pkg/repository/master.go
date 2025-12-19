@@ -32,6 +32,7 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 				provinces[loc.Province.ID] = model.Province{
 					ID:           loc.Province.ID,
 					ProvinceName: loc.Province.Name,
+					Country:      loc.Province.Country["name"].(string),
 				}
 			}
 

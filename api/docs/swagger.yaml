@@ -140,6 +140,34 @@ paths:
       summary: Logout
       tags:
       - Authentication
+  /provinces:
+    get:
+      description: Get list of all provinces in Canada
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              properties:
+                id:
+                  format: int32
+                  type: integer
+                province_name:
+                  type: string
+              type: object
+            type: array
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get provinces
+      tags:
+      - Location
   /session:
     get:
       description: Get current session information

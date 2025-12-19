@@ -105,6 +105,7 @@ func main() {
 	r.GET("/mappings/:site", getMappings)
 	r.GET("/sites", getSites)
 	r.GET("/surfaces", getSurfaces)
+	r.GET("/provinces", getProvinces)
 	r.POST("/set-surface", setSurface)
 	r.POST("/set-mapping", setMapping)
 	r.POST("/login", login)
@@ -399,6 +400,30 @@ func getSurfaces(c *gin.Context) {
 		sendError(c, err)
 	}
 	c.JSON(http.StatusOK, surfaces)
+}
+
+// @Summary Get provinces
+// @Description Get list of all provinces in Canada
+// @Tags Location
+// @Produce json
+// @Success 200 {array} object{id=int32,province_name=string}
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /provinces [get]
+func getProvinces(c *gin.Context) {
+	var result = []struct {
+		Id           int32  `json:"id"`
+		ProvinceName string `json:"province_name"`
+	}{}
+
+	err := db.Raw(`select id, province_name from provinces where country="Canada" order by province_name`).
+		Scan(&result).Error
+
+	if err != nil {
+		sendError(c, err)
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 // @Summary Get sites

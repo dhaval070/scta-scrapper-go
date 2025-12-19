@@ -20,8 +20,9 @@ type JsonLocation struct {
 }
 
 type JsonProvince struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
+	ID      int32  `json:"id"`
+	Name    string `json:"name"`
+	Country map[string]any
 }
 
 type JsonSurfaceMedia struct {
