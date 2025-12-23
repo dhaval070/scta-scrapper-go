@@ -108,6 +108,7 @@ func main() {
 	r.GET("/provinces", getProvinces)
 	r.POST("/set-surface", setSurface)
 	r.POST("/set-mapping", setMapping)
+	r.POST("/unset-mapping", unsetMapping)
 	r.POST("/login", login)
 	r.GET("/logout", logout)
 	r.GET("/session", checkSession)
@@ -344,6 +345,54 @@ func setSurface(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
+// @Summary Unset mapping
+// @Description Remove location or surface mapping for a site location
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param input body models.UnsetMappingInput true "Mapping to unset"
+// @Success 200 {array} models.SiteLocResult
+// @Failure 400 {object} map[string]interface{} "error"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /unset-mapping [post]
+func unsetMapping(c *gin.Context) {
+	var input = &models.UnsetMappingInput{}
+
+	if err := c.BindJSON(input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	updateFields := make(map[string]any)
+
+	if input.Type == "location" {
+		if input.DoNotFill {
+			updateFields["location_id"] = -1
+			updateFields["surface_id"] = -1
+		} else {
+			updateFields["location_id"] = 0
+			updateFields["surface_id"] = 0
+		}
+	} else {
+		if input.DoNotFill {
+			updateFields["surface_id"] = -1
+		} else {
+			updateFields["surface_id"] = 0
+		}
+	}
+
+	if err := db.Model(&models.SiteLocResult{}).
+		Where("site = ? AND location = ?", input.Site, input.Location).
+		Updates(updateFields).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.AddParam("site", input.Site)
+	getSiteLoc(c)
+}
+
 func setMapping(c *gin.Context) {
 	var input = &models.Mapping{}
 
@@ -531,7 +580,7 @@ func AuthMiddleware(c *gin.Context) {
 	defer s.SessionRelease(c.Writer)
 
 	url := c.Request.URL.String()
-	if url != "/swagger/" && url != "/login" && url != "/logout" {
+	if url != "/unset-mapping" && url != "/swagger/" && url != "/login" && url != "/logout" {
 		if s.Get("username") == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "Session expired",

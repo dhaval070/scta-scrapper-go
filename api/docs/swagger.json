@@ -261,6 +261,62 @@
                 }
             }
         },
+        "/unset-mapping": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Remove location or surface mapping for a site location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Unset mapping",
+                "parameters": [
+                    {
+                        "description": "Mapping to unset",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UnsetMappingInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.SiteLocResult"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -405,6 +461,100 @@
         }
     },
     "definitions": {
+        "model.Location": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "all_sheets_count": {
+                    "type": "integer"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "integer"
+                },
+                "recording_hours_local": {
+                    "type": "string"
+                },
+                "total_surfaces": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "venue_status": {
+                    "type": "string"
+                },
+                "zone": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Surface": {
+            "type": "object",
+            "properties": {
+                "closed_from": {
+                    "type": "integer"
+                },
+                "coming_soon": {
+                    "type": "boolean"
+                },
+                "first_media_date": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "location_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "online": {
+                    "type": "boolean"
+                },
+                "orderIndex": {
+                    "type": "integer"
+                },
+                "sports": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "venue_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.CreateUserInput": {
             "type": "object",
             "required": [
@@ -434,6 +584,38 @@
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "models.SiteLocResult": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "linkedSurface": {
+                    "$ref": "#/definitions/model.Surface"
+                },
+                "liveBarnLocation": {
+                    "$ref": "#/definitions/model.Location"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "location_id": {
+                    "type": "integer"
+                },
+                "match_type": {
+                    "type": "string"
+                },
+                "site": {
+                    "type": "string"
+                },
+                "surface": {
+                    "type": "string"
+                },
+                "surface_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -505,6 +687,32 @@
                 },
                 "sports": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UnsetMappingInput": {
+            "type": "object",
+            "required": [
+                "location",
+                "site",
+                "type"
+            ],
+            "properties": {
+                "do_not_fill": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "site": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "location",
+                        "surface"
+                    ]
                 }
             }
         }

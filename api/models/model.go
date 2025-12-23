@@ -137,3 +137,10 @@ type EventWithLocation struct {
 	SurfaceName  string `json:"surface_name"`
 	DisplayName  string `json:"display_name"`
 }
+
+type UnsetMappingInput struct {
+	Site      string `json:"site" binding:"required"`
+	Location  string `json:"location" binding:"required"`
+	Type      string `json:"type" binding:"required,oneof=location surface"`
+	DoNotFill bool   `json:"do_not_fill"`
+}

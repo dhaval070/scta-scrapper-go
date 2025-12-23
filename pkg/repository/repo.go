@@ -57,7 +57,7 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 		return nil
 	}
 
-	if siteLoc.SurfaceID == 0 {
+	if siteLoc.SurfaceID == 0 || siteLoc.SurfaceID == -1 {
 		return nil
 	}
 
@@ -257,7 +257,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 	// Batch update matched location_ids
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
 		for _, m := range matches {
-			if err := tx.Exec("UPDATE sites_locations SET location_id = ? WHERE site = ? AND location = ?",
+			if err := tx.Exec("UPDATE sites_locations SET location_id = ? WHERE site = ? AND location = ? AND location_id != -1",
 				m.locationID, r.site, m.siteLocation).Error; err != nil {
 				return err
 			}
@@ -269,7 +269,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 			JOIN (SELECT location_id FROM surfaces WHERE deleted_at IS NULL GROUP BY location_id HAVING COUNT(*) = 1) single 
 				ON sl.location_id = single.location_id
 			SET sl.surface_id = s.id
-			WHERE sl.site = ?`, r.site).Error
+			WHERE sl.site = ? AND sl.location_id > 0`, r.site).Error
 		if err != nil {
 			return err
 		}
@@ -279,6 +279,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 			SET sl.surface_id=s.id
 			WHERE
 			sl.site=? AND sl.location_id=l.id AND s.location_id=l.id
+			AND sl.surface_id=0 AND sl.location_id > 0
 			AND s.deleted_at IS NULL
 			AND locate(s.name, trim(replace(sl.location, l.name, '')))>0`, r.site).Error
 		return err
@@ -290,7 +291,7 @@ func (r *SiteRepository) MatchGamesheet() error {
 
 	var siteLoc []model.SitesLocation
 	err = r.DB.Raw(`SELECT site, location, location_id FROM sites_locations WHERE site =?
-		AND surface_id=0`, r.site).Scan(&siteLoc).Error
+		AND surface_id=0 AND location_id > 0`, r.site).Scan(&siteLoc).Error
 	if err != nil {
 		return err
 	}
@@ -390,7 +391,7 @@ TOKENS_LOOP:
 
 		err = r.DB.Transaction(func(tx *gorm.DB) error {
 			// set location id
-			err = tx.Exec(`UPDATE sites_locations set location_id=? WHERE site=? AND location=?`, id, sl.Site, sl.Location).Error
+			err = tx.Exec(`UPDATE sites_locations set location_id=? WHERE site=? AND location=? AND location_id != -1`, id, sl.Site, sl.Location).Error
 			if err != nil {
 				return fmt.Errorf("failed to set location id, %w", err)
 			}
@@ -426,7 +427,7 @@ func (r *SiteRepository) SetGamesheetSurface(sl model.SitesLocation, locId int32
 
 func (r *SiteRepository) setSingleSurface(sl model.SitesLocation, surfaceID int32, tx *gorm.DB) (bool, error) {
 	log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
-	err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+	err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id != -1`,
 		surfaceID, sl.Site, sl.Location).Error
 	if err != nil {
 		return false, fmt.Errorf("failed to set location id, %w", err)
@@ -442,18 +443,18 @@ func (r *SiteRepository) matchBySanitizedName(sl model.SitesLocation, locId int3
 
 	remainingPart := strings.TrimSpace(strings.ReplaceAll(sl.Location, location.Name, ""))
 	sanitizedLocName := strings.ToLower(reNonAlphaNum.ReplaceAllString(remainingPart, ""))
-	
+
 	if sanitizedLocName == "" {
 		return false, nil
 	}
 
 	for _, s := range smap[locId] {
 		sanitizedSurfaceName := strings.ToLower(reNonAlphaNum.ReplaceAllString(s.Name, ""))
-		
+
 		if sanitizedSurfaceName != "" && strings.Contains(sanitizedLocName, sanitizedSurfaceName) {
 			log.Printf("gamesheet matched surface: sanitized, site=%s, location=%s, surface=%s\n", sl.Site, sl.Location, s.Name)
-			
-			err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+
+			err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id=0 AND surface_id != -1`,
 				s.ID, sl.Site, sl.Location).Error
 			if err != nil {
 				return false, fmt.Errorf("failed to set surface id, %w", err)
@@ -474,9 +475,9 @@ func (r *SiteRepository) matchByLastWord(sl model.SitesLocation, locId int32, sm
 		if !strings.Contains(strings.ToLower(s.Name), strings.ToLower(lastWord)) {
 			continue
 		}
-		
+
 		log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
-		err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=?`,
+		err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id=0 AND surface_id != -1`,
 			s.ID, sl.Site, sl.Location).Error
 		if err != nil {
 			return false, fmt.Errorf("failed to set surface id, %w", err)
@@ -500,7 +501,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 			l.postal_code<>'' AND
 			position(l.postal_code in s.address) AND
 			s.site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 
 		`UPDATE
 			sites_locations s,
@@ -512,7 +513,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
 			position(left(l.postal_code,3) in s.address) AND
 			site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 
 		`UPDATE
 			sites_locations s,
@@ -523,7 +524,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 		WHERE
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
 			s.site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 	}
 
 	return r.DB.Transaction(func(db *gorm.DB) error {
@@ -537,9 +538,9 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
 		// set surface id
-		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
+		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0 and a.surface_id != -1 and a.location_id > 0`, r.site)
 
-		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=?`, r.site)
+		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=? and s.surface_id != -1 and s.location_id > 0`, r.site)
 		return nil
 	})
 }
@@ -561,7 +562,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			p.id=l.province_id AND
 			p.province_name="Ontario" AND
 			s.site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 
 		`UPDATE
 			sites_locations s,
@@ -576,7 +577,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
 			position(left(l.postal_code,3) in s.address) AND
 			site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 
 		`UPDATE
 			sites_locations s,
@@ -590,7 +591,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			p.id=l.province_id AND
 			p.province_name="Ontario" AND
 			s.site=? AND
-			s.location_id=0`,
+			s.location_id=0 AND s.location_id != -1`,
 	}
 
 	return r.DB.Transaction(func(db *gorm.DB) error {
@@ -604,8 +605,8 @@ func (r *SiteRepository) RunMatchLocations() error {
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, "\\(", '') where site=?`, r.site)
 		db.Exec(`update sites_locations set surface=regexp_replace(surface, '\\)', '') where site=?`, r.site)
 		// set surface id
-		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0`, r.site)
-		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=?`, r.site)
+		db.Exec(`update sites_locations a, surfaces s set a.surface_id=s.id where s.location_id=a.location_id and position(a.surface in REPLACE(s.name,"#", ""))<>0 and s.id is not null and a.surface<>"" and a.site=? and a.surface_id=0 and a.location_id > 0`, r.site)
+		db.Exec(`update sites_locations s, locations l, surfaces r set s.surface_id=r.id where s.location_id=l.id and r.location_id=s.location_id and l.total_surfaces=1 and s.surface_id=0 and s.site=?  and s.location_id > 0`, r.site)
 		return nil
 	})
 }

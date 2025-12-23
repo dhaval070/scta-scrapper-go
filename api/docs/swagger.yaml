@@ -1,5 +1,67 @@
 basePath: /
 definitions:
+  model.Location:
+    properties:
+      address1:
+        type: string
+      address2:
+        type: string
+      all_sheets_count:
+        type: integer
+      city:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      logo_url:
+        type: string
+      longitude:
+        type: number
+      name:
+        type: string
+      postal_code:
+        type: string
+      province_id:
+        type: integer
+      recording_hours_local:
+        type: string
+      total_surfaces:
+        type: integer
+      uuid:
+        type: string
+      venue_status:
+        type: string
+      zone:
+        type: string
+    type: object
+  model.Surface:
+    properties:
+      closed_from:
+        type: integer
+      coming_soon:
+        type: boolean
+      first_media_date:
+        type: integer
+      id:
+        type: integer
+      location_id:
+        type: integer
+      name:
+        type: string
+      online:
+        type: boolean
+      orderIndex:
+        type: integer
+      sports:
+        type: string
+      status:
+        type: string
+      uuid:
+        type: string
+      venue_id:
+        type: integer
+    type: object
   models.CreateUserInput:
     properties:
       password:
@@ -20,6 +82,27 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  models.SiteLocResult:
+    properties:
+      address:
+        type: string
+      linkedSurface:
+        $ref: '#/definitions/model.Surface'
+      liveBarnLocation:
+        $ref: '#/definitions/model.Location'
+      location:
+        type: string
+      location_id:
+        type: integer
+      match_type:
+        type: string
+      site:
+        type: string
+      surface:
+        type: string
+      surface_id:
+        type: integer
     type: object
   models.SitesConfigResponse:
     properties:
@@ -67,6 +150,24 @@ definitions:
         type: string
       sports:
         type: string
+    type: object
+  models.UnsetMappingInput:
+    properties:
+      do_not_fill:
+        type: boolean
+      location:
+        type: string
+      site:
+        type: string
+      type:
+        enum:
+        - location
+        - surface
+        type: string
+    required:
+    - location
+    - site
+    - type
     type: object
 host: localhost:8000
 info:
@@ -234,6 +335,42 @@ paths:
       summary: Get surfaces
       tags:
       - Surfaces
+  /unset-mapping:
+    post:
+      consumes:
+      - application/json
+      description: Remove location or surface mapping for a site location
+      parameters:
+      - description: Mapping to unset
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UnsetMappingInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SiteLocResult'
+            type: array
+        "400":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Unset mapping
+      tags:
+      - Mappings
   /users:
     get:
       description: Get list of all users (passwords are masked)
