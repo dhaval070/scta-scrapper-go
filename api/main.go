@@ -324,17 +324,24 @@ func setSurface(c *gin.Context) {
 		return
 	}
 
-	var surface = &model.Surface{}
-	if err := db.Find(surface, input.SurfaceID).Error; err != nil {
-		sendError(c, err)
-		return
-	}
+	if input.SurfaceID == -1 {
+		if err := db.Model(input).Where("site=? and location=?", input.Site, input.Location).Select("SurfaceID").Updates(input).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+	} else {
+		var surface = &model.Surface{}
+		if err := db.Find(surface, input.SurfaceID).Error; err != nil {
+			sendError(c, err)
+			return
+		}
 
-	input.LocationID = surface.LocationID
+		input.LocationID = surface.LocationID
 
-	if err := db.Model(input).Where("site=? and location=?", input.Site, input.Location).Select("LocationID", "SurfaceID").Updates(input).Error; err != nil {
-		sendError(c, err)
-		return
+		if err := db.Model(input).Where("site=? and location=?", input.Site, input.Location).Select("LocationID", "SurfaceID").Updates(input).Error; err != nil {
+			sendError(c, err)
+			return
+		}
 	}
 	var result = []models.SiteLocResult{}
 
@@ -367,19 +374,20 @@ func unsetMapping(c *gin.Context) {
 	updateFields := make(map[string]any)
 
 	if input.Type == "location" {
-		if input.DoNotFill {
-			updateFields["location_id"] = -1
-			updateFields["surface_id"] = -1
-		} else {
-			updateFields["location_id"] = 0
+		var current models.SiteLocResult
+		if err := db.Model(&models.SiteLocResult{}).
+			Where("site = ? AND location = ?", input.Site, input.Location).
+			First(&current).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		updateFields["location_id"] = 0
+		if current.SurfaceID != -1 {
 			updateFields["surface_id"] = 0
 		}
 	} else {
-		if input.DoNotFill {
-			updateFields["surface_id"] = -1
-		} else {
-			updateFields["surface_id"] = 0
-		}
+		updateFields["surface_id"] = 0
 	}
 
 	if err := db.Model(&models.SiteLocResult{}).

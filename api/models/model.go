@@ -139,8 +139,7 @@ type EventWithLocation struct {
 }
 
 type UnsetMappingInput struct {
-	Site      string `json:"site" binding:"required"`
-	Location  string `json:"location" binding:"required"`
-	Type      string `json:"type" binding:"required,oneof=location surface"`
-	DoNotFill bool   `json:"do_not_fill"`
+	Site     string `json:"site" binding:"required"`
+	Location string `json:"location" binding:"required"`
+	Type     string `json:"type" binding:"required,oneof=location surface"`
 }
