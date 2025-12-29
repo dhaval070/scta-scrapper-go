@@ -55,6 +55,12 @@ type SetSurfaceInput struct {
 	SurfaceID int32  `json:"surface_id"`
 }
 
+type SetLocationInput struct {
+	Site       string `json:"site"`
+	Location   string `json:"location"`
+	LocationID int32  `json:"surface_id"`
+}
+
 type Login struct {
 	Username  string     `json:"username" gorm:"primaryKey"`
 	Password  string     `json:"password" gorm:"not null"`

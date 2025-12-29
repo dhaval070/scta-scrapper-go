@@ -83,6 +83,15 @@ definitions:
       username:
         type: string
     type: object
+  models.SetLocationInput:
+    properties:
+      location:
+        type: string
+      site:
+        type: string
+      surface_id:
+        type: integer
+    type: object
   models.SiteLocResult:
     properties:
       address:
@@ -153,8 +162,6 @@ definitions:
     type: object
   models.UnsetMappingInput:
     properties:
-      do_not_fill:
-        type: boolean
       location:
         type: string
       site:
@@ -230,6 +237,46 @@ paths:
       summary: Get events
       tags:
       - Events
+  /locations:
+    get:
+      description: Get paginated list of locations with their surfaces
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Results per page
+        in: query
+        name: perPage
+        type: integer
+      - description: Filter by location name
+        in: query
+        name: name
+        type: string
+      - description: Filter by postal code
+        in: query
+        name: postal_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: data, page, perPage, total
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get locations
+      tags:
+      - Locations
   /logout:
     get:
       description: Destroy current session
@@ -285,6 +332,37 @@ paths:
       summary: Check session
       tags:
       - Authentication
+  /set-location:
+    post:
+      consumes:
+      - application/json
+      description: Set Location ID with a SiteLocation Record
+      parameters:
+      - description: Mapping to set
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SetLocationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SiteLocResult'
+            type: array
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Set Location ID with a SiteLocation Record
+      tags:
+      - Mappings
   /sites:
     get:
       description: Get list of all configured sites

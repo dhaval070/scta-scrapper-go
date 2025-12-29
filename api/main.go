@@ -107,6 +107,7 @@ func main() {
 	r.GET("/surfaces", getSurfaces)
 	r.GET("/provinces", getProvinces)
 	r.POST("/set-surface", setSurface)
+	r.POST("/set-location", setLocation)
 	r.POST("/set-mapping", setMapping)
 	r.POST("/unset-mapping", unsetMapping)
 	r.POST("/login", login)
@@ -350,6 +351,39 @@ func setSurface(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+// @Summary Set Location ID with a SiteLocation Record
+// @Description Set Location ID with a SiteLocation Record
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param input body models.SetLocationInput true "Mapping to set"
+// @Success 200 {array} models.SiteLocResult
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /set-location [post]
+func setLocation(c *gin.Context) {
+	var input = struct {
+		LocationId int32  `json:"location_id"`
+		Site       string `json:"site"`
+		Location   string `json:"location"`
+	}{}
+
+	if err := c.BindJSON(&input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	err := db.Exec(`update sites_locations set location_id=? where site=? and location=?`, input.LocationId, input.Site, input.Location).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error updating location"})
+		return
+	}
+
+	c.AddParam("site", input.Site)
+	getSiteLoc(c)
 }
 
 // @Summary Unset mapping
@@ -900,6 +934,18 @@ type LocationWithSurfaces struct {
 }
 
 // getLocations returns all locations with their associated surfaces
+// @Summary Get locations
+// @Description Get paginated list of locations with their surfaces
+// @Tags Locations
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param perPage query int false "Results per page" default(10)
+// @Param name query string false "Filter by location name"
+// @Param postal_code query string false "Filter by postal code"
+// @Success 200 {object} map[string]interface{} "data, page, perPage, total"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /locations [get]
 func getLocations(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
 	perPage := c.DefaultQuery("perPage", "10")

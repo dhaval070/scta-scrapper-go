@@ -96,6 +96,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/locations": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Get paginated list of locations with their surfaces",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "Get locations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Results per page",
+                        "name": "perPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by location name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by postal code",
+                        "name": "postal_code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "data, page, perPage, total",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/logout": {
             "get": {
                 "security": [
@@ -177,6 +238,55 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "username",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/set-location": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Set Location ID with a SiteLocation Record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Set Location ID with a SiteLocation Record",
+                "parameters": [
+                    {
+                        "description": "Mapping to set",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SetLocationInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.SiteLocResult"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -589,6 +699,20 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SetLocationInput": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string"
+                },
+                "site": {
+                    "type": "string"
+                },
+                "surface_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.SiteLocResult": {
             "type": "object",
             "properties": {
@@ -700,9 +824,6 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
-                "do_not_fill": {
-                    "type": "boolean"
-                },
                 "location": {
                     "type": "string"
                 },
