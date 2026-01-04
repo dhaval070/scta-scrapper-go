@@ -299,13 +299,17 @@ type RinkReportResponse struct {
 }
 
 // @Summary Get rink usage report
-// @Description Get paginated rink usage report aggregated by date and location
+// @Description Get paginated rink usage report aggregated by date and location. Supports filtering by rink (partial), province, city, and exporting CSV via 'export' query param.
 // @Tags Reports
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param perPage query int false "Results per page" default(10)
 // @Param start_date query string false "Start date (YYYY-MM-DD)"
 // @Param end_date query string false "End date (YYYY-MM-DD)"
+// @Param rink query string false "Rink name (partial match)"
+// @Param province query string false "Province ID"
+// @Param city query string false "City name"
+// @Param export query string false "If present returns CSV download"
 // @Success 200 {object} RinkReportResponse
 // @Failure 400 {object} map[string]interface{} "bad request"
 // @Failure 500 {object} map[string]interface{} "error"
@@ -316,6 +320,7 @@ func rinkReport(c *gin.Context) {
 	perPage := c.DefaultQuery("perPage", "10")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
+	export := c.Query("export")
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -331,6 +336,9 @@ func rinkReport(c *gin.Context) {
 
 	where := ""
 	var args []any
+	rink := c.Query("rink")
+	province := c.Query("province")
+	city := c.Query("city")
 	if startDate != "" {
 		where = " WHERE edate >= ?"
 		args = append(args, startDate)
@@ -344,15 +352,38 @@ func rinkReport(c *gin.Context) {
 			args = append(args, endDate)
 		}
 	}
+	if rink != "" {
+		if where == "" {
+			where = " WHERE l.name LIKE ?"
+		} else {
+			where = where + " AND l.name LIKE ?"
+		}
+		args = append(args, "%"+rink+"%")
+	}
+	if province != "" {
+		if where == "" {
+			where = " WHERE p.id = ?"
+		} else {
+			where = where + " AND p.id = ?"
+		}
+		args = append(args, province)
+	}
+	if city != "" {
+		if where == "" {
+			where = " WHERE l.city LIKE ?"
+		} else {
+			where = where + " AND l.city LIKE ?"
+		}
+		args = append(args, city+"%")
+	}
 
 	countQuery := `with tbl as (
 		select edate, l.name, location_id, l.city,p.province_name, site, count(*) cnt from events e
-		join locations l on l.id=e.location_id
-		join provinces p on p.id=l.province_id
+		inner join locations l on l.id=e.location_id
+		inner join provinces p on p.id=l.province_id
 		` + where + `
 		group by edate, location_id, site
-	)
-	select count(edate) from tbl;`
+		) select count(edate) from tbl;`
 
 	var total int64
 	if err := db.Raw(countQuery, args...).Scan(&total).Error; err != nil {
@@ -360,28 +391,51 @@ func rinkReport(c *gin.Context) {
 		return
 	}
 
-	query := `with tbl as (
+	// Build query differently when exporting (no pagination)
+	var query string
+	var queryArgs []any
+	if export != "" {
+		query = `with tbl as (
+			select edate, l.name, location_id, l.city,p.province_name, site, count(*) cnt from events e
+			inner join locations l on l.id=e.location_id
+			inner join provinces p on p.id=l.province_id
+			` + where + `
+			group by edate, location_id, site
+			)
+			select edate e_date,
+			any_value(name) rink,
+			tbl.location_id,
+			any_value(city) city,
+			any_value(province_name) province,
+			json_objectagg(tbl.site, cnt) json_report,
+			sum(cnt) total
+			from
+			tbl
+			group by edate, location_id order by edate,name`
+		queryArgs = args
+	} else {
+		query = `with tbl as (
 			select edate, l.name, location_id, l.city,p.province_name, site, count(*) cnt from events e
 			join locations l on l.id=e.location_id
 			join provinces p on p.id=l.province_id
 			` + where + `
 			group by edate, location_id, site
 			LIMIT ? OFFSET ?
-		)
-		select edate e_date,
-		any_value(name) rink,
-		tbl.location_id,
-		any_value(city) city,
-		any_value(province_name) province,
-		json_objectagg(tbl.site, cnt) json_report,
-		sum(cnt) total
-		from
+			)
+			select edate e_date,
+			any_value(name) rink,
+			tbl.location_id,
+			any_value(city) city,
+			any_value(province_name) province,
+			json_objectagg(tbl.site, cnt) json_report,
+			sum(cnt) total
+			from
 			tbl
-		group by edate, location_id order by edate,name`
+			group by edate, location_id order by edate,name`
+		queryArgs = append(args, perPageNum, offset)
+	}
 
-	queryArgs := append(args, perPageNum, offset)
-
-	var result []struct {
+	var result = []struct {
 		EDate      string         `json:"edate"`
 		Rink       string         `json:"rink"`
 		LocationID int32          `json:"location_id"`
@@ -389,10 +443,34 @@ func rinkReport(c *gin.Context) {
 		Province   string         `json:"province"`
 		JsonReport datatypes.JSON `json:"json_report"`
 		Total      int32          `json:"total"`
-	}
+	}{}
 
 	if err := db.Raw(query, queryArgs...).Scan(&result).Error; err != nil {
 		sendError(c, err)
+		return
+	}
+
+	// If export param present, stream CSV without pagination
+	if export != "" {
+		var b = &bytes.Buffer{}
+		w := csv.NewWriter(b)
+		w.Write([]string{"Date", "Rink", "Location ID", "City", "Province", "Json Report", "Total"})
+		for _, row := range result {
+			w.Write([]string{
+				row.EDate,
+				row.Rink,
+				fmt.Sprint(row.LocationID),
+				row.City,
+				row.Province,
+				string(row.JsonReport),
+				fmt.Sprint(row.Total),
+			})
+		}
+		w.Flush()
+
+		c.Writer.Header().Add("content-type", "text/csv")
+		c.Writer.Header().Add("content-disposition", "attachment;filename=rink_report.csv")
+		c.Writer.Write(b.Bytes())
 		return
 	}
 

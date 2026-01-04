@@ -225,7 +225,7 @@
                         "CookieAuth": []
                     }
                 ],
-                "description": "Get paginated rink usage report aggregated by date and location",
+                "description": "Get paginated rink usage report aggregated by date and location. Supports filtering by rink (partial), province, city, and exporting CSV via 'export' query param.",
                 "produces": [
                     "application/json"
                 ],
@@ -258,6 +258,30 @@
                         "type": "string",
                         "description": "End date (YYYY-MM-DD)",
                         "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Rink name (partial match)",
+                        "name": "rink",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Province ID",
+                        "name": "province",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "City name",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "If present returns CSV download",
+                        "name": "export",
                         "in": "query"
                     }
                 ],

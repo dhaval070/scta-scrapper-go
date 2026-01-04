@@ -354,7 +354,9 @@ paths:
       - Location
   /rink-report:
     get:
-      description: Get paginated rink usage report aggregated by date and location
+      description: Get paginated rink usage report aggregated by date and location.
+        Supports filtering by rink (partial), province, city, and exporting CSV via
+        'export' query param.
       parameters:
       - default: 1
         description: Page number
@@ -373,6 +375,22 @@ paths:
       - description: End date (YYYY-MM-DD)
         in: query
         name: end_date
+        type: string
+      - description: Rink name (partial match)
+        in: query
+        name: rink
+        type: string
+      - description: Province ID
+        in: query
+        name: province
+        type: string
+      - description: City name
+        in: query
+        name: city
+        type: string
+      - description: If present returns CSV download
+        in: query
+        name: export
         type: string
       produces:
       - application/json
