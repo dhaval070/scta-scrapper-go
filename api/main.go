@@ -366,6 +366,7 @@ func rinkReport(c *gin.Context) {
 			join provinces p on p.id=l.province_id
 			` + where + `
 			group by edate, location_id, site
+			LIMIT ? OFFSET ?
 		)
 		select edate e_date,
 		any_value(name) rink,
@@ -376,8 +377,7 @@ func rinkReport(c *gin.Context) {
 		sum(cnt) total
 		from
 			tbl
-		group by edate, location_id order by edate,name
-		 LIMIT ? OFFSET ?`
+		group by edate, location_id order by edate,name`
 
 	queryArgs := append(args, perPageNum, offset)
 
