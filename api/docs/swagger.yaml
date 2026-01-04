@@ -1,5 +1,41 @@
 basePath: /
 definitions:
+  main.RinkReportItem:
+    properties:
+      city:
+        type: string
+      edate:
+        type: string
+      json_report:
+        additionalProperties:
+          type: integer
+        type: object
+      location_id:
+        type: integer
+      province:
+        type: string
+      rink:
+        type: string
+      total:
+        type: integer
+    type: object
+  main.RinkReportResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/main.RinkReportItem'
+        type: array
+      end_date:
+        type: string
+      page:
+        type: integer
+      perPage:
+        type: integer
+      start_date:
+        type: string
+      total:
+        type: integer
+    type: object
   model.Location:
     properties:
       address1:
@@ -316,6 +352,50 @@ paths:
       summary: Get provinces
       tags:
       - Location
+  /rink-report:
+    get:
+      description: Get paginated rink usage report aggregated by date and location
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Results per page
+        in: query
+        name: perPage
+        type: integer
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.RinkReportResponse'
+        "400":
+          description: bad request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get rink usage report
+      tags:
+      - Reports
   /session:
     get:
       description: Get current session information

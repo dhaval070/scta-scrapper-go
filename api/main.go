@@ -23,6 +23,7 @@ import (
 	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/datatypes"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -115,6 +116,7 @@ func main() {
 	r.GET("/session", checkSession)
 	r.GET("/report", surfaceReport)
 	r.GET("/report/download", downloadReportCSV)
+	r.GET("/rink-report", rinkReport)
 	r.GET("/events-by-date", getEventsByDateRange)
 	r.GET("/ramp-mappings/:province", rampMappings)
 	r.GET("/ramp-provinces", rampProvinces)
@@ -274,6 +276,127 @@ func downloadReportCSV(c *gin.Context) {
 	c.Writer.Header().Add("content-type", "text/csv")
 	c.Writer.Header().Add("content-disposition", "attachment;filename=surface_report.csv")
 	c.Writer.Write(b.Bytes())
+}
+
+type RinkReportItem struct {
+	EDate      string         `json:"edate"`
+	Rink       string         `json:"rink"`
+	LocationID int32          `json:"location_id"`
+	City       string         `json:"city"`
+	Province   string         `json:"province"`
+	JsonReport map[string]int `json:"json_report"`
+	Total      int32          `json:"total"`
+}
+
+// RinkReportResponse describes the full API response for /rink-report
+type RinkReportResponse struct {
+	Data      []RinkReportItem `json:"data"`
+	Page      int              `json:"page"`
+	PerPage   int              `json:"perPage"`
+	Total     int64            `json:"total"`
+	StartDate string           `json:"start_date"`
+	EndDate   string           `json:"end_date"`
+}
+
+// @Summary Get rink usage report
+// @Description Get paginated rink usage report aggregated by date and location
+// @Tags Reports
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param perPage query int false "Results per page" default(10)
+// @Param start_date query string false "Start date (YYYY-MM-DD)"
+// @Param end_date query string false "End date (YYYY-MM-DD)"
+// @Success 200 {object} RinkReportResponse
+// @Failure 400 {object} map[string]interface{} "bad request"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /rink-report [get]
+func rinkReport(c *gin.Context) {
+	page := c.DefaultQuery("page", "1")
+	perPage := c.DefaultQuery("perPage", "10")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	var pageNum, perPageNum int
+	fmt.Sscanf(page, "%d", &pageNum)
+	fmt.Sscanf(perPage, "%d", &perPageNum)
+
+	if pageNum < 1 {
+		pageNum = 1
+	}
+	if perPageNum < 1 || perPageNum > 100 {
+		perPageNum = 10
+	}
+	offset := (pageNum - 1) * perPageNum
+
+	where := ""
+	var args []any
+	if startDate != "" {
+		where = " WHERE edate >= ?"
+		args = append(args, startDate)
+	}
+	if endDate != "" {
+		if where == "" {
+			where = " WHERE edate <= ?"
+			args = append(args, endDate)
+		} else {
+			where = where + " AND edate <= ?"
+			args = append(args, endDate)
+		}
+	}
+
+	countQuery := `with tbl as (
+		select edate, l.name, location_id, l.city,p.province_name, site, count(*) cnt from events e
+		join locations l on l.id=e.location_id
+		join provinces p on p.id=l.province_id
+		` + where + `
+		group by edate, location_id, site
+	)
+	select count(edate) from tbl;`
+
+	var total int64
+	if err := db.Raw(countQuery, args...).Scan(&total).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	query := `with tbl as (
+			select edate, l.name, location_id, l.city,p.province_name, site, count(*) cnt from events e
+			join locations l on l.id=e.location_id
+			join provinces p on p.id=l.province_id
+			` + where + `
+			group by edate, location_id, site
+		)
+		select edate e_date,
+		any_value(name) rink,
+		tbl.location_id,
+		any_value(city) city,
+		any_value(province_name) province,
+		json_objectagg(tbl.site, cnt) json_report,
+		sum(cnt) total
+		from
+			tbl
+		group by edate, location_id order by edate,name
+		 LIMIT ? OFFSET ?`
+
+	queryArgs := append(args, perPageNum, offset)
+
+	var result []struct {
+		EDate      string         `json:"edate"`
+		Rink       string         `json:"rink"`
+		LocationID int32          `json:"location_id"`
+		City       string         `json:"city"`
+		Province   string         `json:"province"`
+		JsonReport datatypes.JSON `json:"json_report"`
+		Total      int32          `json:"total"`
+	}
+
+	if err := db.Raw(query, queryArgs...).Scan(&result).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": result, "page": pageNum, "perPage": perPageNum, "total": total, "start_date": startDate, "end_date": endDate})
 }
 
 func getEventsByDateRange(c *gin.Context) {
