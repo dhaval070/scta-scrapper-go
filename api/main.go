@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"surface-api/dao/model"
 	"surface-api/models"
+	"sync"
+	"time"
 
 	_ "surface-api/docs"
 
@@ -51,6 +53,13 @@ var db *gorm.DB
 var cfg models.Config
 var sess *session.Manager
 var configFile = flag.String("config", "config.yaml", "Path to config file")
+
+// rate limiting for password change: track failed attempts timestamps per username
+var pwdChangeLock sync.Mutex
+var pwdChangeAttempts = make(map[string][]time.Time)
+
+const pwdChangeWindow = 5 * time.Minute
+const pwdChangeMaxAttempts = 5
 
 func init() {
 	flag.Parse()
@@ -129,6 +138,7 @@ func main() {
 	r.GET("/users", listUsers)
 	r.POST("/users", addUser)
 	r.DELETE("/users/:username", deleteUser)
+	r.PUT("/users/:username/password", changePassword)
 
 	// Sites config CRUD routes
 	r.GET("/sites-config", getSitesConfig)
@@ -1450,6 +1460,139 @@ func deleteUser(c *gin.Context) {
 	go invalidateUserSessions(usernameToDelete)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+// @Summary Change own password
+// @Description Allow a logged-in user to change their own password. Accepts {"current_password":"old","password":"new","confirm":"new"}.
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Param input body object true "New password"
+// @Success 200 {object} map[string]interface{} "Password changed successfully. Server invalidates sessions; client should force re-login. Example: {\"message\":\"password changed\"}"
+// @Failure 400 {object} map[string]interface{} "Bad Request. Returned when validation fails or current password is incorrect. Response shape: {\"error\":\"message\", optionally \"attempts_left\":int, \"cooldown_seconds\":int}"
+// @Failure 429 {object} map[string]interface{} "Too Many Requests. Returned when rate limit reached. Response shape: {\"error\":\"too many password change attempts, try again later\", \"attempts_left\":0, \"cooldown_seconds\":int}"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error: {\"error\":\"message\"}"
+// @Security CookieAuth
+// @Router /users/{username}/password [put]
+func changePassword(c *gin.Context) {
+	username := c.Param("username")
+
+	s, _ := c.Get("sess")
+	sess := s.(session.Store)
+	currentUser := sess.Get("username")
+
+	// Only allow changing own password
+	if currentUser == nil || currentUser.(string) != username {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Can only change own password"})
+		return
+	}
+
+	// rate limiting: block if too many recent failed attempts
+	now := time.Now()
+	pwdChangeLock.Lock()
+	attempts := pwdChangeAttempts[username]
+	var pruned []time.Time
+	for _, t := range attempts {
+		if now.Sub(t) < pwdChangeWindow {
+			pruned = append(pruned, t)
+		}
+	}
+	if len(pruned) >= pwdChangeMaxAttempts {
+		// compute remaining cooldown based on the oldest attempt in window
+		earliest := pruned[0]
+		remaining := max(0, pwdChangeWindow-now.Sub(earliest))
+		pwdChangeLock.Unlock()
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many password change attempts, try again later", "attempts_left": 0, "cooldown_seconds": int(remaining.Seconds())})
+		return
+	}
+	pwdChangeAttempts[username] = pruned
+	pwdChangeLock.Unlock()
+
+	var input struct {
+		CurrentPassword string `json:"current_password"`
+		Password        string `json:"password"`
+		Confirm         string `json:"confirm"`
+	}
+
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// basic validations
+	if input.Password == "" || input.Confirm == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password and confirm are required"})
+		return
+	}
+	if input.Password != input.Confirm {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password and confirm do not match"})
+		return
+	}
+	if len(input.Password) < 8 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password must be at least 8 characters"})
+		return
+	}
+
+	// verify current password
+	var user models.Login
+	if err := db.First(&user, "username = ?", username).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
+
+	currHash := sha256.Sum256([]byte(input.CurrentPassword))
+	dstCurr := make([]byte, base64.StdEncoding.EncodedLen(len(currHash)))
+	base64.StdEncoding.Encode(dstCurr, currHash[:])
+
+	if user.Password != string(dstCurr) {
+		// record failed attempt
+		pwdChangeLock.Lock()
+		pwdChangeAttempts[username] = append(pwdChangeAttempts[username], now)
+		// compute attempts left and cooldown
+		attemptsLeft := pwdChangeMaxAttempts - len(pwdChangeAttempts[username])
+		attemptsLeft = max(0, attemptsLeft)
+
+		var cooldownSeconds int
+		if attemptsLeft == 0 {
+			earliest := pwdChangeAttempts[username][0]
+			remaining := pwdChangeWindow - now.Sub(earliest)
+			remaining = max(0, remaining)
+
+			cooldownSeconds = int(remaining.Seconds())
+		} else {
+			cooldownSeconds = 0
+		}
+		pwdChangeLock.Unlock()
+
+		c.JSON(http.StatusBadRequest, gin.H{"error": "current password is incorrect", "attempts_left": attemptsLeft, "cooldown_seconds": cooldownSeconds})
+		return
+	}
+
+	// set new password
+	newHash := sha256.Sum256([]byte(input.Password))
+	dstNew := make([]byte, base64.StdEncoding.EncodedLen(len(newHash)))
+	base64.StdEncoding.Encode(dstNew, newHash[:])
+
+	if err := db.Model(&models.Login{}).Where("username = ?", username).Update("password", string(dstNew)).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	// invalidate other sessions in background and ensure current session remains set
+	go invalidateUserSessions(username)
+	// clear failed attempts on success
+	pwdChangeLock.Lock()
+	delete(pwdChangeAttempts, username)
+	pwdChangeLock.Unlock()
+
+	// UI should force re-login sess.Set("username", username)
+
+	c.Status(http.StatusOK)
 }
 
 func invalidateUserSessions(username string) {

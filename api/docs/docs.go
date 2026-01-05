@@ -661,6 +661,74 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{username}/password": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Allow a logged-in user to change their own password. Accepts {\"current_password\":\"old\",\"password\":\"new\",\"confirm\":\"new\"}.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Change own password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New password",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully. Server invalidates sessions; client should force re-login. Example: {\\\"message\\\":\\\"password changed\\\"}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request. Returned when validation fails or current password is incorrect. Response shape: {\\\"error\\\":\\\"message\\\", optionally \\\"attempts_left\\\":int, \\\"cooldown_seconds\\\":int}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests. Returned when rate limit reached. Response shape: {\\\"error\\\":\\\"too many password change attempts, try again later\\\", \\\"attempts_left\\\":0, \\\"cooldown_seconds\\\":int}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error: {\\\"error\\\":\\\"message\\\"}",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

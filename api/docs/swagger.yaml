@@ -640,6 +640,56 @@ paths:
       summary: Delete user
       tags:
       - Users
+  /users/{username}/password:
+    put:
+      consumes:
+      - application/json
+      description: Allow a logged-in user to change their own password. Accepts {"current_password":"old","password":"new","confirm":"new"}.
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: New password
+        in: body
+        name: input
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'Password changed successfully. Server invalidates sessions;
+            client should force re-login. Example: {\"message\":\"password changed\"}'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'Bad Request. Returned when validation fails or current password
+            is incorrect. Response shape: {\"error\":\"message\", optionally \"attempts_left\":int,
+            \"cooldown_seconds\":int}'
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: 'Too Many Requests. Returned when rate limit reached. Response
+            shape: {\"error\":\"too many password change attempts, try again later\",
+            \"attempts_left\":0, \"cooldown_seconds\":int}'
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 'Internal Server Error: {\"error\":\"message\"}'
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Change own password
+      tags:
+      - Users
 schemes:
 - http
 - https
