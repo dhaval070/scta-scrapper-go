@@ -282,6 +282,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Site name",
+                        "name": "site",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "If present returns CSV download",
                         "name": "export",
                         "in": "query"

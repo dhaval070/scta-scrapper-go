@@ -319,6 +319,7 @@ type RinkReportResponse struct {
 // @Param rink query string false "Rink name (partial match)"
 // @Param province query string false "Province ID"
 // @Param city query string false "City name"
+// @Param site query string false "Site name"
 // @Param export query string false "If present returns CSV download"
 // @Success 200 {object} RinkReportResponse
 // @Failure 400 {object} map[string]interface{} "bad request"
@@ -331,6 +332,7 @@ func rinkReport(c *gin.Context) {
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	export := c.Query("export")
+	site := c.Query("site")
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -385,6 +387,14 @@ func rinkReport(c *gin.Context) {
 			where = where + " AND l.city LIKE ?"
 		}
 		args = append(args, city+"%")
+	}
+	if site != "" {
+		if where == "" {
+			where = " WHERE e.site=?"
+		} else {
+			where = where + " AND e.site=?"
+		}
+		args = append(args, site)
 	}
 
 	countQuery := `with tbl as (
