@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"bufio"
 	"bytes"
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/parser1"
@@ -282,15 +283,17 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 		return nil, fmt.Errorf("failed to start external command")
 	}
 
-	chStdErr := make(chan string)
-
 	go func() {
-		defer close(chStdErr)
-		errout, err := io.ReadAll(errpipe)
-		if err != nil {
-			chStdErr <- err.Error()
+		// defer close(chStdErr)
+		r := bufio.NewReader(errpipe)
+		for {
+			line, _, err := r.ReadLine()
+			// errout, err := io.ReadAll(errpipe)
+			if err != nil {
+				break
+			}
+			log.Println(string(line))
 		}
-		chStdErr <- string(errout)
 	}()
 
 	output, err := io.ReadAll(outpipe)
@@ -298,8 +301,8 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 		return nil, err
 	}
 
-	errout := <-chStdErr
-	log.Println(string(errout))
+	// errout := <-chStdErr
+	// log.Println(string(errout))
 
 	err = cmd.Wait()
 	if err != nil {
