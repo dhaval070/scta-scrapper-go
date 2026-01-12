@@ -2,6 +2,8 @@ package client
 
 import (
 	"compress/gzip"
+	"context"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -15,6 +17,21 @@ type transport struct {
 	domainSemsMu       sync.Mutex
 	maxRequestsPerHost int
 	jar                http.CookieJar
+	requestTimeout     time.Duration
+}
+
+type cancelBody struct {
+	io.ReadCloser
+	cancel func()
+}
+
+func (cb *cancelBody) Close() error {
+	err := cb.ReadCloser.Close()
+	if cb.cancel != nil {
+		cb.cancel()
+		cb.cancel = nil
+	}
+	return err
 }
 
 func (adt *transport) getDomainSemaphore(host string) chan struct{} {
@@ -74,9 +91,24 @@ func (adt *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0")
 	req.Header.Add("Accept", "text/html")
 	req.Header.Add("Accept-Encoding", "gzip")
-	resp, err := adt.t.RoundTrip(req)
+	t := time.Now()
+	reqForTransport := req
+	var cancel func()
+	if adt.requestTimeout > 0 {
+		ctx, c := context.WithTimeout(req.Context(), adt.requestTimeout)
+		cancel = c
+		reqForTransport = req.WithContext(ctx)
+	}
+	resp, err := adt.t.RoundTrip(reqForTransport)
+
 	if err != nil {
+		if cancel != nil {
+			cancel()
+		}
 		return nil, err
+	}
+	if cancel != nil && resp != nil && resp.Body != nil {
+		resp.Body = &cancelBody{ReadCloser: resp.Body, cancel: cancel}
 	}
 
 	if resp.Header.Get("Content-Encoding") == "gzip" {
@@ -111,8 +143,8 @@ func GetClient(proxy string, maxRequestsPerHost int) *http.Client {
 	t.MaxConnsPerHost = maxRequestsPerHost
 	t.MaxIdleConnsPerHost = 10
 	t.IdleConnTimeout = 3 * time.Second
-	t.ResponseHeaderTimeout = time.Second * 20
-	t.TLSHandshakeTimeout = 20 * time.Second
+	t.ResponseHeaderTimeout = time.Second * 30
+	t.TLSHandshakeTimeout = 3 * time.Second
 
 	jar, _ := cookiejar.New(nil)
 
@@ -122,8 +154,9 @@ func GetClient(proxy string, maxRequestsPerHost int) *http.Client {
 			domainSems:         make(map[string]chan struct{}),
 			maxRequestsPerHost: maxRequestsPerHost,
 			jar:                jar,
+			requestTimeout:     time.Second * 40,
 		},
-		Timeout: time.Second * 25,
+		Timeout: 0,
 		Jar:     jar,
 	}
 
