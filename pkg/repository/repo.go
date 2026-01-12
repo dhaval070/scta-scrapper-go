@@ -205,7 +205,7 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 	switch {
 	case r.site == "lugsports":
 		return r.RunMatchLocationsAllStates()
-	case strings.HasPrefix(r.site, "gs_"):
+	case strings.HasPrefix(r.site, "gs_") || r.site == "atlantichockeyfederation":
 		return r.MatchGamesheet()
 
 	default:
@@ -251,8 +251,6 @@ func (r *SiteRepository) MatchGamesheet() error {
 			matches = append(matches, matchResult{sl.Location, bestMatch.ID})
 		}
 	}
-
-	log.Printf("gamesheet: in-memory matching found %d location matches\n", len(matches))
 
 	// Batch update matched location_ids
 	err = r.DB.Transaction(func(tx *gorm.DB) error {
@@ -352,8 +350,6 @@ func (r *SiteRepository) MatchGamesheet() error {
 		}
 	}
 
-	log.Printf("gamesheet: by tokens totalLocMatched=%d, totalSurfaceMatched=%d\n", totalLocMatch, totalSurfaceMatch)
-
 	return nil
 }
 
@@ -379,7 +375,6 @@ TOKENS_LOOP:
 			if strings.Contains(l.Name, t) {
 				// if more than one location matched then skip token.
 				if id != 0 {
-					log.Println("multiple loc matched for site-location:", sl.Location, ",token:", t)
 					continue TOKENS_LOOP
 				}
 				id = l.ID
@@ -396,8 +391,6 @@ TOKENS_LOOP:
 				return fmt.Errorf("failed to set location id, %w", err)
 			}
 			locMatched = true
-
-			log.Printf("gamesheet matched location. site=%s, location=%s, locId=%d, token=%s\n", sl.Site, sl.Location, id, t)
 
 			surfaceMatched, err = r.SetGamesheetSurface(sl, id, smap, locMap, lastWord, tx)
 			if err != nil {
@@ -426,7 +419,6 @@ func (r *SiteRepository) SetGamesheetSurface(sl model.SitesLocation, locId int32
 }
 
 func (r *SiteRepository) setSingleSurface(sl model.SitesLocation, surfaceID int32, tx *gorm.DB) (bool, error) {
-	log.Printf("gamesheet matched surface: single, site=%s, location=%s\n", sl.Site, sl.Location)
 	err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id != -1`,
 		surfaceID, sl.Site, sl.Location).Error
 	if err != nil {
@@ -452,8 +444,6 @@ func (r *SiteRepository) matchBySanitizedName(sl model.SitesLocation, locId int3
 		sanitizedSurfaceName := strings.ToLower(reNonAlphaNum.ReplaceAllString(s.Name, ""))
 
 		if sanitizedSurfaceName != "" && strings.Contains(sanitizedLocName, sanitizedSurfaceName) {
-			log.Printf("gamesheet matched surface: sanitized, site=%s, location=%s, surface=%s\n", sl.Site, sl.Location, s.Name)
-
 			err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id=0 AND surface_id != -1`,
 				s.ID, sl.Site, sl.Location).Error
 			if err != nil {
@@ -476,7 +466,6 @@ func (r *SiteRepository) matchByLastWord(sl model.SitesLocation, locId int32, sm
 			continue
 		}
 
-		log.Printf("gamesheet matched surface: lastword, site=%s, location=%s\n", sl.Site, sl.Location)
 		err := tx.Exec(`UPDATE sites_locations SET surface_id=? WHERE site=? AND location=? AND surface_id=0 AND surface_id != -1`,
 			s.ID, sl.Site, sl.Location).Error
 		if err != nil {
