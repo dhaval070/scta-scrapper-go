@@ -14,7 +14,6 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -64,34 +63,32 @@ func main() {
 		panic(fmt.Errorf("failed parse cutoff date %w", err))
 	}
 
-	for chunk := range slices.Chunk(divisions, 5) {
-		var wg = sync.WaitGroup{}
-		for _, division := range chunk {
-			d := division
-			wg.Go(func() {
-				games, err = fetchSchedules(d, cutoff, creds)
-				log.Printf("division: %s, games: %d", d.name, len(games))
-				if err != nil {
-					fmt.Printf("error %s\n", err)
-					return
-				}
-				lock.Lock()
-				for _, g := range games {
-					allGames = append(allGames, []string{
-						g.DateTime,
-						SITE,
-						g.HomeTeam,
-						g.AwayTeam,
-						g.Location,
-						d.name,
-						"", // no address
-					})
-				}
-				lock.Unlock()
-			})
-		}
-		wg.Wait()
+	var wg = sync.WaitGroup{}
+	for _, division := range divisions {
+		d := division
+		wg.Go(func() {
+			games, err = fetchSchedules(d, cutoff, creds)
+			log.Printf("division: %s, games: %d", d.name, len(games))
+			if err != nil {
+				fmt.Printf("error %s\n", err)
+				return
+			}
+			lock.Lock()
+			for _, g := range games {
+				allGames = append(allGames, []string{
+					g.DateTime,
+					SITE,
+					g.HomeTeam,
+					g.AwayTeam,
+					g.Location,
+					d.name,
+					"", // no address
+				})
+			}
+			lock.Unlock()
+		})
 	}
+	wg.Wait()
 
 	log.Println("total games ", len(allGames))
 	if *flags.ImportLocations {
@@ -138,7 +135,6 @@ func fetchSchedules(division Division, cutoff time.Time, creds *Creds) ([]Game, 
 		"get_schedule",
 		params,
 	)
-	log.Println("fetching ", url)
 
 	resp, err := cl.Get(url)
 	if err != nil {

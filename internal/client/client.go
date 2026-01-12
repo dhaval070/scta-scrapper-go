@@ -91,7 +91,6 @@ func (adt *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0")
 	req.Header.Add("Accept", "text/html")
 	req.Header.Add("Accept-Encoding", "gzip")
-	t := time.Now()
 	reqForTransport := req
 	var cancel func()
 	if adt.requestTimeout > 0 {
