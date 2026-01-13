@@ -86,7 +86,7 @@ func runScraper(cmd *cobra.Command, args []string) {
 	cfg := config.MustReadConfig()
 
 	// Initialize parser with rate limiting config
-	parser.InitWithConfig(cfg.MaxRequestsPerHost)
+	parser.InitWithConfig(cfg.MaxRequestsPerHost, cfg.ExternalAddressFetcher)
 
 	// Connect to database
 	db, err := initDB(&cfg)

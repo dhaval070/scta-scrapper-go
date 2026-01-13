@@ -5,9 +5,11 @@ import (
 	"calendar-scrapper/pkg/fetcher"
 	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/month"
+	"context"
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
@@ -21,16 +23,33 @@ import (
 )
 
 var Client *http.Client
-var VenueFetcher *fetcher.VenueAddressFetcher
+var VenueFetcher Fetcher
 
 func init() {
-	InitWithConfig(0)
+	Client = client.GetClient("", 0)
+}
+
+type Fetcher interface {
+	Fetch(url, class string) (string, error)
 }
 
 // InitWithConfig initializes the parser package with configuration
-func InitWithConfig(maxRequestsPerHost int) {
-	Client = client.GetClient(os.Getenv("HTTP_PROXY"), maxRequestsPerHost)
-	VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
+func InitWithConfig(maxRequestsPerHost int, external bool) {
+	log.Println("external address fetchre: ", external)
+
+	if external {
+		Client = client.GetClient(os.Getenv("HTTP_PROXY"), maxRequestsPerHost)
+		c := http.Client{
+			Transport: &http.Transport{
+				DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+					return net.Dial("unix", "@address-fetcher.sock")
+				},
+			},
+		}
+		VenueFetcher = fetcher.NewFetcherHttp(c, "http://dummy/")
+	} else {
+		VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
+	}
 }
 
 type ByDate [][]string

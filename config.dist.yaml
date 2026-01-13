@@ -4,3 +4,4 @@ IMPORT_URL: "https://www.agilex.ca/api/GameQuery?date=%s&id=AS0122341&league=%s"
 GAMESHEET_API_KEY:
 MAX_REQUESTS_PER_HOST: 5
 GAMESHEET_START_DATE: "2025-09-01"
+EXTERNAL_ADDRESS_FETCHER: false
