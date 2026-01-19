@@ -48,6 +48,7 @@ func InitWithConfig(maxRequestsPerHost int, external bool) {
 		}
 		VenueFetcher = fetcher.NewFetcherHttp(c, "http://dummy/")
 	} else {
+		Client = client.GetClient("", maxRequestsPerHost)
 		VenueFetcher = fetcher.NewVenueAddressFetcher(Client)
 	}
 }
@@ -297,7 +298,6 @@ func FetchSchedules(site, baseUrl, url string, groups map[string]string, mm, yyy
 // DayDetailsConfig configures the ParseDayDetailsSchedule function
 type DayDetailsConfig struct {
 	TournamentCheckExact bool // true for exact match, false for contains check
-	LogErrors            bool // enable verbose error logging
 	// GameDEtailsFunc is unused
 	// GameDetailsFunc      func(string) string         // function to fetch venue address from game URL
 	VenueAddressFunc func(string, string) string // function to fetch venue address
@@ -365,25 +365,19 @@ func ParseDayDetailsSchedule(doc *html.Node, site, baseURL, homeTeam string, cfg
 
 			timeval, err := ParseTime(content)
 			if err != nil {
-				if cfg.LogErrors {
-					log.Println(err)
-				}
+				log.Println(err)
 				continue
 			}
 
 			division, err := QueryInnerText(item, `div[3]/div[1]`)
 			if err != nil {
-				if cfg.LogErrors {
-					log.Println(err)
-				}
+				log.Println(err)
 				continue
 			}
 
 			subjectText, err := htmlquery.Query(item, `//div[contains(@class, "subject-text")]`)
 			if err != nil {
-				if cfg.LogErrors {
-					log.Println(err)
-				}
+				log.Println(err)
 				continue
 			}
 

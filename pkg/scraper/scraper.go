@@ -6,6 +6,7 @@ import (
 	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/parser1"
 	"calendar-scrapper/pkg/parser2"
+	"calendar-scrapper/pkg/rockies"
 	"calendar-scrapper/pkg/siteconfig"
 	"encoding/csv"
 	"fmt"
@@ -59,6 +60,8 @@ func (s *Scraper) Scrape(mm, yyyy int) ([][]string, error) {
 		return s.scrapeMonthBased(mm, yyyy)
 	case siteconfig.ParserTypeExternal:
 		return s.scrapeExternal(mm, yyyy)
+	case siteconfig.ParserTypeCustom:
+		return s.scrapeCustom(mm, yyyy)
 	default:
 		return nil, fmt.Errorf("unsupported parser type: %s", s.config.ParserType)
 	}
@@ -112,7 +115,6 @@ func (s *Scraper) scrapeDayDetails(mm, yyyy int) ([][]string, error) {
 
 	cfg := parser.DayDetailsConfig{
 		TournamentCheckExact: s.parserCfg.TournamentCheckExact,
-		LogErrors:            s.parserCfg.LogErrors,
 		ContentFilter:        s.parserCfg.ContentFilter,
 		// GameDetailsFunc: func(gameURL string) string {
 		// 	return parser.GetGameDetailsAddress(gameURL, s.config.BaseURL)
@@ -301,9 +303,6 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 		return nil, err
 	}
 
-	// errout := <-chStdErr
-	// log.Println(string(errout))
-
 	err = cmd.Wait()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
@@ -321,6 +320,17 @@ func (s *Scraper) scrapeExternal(mm, yyyy int) ([][]string, error) {
 
 	log.Printf("[%s] External parser returned %d records\n", s.config.SiteName, len(records))
 	return records, nil
+}
+
+func (s *Scraper) scrapeCustom(mm, yyyy int) (result [][]string, err error) {
+	switch s.config.SiteName {
+	case "rockieshockeyleague",
+		"allpeacehockey",
+		"cahlhockey":
+		sc := rockies.RockiesScraper{Sc: s.config, ParserCfg: s.parserCfg}
+		return sc.ScrapeRockies(mm, yyyy)
+	}
+	return result, err
 }
 
 // GetConfig returns the site configuration

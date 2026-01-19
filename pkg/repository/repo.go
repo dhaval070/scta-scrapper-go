@@ -205,7 +205,7 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 	switch {
 	case r.site == "lugsports":
 		return r.RunMatchLocationsAllStates()
-	case strings.HasPrefix(r.site, "gs_") || r.site == "atlantichockeyfederation":
+	case strings.HasPrefix(r.site, "gs_") || r.site == "atlantichockeyfederation" || r.site == "rockieshockeyleague" || r.site == "allpeacehockey" || r.site == "cahlhockey":
 		return r.MatchGamesheet()
 
 	default:

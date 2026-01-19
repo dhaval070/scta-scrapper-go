@@ -26,9 +26,10 @@ func (SiteConfig) TableName() string {
 
 // ParserConfigJSON represents the JSON configuration for parsers
 type ParserConfigJSON struct {
+	// for rockies scraper
+	GameType []string `json:"game_type"`
 	// Common fields
 	TournamentCheckExact bool   `json:"tournament_check_exact,omitempty"`
-	LogErrors            bool   `json:"log_errors,omitempty"`
 	URLTemplate          string `json:"url_template,omitempty"`
 	ContentFilter        string `json:"content_filter,omitempty"` // Filter events by content substring
 
