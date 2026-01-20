@@ -207,18 +207,18 @@ func getAddress(g Game, ch chan<- Game) {
 	url := fmt.Sprintf("http://rinkdb.com/v2/view/%s/%s/%s", g.Country, g.Prov, g.RARIDString)
 	resp, err := client.Get(url)
 	if err != nil {
-		log.Println(fmt.Sprintf("http error for %s %s", url, err.Error()))
+		log.Printf("http error for %s %s", url, err.Error())
 		return
 	}
 	defer resp.Body.Close()
 	doc, err := htmlquery.Parse(resp.Body)
 	if err != nil {
-		log.Println(fmt.Sprintf("error parsing doc %s %s", url, err.Error()))
+		log.Printf("error parsing doc %s %s", url, err.Error())
 		return
 	}
 	nodes := htmlquery.Find(doc, `//div[@class="container-fluid"]//h3`)
 	if len(nodes) == 0 {
-		log.Println(fmt.Sprintf("address nodes not found %s", url))
+		log.Printf("address nodes not found %s", url)
 		return
 	}
 	address := ""
