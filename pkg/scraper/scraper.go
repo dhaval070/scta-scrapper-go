@@ -326,7 +326,8 @@ func (s *Scraper) scrapeCustom(mm, yyyy int) (result [][]string, err error) {
 	switch s.config.SiteName {
 	case "rockieshockeyleague",
 		"allpeacehockey",
-		"cahlhockey":
+		"cahlhockey",
+		"neahl":
 		sc := rockies.RockiesScraper{Sc: s.config, ParserCfg: s.parserCfg}
 		return sc.ScrapeRockies(mm, yyyy)
 	}
