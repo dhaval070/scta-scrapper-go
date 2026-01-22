@@ -46,35 +46,23 @@ func (r *RockiesScraper) ScrapeRockies(mm, yyyy int) (result [][]string, err err
 		return nil, fmt.Errorf("failed to parse doc %w", err)
 	}
 
-	nodes := htmlquery.Find(doc, `//h4[@class="panel-title"]/a`)
-	// log.Println("nodes ", len(nodes))
-	if len(nodes) == 0 {
-		return nil, errors.New("cannot find divisions links")
-	}
+	reDiv := regexp.MustCompile("/division/([0-9]+)/([0-9]+)/games")
 
-	re := regexp.MustCompile("[0-9]+")
 	allGames := []Game{}
 	lock := sync.Mutex{}
 	var wg sync.WaitGroup
-	for _, node := range nodes {
-		dataParent := htmlutil.GetAttr(node, "data-parent")
+
+	for _, node := range htmlquery.Find(doc, `//div[contains(@class, "panel")]//a]`) {
 		href := htmlutil.GetAttr(node, "href")
 
-		if dataParent == "" {
-			return nil, errors.New("data parent not found")
+		matches := reDiv.FindStringSubmatch(href)
+		if len(matches) != 3 {
+			continue
 		}
-		if href == "" {
-			return nil, errors.New("href not found")
-		}
-		parent := re.FindString(dataParent)
-		if parent == "" {
-			return nil, errors.New("parent id not found")
-		}
-		child := re.FindString(href)
-		if child == "" {
-			return nil, errors.New("child path id not found")
-		}
+		parent := matches[1]
+		child := matches[2]
 
+		log.Println(parent, child)
 		wg.Add(1)
 		go func(parent, child string) {
 			defer wg.Done()
