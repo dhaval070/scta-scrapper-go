@@ -39,7 +39,6 @@ fi
 
 sd=`echo $dt|sed 's/-//g'`
 
-dt=`date +%Y-%m-%d`
 dir="var/$sd"
 d1="$dir/with-surface"
 

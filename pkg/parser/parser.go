@@ -135,7 +135,7 @@ func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 			}
 
 			ch := subjectText.FirstChild
-			homeTeam := strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+			homeTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
 			if err != nil {
 				log.Println("failed to parse location")
@@ -525,7 +525,7 @@ func ParseMonthBasedSchedule(doc *html.Node, mm, yyyy int, site string, cfg Mont
 				}
 
 				ch := subjectText.FirstChild
-				homeTeam = strings.Replace(htmlquery.InnerText(ch), "@ ", "", -1)
+				homeTeam = strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 			}
 
 			location, err := QueryInnerText(item, `//div[@class="location remote"]`)

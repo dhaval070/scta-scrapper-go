@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -66,7 +65,7 @@ func (r *RockiesScraper) ScrapeRockies(mm, yyyy int) (result [][]string, err err
 		wg.Add(1)
 		go func(parent, child string) {
 			defer wg.Done()
-			games, err := r.fetchRockiesGames(parent, child, yyyy)
+			games, err := r.fetchRockiesGames(parent, child, mm, yyyy)
 			if err != nil {
 				log.Printf("scrape error: %v", err)
 				return
@@ -92,16 +91,12 @@ func (r *RockiesScraper) ScrapeRockies(mm, yyyy int) (result [][]string, err err
 	wg.Wait()
 	log.Println("total ", len(allGames))
 	for _, g := range allGames {
-		dt, err := time.Parse("2006-01-02T15:04:05", g.EDate)
-		if err != nil {
-			log.Println("invalid date format: ", g.EDate)
-			continue
-		}
-		if dt.Year() > yyyy || int(dt.Month()) > mm {
-			continue
-		}
+		log.Println(g.HomeDivision)
+	}
+
+	for _, g := range allGames {
 		result = append(result, []string{
-			dt.Format("2006-01-02 15:04"),
+			g.Date.Format("2006-01-02 15:04"),
 			r.Sc.SiteName,
 			g.HomeTeamName,
 			g.AwayTeamName,
@@ -113,7 +108,7 @@ func (r *RockiesScraper) ScrapeRockies(mm, yyyy int) (result [][]string, err err
 	return result, err
 }
 
-func (rs *RockiesScraper) fetchRockiesGames(parent, child string, yyyy int) (result []Game, err error) {
+func (rs *RockiesScraper) fetchRockiesGames(parent, child string, mm, yyyy int) (result []Game, err error) {
 	url := rs.Sc.BaseURL + "/division/" + parent + "/" + child + "/games"
 	r, err := parser.Client.Get(url)
 	if err != nil {
@@ -140,6 +135,8 @@ func (rs *RockiesScraper) fetchRockiesGames(parent, child string, yyyy int) (res
 		return result, err
 	}
 
+	fromDt := fmt.Sprintf("%d%0d", yyyy, mm)
+
 	for _, gt := range rs.ParserCfg.GameType {
 		url = fmt.Sprintf(rs.Sc.BaseURL+"/api/leaguegame/get/%s/%s/%s/%s/%s/0", matches[1], season, parent, child, gt)
 
@@ -159,7 +156,19 @@ func (rs *RockiesScraper) fetchRockiesGames(parent, child string, yyyy int) (res
 			log.Println("unmarshal error ", url, err)
 			continue
 		}
-		result = append(result, games...)
+
+		for i := 0; i < len(games); i += 1 {
+			dt, err := time.Parse("2006-01-02T15:04:05", games[i].EDate)
+			if err != nil {
+				log.Println("invalid date format: ", games[i].EDate)
+				continue
+			}
+			if fromDt > dt.Format("200601") {
+				continue
+			}
+			games[i].Date = dt
+			result = append(result, games[i])
+		}
 	}
 	return result, err
 }
@@ -172,15 +181,7 @@ func scrapeSeason(body string, yyyy int) (string, error) {
 
 	for _, node := range htmlquery.Find(doc, `//select[@id="ddlSeason"]/option`) {
 		val := htmlquery.InnerText(node)
-		matches := reSeason.FindStringSubmatch(val)
-		if len(matches) == 0 {
-			return "", fmt.Errorf("failed to parse season %s", val)
-		}
-		log.Printf("%+v\n", matches)
-		fromInt, _ := strconv.Atoi(matches[1])
-		toInt, _ := strconv.Atoi(matches[2])
-
-		if yyyy >= fromInt && yyyy <= toInt {
+		if strings.Contains(val, fmt.Sprint(yyyy)) {
 			return htmlutil.GetAttr(node, "value"), nil
 		}
 	}
