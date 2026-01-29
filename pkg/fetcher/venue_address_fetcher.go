@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -172,6 +173,18 @@ func (f *VenueAddressFetcher) scrapeVenueAddress(url string, class string) (stri
 	}
 
 	var address string
+
+	if strings.Contains(url, "rinkdb.com") {
+		nodes := htmlquery.Find(doc, `//div[@class="container-fluid"]//h3`)
+		if len(nodes) == 0 {
+			log.Printf("address nodes not found %s", url)
+			return address, nil
+		}
+		for _, node := range nodes {
+			address = address + htmlquery.InnerText(node) + " "
+		}
+		return strings.Trim(address, " \n"), nil
+	}
 
 	// theonedb.com - remote URLs
 	switch class {

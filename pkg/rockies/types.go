@@ -3,9 +3,10 @@ package rockies
 import "time"
 
 type Game struct {
+	AID          int       `json:"AID"`
 	ArenaName    string    `json:"ArenaName"`
 	CategoryName string    `json:"CategoryName"`
-	EDate        string    `json:"eDate"` // 2025-11-01T08:15:00
+	SDate        string    `json:"sDate"`
 	Date         time.Time `json:"-"`
 	HomeDivision string    `json:"HomeDivision"`
 	HomeTeamName string    `json:"HomeTeamName"`

@@ -156,9 +156,9 @@ func (rs *RockiesScraper) fetchRockiesGames(parent, child string, mm, yyyy int) 
 	}
 
 	for i := 0; i < len(games); i += 1 {
-		dt, err := time.Parse("2006-01-02T15:04:05", games[i].EDate)
+		dt, err := time.Parse("2006-01-02T15:04:05", games[i].SDate)
 		if err != nil {
-			log.Println("invalid date format: ", games[i].EDate)
+			log.Printf("invalid date format: url:%s ,  %+v\n", url, games[i])
 			continue
 		}
 		if fromDt > dt.Format("200601") {
@@ -191,26 +191,10 @@ func getAddress(g Game, ch chan<- Game) {
 	defer func() { ch <- g }()
 
 	url := fmt.Sprintf("http://rinkdb.com/v2/view/%s/%s/%s", g.Country, g.Prov, g.RARIDString)
-	resp, err := client.Get(url)
+	addr, err := parser.VenueFetcher.Fetch(url, "")
 	if err != nil {
-		log.Printf("http error for %s %s", url, err.Error())
-		return
+		log.Println("address error ", err)
+	} else {
+		g.Address = addr
 	}
-	defer resp.Body.Close()
-	doc, err := htmlquery.Parse(resp.Body)
-	if err != nil {
-		log.Printf("error parsing doc %s %s", url, err.Error())
-		return
-	}
-	nodes := htmlquery.Find(doc, `//div[@class="container-fluid"]//h3`)
-	if len(nodes) == 0 {
-		log.Printf("address nodes not found %s", url)
-		return
-	}
-	address := ""
-	for _, node := range nodes {
-		address = address + htmlquery.InnerText(node) + " "
-	}
-	log.Println("address: ", address)
-	g.Address = strings.Trim(address, " \n")
 }
