@@ -22,7 +22,6 @@ import (
 // https://rockieshockeyleague.com/division/1724/15639/games
 // GET https://rockieshockeyleague.com/api/leaguegame/get/2155/ 12605/ 1724/15639/  4553/     0/
 var client = parser.Client
-var reSeason = regexp.MustCompile(`([0-9]+)\s*-\s*([0-9]+)`)
 
 type RockiesScraper struct {
 	Sc        *siteconfig.SiteConfig
@@ -135,40 +134,38 @@ func (rs *RockiesScraper) fetchRockiesGames(parent, child string, mm, yyyy int) 
 		return result, err
 	}
 
-	fromDt := fmt.Sprintf("%d%0d", yyyy, mm)
+	fromDt := fmt.Sprintf("%d%02d", yyyy, mm)
 
-	for _, gt := range rs.ParserCfg.GameType {
-		url = fmt.Sprintf(rs.Sc.BaseURL+"/api/leaguegame/get/%s/%s/%s/%s/%s/0", matches[1], season, parent, child, gt)
+	url = fmt.Sprintf(rs.Sc.BaseURL+"/api/leaguegame/get/%s/%s/%s/%s/0/0", matches[1], season, parent, child)
 
-		log.Println("url: ", url)
-		resp, err := client.Get(url)
+	log.Println("url: ", url)
+	resp, err := client.Get(url)
+	if err != nil {
+		return result, err
+	}
+	defer resp.Body.Close()
+	b, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return result, err
+	}
+	var games []Game
+	err = jsoniter.Unmarshal(b, &games)
+	if err != nil {
+		log.Println("unmarshal error ", url, err)
+		return games, err
+	}
+
+	for i := 0; i < len(games); i += 1 {
+		dt, err := time.Parse("2006-01-02T15:04:05", games[i].EDate)
 		if err != nil {
-			return result, err
-		}
-		defer resp.Body.Close()
-		b, err = io.ReadAll(resp.Body)
-		if err != nil {
-			return result, err
-		}
-		var games []Game
-		err = jsoniter.Unmarshal(b, &games)
-		if err != nil {
-			log.Println("unmarshal error ", url, err)
+			log.Println("invalid date format: ", games[i].EDate)
 			continue
 		}
-
-		for i := 0; i < len(games); i += 1 {
-			dt, err := time.Parse("2006-01-02T15:04:05", games[i].EDate)
-			if err != nil {
-				log.Println("invalid date format: ", games[i].EDate)
-				continue
-			}
-			if fromDt > dt.Format("200601") {
-				continue
-			}
-			games[i].Date = dt
-			result = append(result, games[i])
+		if fromDt > dt.Format("200601") {
+			continue
 		}
+		games[i].Date = dt
+		result = append(result, games[i])
 	}
 	return result, err
 }
