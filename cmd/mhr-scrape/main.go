@@ -7,6 +7,7 @@ import (
 	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/repository"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"regexp"
@@ -128,7 +129,7 @@ func process_state(state string) (result []MhrLocation) {
 	for ; i > 0; i -= 1 {
 		loc := <-ch
 		if loc != nil {
-			log.Println(loc.RinkName)
+			fmt.Println(loc.RinkName)
 			allVenues = append(allVenues, *loc)
 		}
 	}
@@ -163,11 +164,12 @@ func get_venue(mhrId string, ch chan *MhrLocation) {
 		return
 	}
 	loc, err = parse_venue(doc)
-	loc.MhrID, _ = strconv.Atoi(mhrId)
 
 	if err != nil {
 		log.Printf("failed %s, %v", url, err)
+		return
 	}
+	loc.MhrID, _ = strconv.Atoi(mhrId)
 }
 
 var reAddrClean = regexp.MustCompile(`\s+`)
@@ -191,7 +193,11 @@ func parse_venue(doc *html.Node) (*MhrLocation, error) {
 
 		switch label {
 		case "AKA":
-			aka := htmlquery.InnerText(node.NextSibling)
+			akaNode := htmlquery.FindOne(node, "following-sibling::ul/li")
+			if akaNode == nil {
+				return nil, errors.New("aka node not found")
+			}
+			aka := htmlquery.InnerText(akaNode)
 			loc.Aka = &aka
 		case "Address":
 			addrNode := htmlquery.FindOne(node, `following-sibling::p`)
@@ -211,7 +217,11 @@ func parse_venue(doc *html.Node) (*MhrLocation, error) {
 				loc.Phone = &phone
 			}
 		case "Notes":
-			notes := htmlquery.InnerText(node.NextSibling)
+			notestNode := htmlquery.FindOne(node, `following-sibling::p`)
+			if notestNode == nil {
+				return nil, errors.New("notes node not found")
+			}
+			notes := htmlquery.InnerText(notestNode)
 			if notes != "" {
 				loc.Notes = &notes
 			}
