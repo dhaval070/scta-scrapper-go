@@ -65,17 +65,19 @@ func init() {
 }
 
 type MhrLocation struct {
-	MhrID              int     `gorm:"column:mhr_id;primaryKey"`
-	RinkName           string  `gorm:"column:rink_name;not null"`
-	Aka                *string `gorm:"column:aka"`
-	Address            string  `gorm:"column:address;not null"`
-	Phone              *string `gorm:"column:phone"`
-	Website            *string `gorm:"column:website"`
-	Streaming          *string `gorm:"column:streaming"`
-	Notes              *string `gorm:"column:notes"`
-	LivebarnInstalled  bool    `gorm:"column:livebarn_installed"`
-	LivebarnLocationId int     `gorm:"column:livebarn_location_id"`
-	LivebarnSurfaceId  int     `gorm:"column:livebarn_surface_id"`
+	MhrID              int                 `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
+	RinkName           string              `gorm:"column:rink_name;not null" json:"rink_name"`
+	Aka                *string             `gorm:"column:aka" json:"aka"`
+	Address            string              `gorm:"column:address;not null" json:"address"`
+	Phone              *string             `gorm:"column:phone" json:"phone"`
+	Website            *string             `gorm:"column:website" json:"website"`
+	Streaming          *string             `gorm:"column:streaming" json:"streaming"`
+	Notes              *string             `gorm:"column:notes" json:"notes"`
+	LivebarnInstalled  bool                `gorm:"column:livebarn_installed" json:"livebarn_installed"`
+	LivebarnLocationId int                 `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
+	LivebarnSurfaceId  int                 `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
+	HomeTeams          []map[string]string `gorm:"column:home_teams;serializer:json" json:"home_teams"`
+	// home teams are array of name and url of home teams.
 }
 
 func (MhrLocation) TableName() string {
@@ -277,6 +279,25 @@ func parse_venue(doc *html.Node) (*MhrLocation, error) {
 				if strings.Contains(url, "livebarn") {
 					loc.LivebarnInstalled = true
 				}
+			}
+		case "Home Ice Of":
+			ul := htmlquery.FindOne(node, `following-sibling::ul`)
+			if ul == nil {
+				log.Println("home teams list not found")
+			} else {
+				var homeTeams = []map[string]string{}
+				for _, linkNode := range htmlquery.Find(ul, `//a`) {
+					url := htmlutil.GetAttr(linkNode, "href")
+					if !strings.Contains(url, "http") {
+						url = BASE_URL + "/" + url
+					}
+					label := htmlquery.InnerText(linkNode)
+					homeTeams = append(homeTeams, map[string]string{
+						"label": label,
+						"url":   url,
+					})
+				}
+				loc.HomeTeams = homeTeams
 			}
 		}
 	}
