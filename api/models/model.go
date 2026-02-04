@@ -27,6 +27,13 @@ func (*SiteLocResult) TableName() string {
 	return "sites_locations"
 }
 
+type MHRLocResult struct {
+	Data    []MhrLocation `json:"data"`
+	Page    int           `json:"page"`
+	PerPage int           `json:"perPage"`
+	Total   int64         `json:"total"`
+}
+
 type Mapping struct {
 	Site        string `json:"site" gorm:"column:site"`
 	Location    string `json:"location" gorm:"column:location"`
@@ -148,4 +155,29 @@ type UnsetMappingInput struct {
 	Site     string `json:"site" binding:"required"`
 	Location string `json:"location" binding:"required"`
 	Type     string `json:"type" binding:"required,oneof=location surface"`
+}
+
+type UnsetMHRMappingInput struct {
+	MhrId int    `json:"mhr_id" binding:"required"`
+	Type  string `json:"type" binding:"required,oneof=location surface"`
+}
+
+type MhrLocation struct {
+	MhrID              int            `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
+	RinkName           string         `gorm:"column:rink_name;not null" json:"rink_name"`
+	Aka                *string        `gorm:"column:aka" json:"aka"`
+	Address            string         `gorm:"column:address;not null" json:"address"`
+	Phone              *string        `gorm:"column:phone" json:"phone"`
+	Website            *string        `gorm:"column:website" json:"website"`
+	Streaming          *string        `gorm:"column:streaming" json:"streaming"`
+	Notes              *string        `gorm:"column:notes" json:"notes"`
+	LivebarnInstalled  bool           `gorm:"column:livebarn_installed" json:"livebarn_installed"`
+	LivebarnLocationId int            `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
+	LivebarnSurfaceId  int            `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
+	LiveBarnLocation   model.Location `gorm:"foreignKey:LivebarnLocationId"`
+	LinkedSurface      model.Surface  `gorm:"foreignKey:LivebarnSurfaceId"`
+}
+
+func (MhrLocation) TableName() string {
+	return "mhr_locations"
 }

@@ -112,6 +112,10 @@ func main() {
 	r.Use(AuthMiddleware)
 
 	r.GET("/site-locations/:site", getSiteLoc)
+	r.GET("/mhr-locations", getMHRLoc)
+	r.POST("/mhr-set-location", setMHRLoc)
+	r.POST("/mhr-set-surface", setMHRSurface)
+	r.POST("/mhr-unset-mapping", unsetMHRMapping)
 	r.GET("/mappings/:site", getMappings)
 	r.GET("/sites", getSites)
 	r.GET("/surfaces", getSurfaces)
@@ -765,6 +769,153 @@ func getSiteLoc(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func getMHRLoc(c *gin.Context) {
+	var result = []models.MhrLocation{}
+
+	page := c.DefaultQuery("page", "1")
+	perPage := c.DefaultQuery("perPage", "10")
+	// name := c.Query("name")
+
+	var pageNum, perPageNum int
+	fmt.Sscanf(page, "%d", &pageNum)
+	fmt.Sscanf(perPage, "%d", &perPageNum)
+
+	if pageNum < 1 {
+		pageNum = 1
+	}
+	if perPageNum < 1 || perPageNum > 100 {
+		perPageNum = 10
+	}
+
+	offset := (pageNum - 1) * perPageNum
+
+	var total int64
+	if err := db.Model(&models.MhrLocation{}).Count(&total).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	if err := db.Joins("LinkedSurface").Joins("LiveBarnLocation").Offset(offset).Limit(perPageNum).Find(&result).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, models.MHRLocResult{
+		Data:    result,
+		Page:    pageNum,
+		PerPage: perPageNum,
+		Total:   total,
+	})
+}
+
+// @Summary Set Location ID with a MHRLocation Record
+// @Description Set Location ID with a MHRLocation Record
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param input body models.SetLocationInput true "Mapping to set"
+// @Success 200 {array} models.MHRLocResult
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /mhr-set-location [post]
+func setMHRLoc(c *gin.Context) {
+	var input = struct {
+		LocationId int32 `json:"location_id"`
+		MhrId      int   `json:"mhr_id"`
+	}{}
+
+	if err := c.BindJSON(&input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	err := db.Exec(`update mhr_locations set livebarn_location_id=? where mhr_id=?`, input.LocationId, input.MhrId).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error updating location"})
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func setMHRSurface(c *gin.Context) {
+	var input = &models.MhrLocation{}
+
+	if err := c.BindJSON(input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	if input.LivebarnSurfaceId == -1 {
+		if err := db.Exec(`update mhr_locations set livebarn_surface_id=? where mhr_id=?`, input.LivebarnSurfaceId, input.MhrID).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+	} else {
+		var surface = &model.Surface{}
+		if err := db.Find(surface, input.LivebarnSurfaceId).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		input.LivebarnLocationId = int(surface.LocationID)
+
+		if err := db.Exec(`update mhr_locations set livebarn_location_id=?, livebarn_surface_id=? where mhr_id=?`, input.LivebarnLocationId, input.LivebarnSurfaceId, input.MhrID).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+	}
+	c.Status(http.StatusOK)
+}
+
+// @Summary Unset MHR mapping
+// @Description Remove location or surface mapping for a mhr location
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param input body models.UnsetMHRMappingInput true "Mapping to unset"
+// @Success 200
+// @Failure 400 {object} map[string]interface{} "error"
+// @Failure 500 {object} map[string]interface{} "error"
+// @Security CookieAuth
+// @Router /mhr-unset-mapping [post]
+func unsetMHRMapping(c *gin.Context) {
+	var input = &models.UnsetMHRMappingInput{}
+
+	if err := c.BindJSON(input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	updateFields := make(map[string]any)
+
+	if input.Type == "location" {
+		var current models.MhrLocation
+		if err := db.Model(&models.MhrLocation{}).
+			Where("mhr_id = ?", input.MhrId).
+			First(&current).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		updateFields["livebarn_location_id"] = 0
+		if current.LivebarnSurfaceId != -1 {
+			updateFields["livebarn_surface_id"] = 0
+		}
+	} else {
+		updateFields["livebarn_surface_id"] = 0
+	}
+
+	if err := db.Model(&models.MhrLocation{}).
+		Where("mhr_id = ?", input.MhrId).
+		Updates(updateFields).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+	c.Status(http.StatusOK)
 }
 
 func getMappings(c *gin.Context) {
