@@ -776,7 +776,8 @@ func getMHRLoc(c *gin.Context) {
 
 	page := c.DefaultQuery("page", "1")
 	perPage := c.DefaultQuery("perPage", "10")
-	// name := c.Query("name")
+	name := c.Query("name")
+	province := c.Query("province")
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -792,12 +793,24 @@ func getMHRLoc(c *gin.Context) {
 	offset := (pageNum - 1) * perPageNum
 
 	var total int64
-	if err := db.Model(&models.MhrLocation{}).Count(&total).Error; err != nil {
+
+	baseQuery := db.Model(&models.MhrLocation{})
+
+	if name != "" {
+		// baseQuery = baseQuery.Where(`rink_name like ?`, "%"+name+"%").Count(&total).Error; err != nil {
+		baseQuery = baseQuery.Where(`rink_name like ?`, "%"+name+"%")
+	}
+
+	if province != "" {
+		baseQuery = baseQuery.Where(`province like ?`, "%"+province+"%")
+	}
+
+	if err := baseQuery.Count(&total).Error; err != nil {
 		sendError(c, err)
 		return
 	}
 
-	if err := db.Joins("LinkedSurface").Joins("LiveBarnLocation").Offset(offset).Limit(perPageNum).Find(&result).Error; err != nil {
+	if err := baseQuery.Joins("LinkedSurface").Joins("LiveBarnLocation").Offset(offset).Limit(perPageNum).Find(&result).Error; err != nil {
 		sendError(c, err)
 		return
 	}

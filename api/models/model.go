@@ -163,19 +163,21 @@ type UnsetMHRMappingInput struct {
 }
 
 type MhrLocation struct {
-	MhrID              int            `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
-	RinkName           string         `gorm:"column:rink_name;not null" json:"rink_name"`
-	Aka                *string        `gorm:"column:aka" json:"aka"`
-	Address            string         `gorm:"column:address;not null" json:"address"`
-	Phone              *string        `gorm:"column:phone" json:"phone"`
-	Website            *string        `gorm:"column:website" json:"website"`
-	Streaming          *string        `gorm:"column:streaming" json:"streaming"`
-	Notes              *string        `gorm:"column:notes" json:"notes"`
-	LivebarnInstalled  bool           `gorm:"column:livebarn_installed" json:"livebarn_installed"`
-	LivebarnLocationId int            `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
-	LivebarnSurfaceId  int            `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
-	LiveBarnLocation   model.Location `gorm:"foreignKey:LivebarnLocationId"`
-	LinkedSurface      model.Surface  `gorm:"foreignKey:LivebarnSurfaceId"`
+	MhrID              int                 `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
+	RinkName           string              `gorm:"column:rink_name;not null" json:"rink_name"`
+	Aka                *string             `gorm:"column:aka" json:"aka"`
+	Address            string              `gorm:"column:address;not null" json:"address"`
+	Phone              *string             `gorm:"column:phone" json:"phone"`
+	Website            *string             `gorm:"column:website" json:"website"`
+	Streaming          *string             `gorm:"column:streaming" json:"streaming"`
+	Notes              *string             `gorm:"column:notes" json:"notes"`
+	LivebarnInstalled  bool                `gorm:"column:livebarn_installed" json:"livebarn_installed"`
+	LivebarnLocationId int                 `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
+	LivebarnSurfaceId  int                 `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
+	LiveBarnLocation   model.Location      `gorm:"foreignKey:LivebarnLocationId"`
+	LinkedSurface      model.Surface       `gorm:"foreignKey:LivebarnSurfaceId"`
+	HomeTeams          []map[string]string `gorm:"column:home_teams;serializer:json" json:"home_teams"`
+	Province           string              `gorm:"column:province" json:"province"`
 }
 
 func (MhrLocation) TableName() string {

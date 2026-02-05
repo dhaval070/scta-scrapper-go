@@ -78,6 +78,7 @@ type MhrLocation struct {
 	LivebarnSurfaceId  int                 `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
 	HomeTeams          []map[string]string `gorm:"column:home_teams;serializer:json" json:"home_teams"`
 	// home teams are array of name and url of home teams.
+	Province string `gorm:"column:province" json:"province"`
 }
 
 func (MhrLocation) TableName() string {
@@ -88,6 +89,11 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+type State struct {
+	Id    string
+	Value string
 }
 
 func runScraper(cmd *cobra.Command, args []string) {
@@ -105,17 +111,21 @@ func runScraper(cmd *cobra.Command, args []string) {
 
 	nodes := htmlquery.Find(doc, `//select[@id="state-select"]/option`)
 
-	states := make([]string, 0, len(nodes))
-
 	wg := sync.WaitGroup{}
 	for _, n := range nodes {
 		v := htmlutil.GetAttr(n, "value")
-		if v != "" {
-			states = append(states, v)
+		if v == "" {
+			continue
 		}
 		log.Println(v)
+
+		name := htmlquery.InnerText(n)
+		state := State{
+			Id:    v,
+			Value: name,
+		}
 		wg.Go(func() {
-			venues := process_state(v)
+			venues := process_state(state)
 
 			if len(venues) > 0 {
 				err := repo.DB.Transaction(func(tx *gorm.DB) error {
@@ -128,13 +138,13 @@ func runScraper(cmd *cobra.Command, args []string) {
 		})
 	}
 	wg.Wait()
-	log.Println("total states: ", len(states))
+	log.Println("done")
 }
 
 var reLink = regexp.MustCompile(`rink-info\?r=([0-9]+)`)
 
-func process_state(state string) (result []MhrLocation) {
-	url := BASE_URL + "/rinks?state=" + state
+func process_state(state State) (result []MhrLocation) {
+	url := BASE_URL + "/rinks?state=" + state.Id
 
 	resp, err := cl.Get(url)
 	if err != nil {
@@ -174,6 +184,7 @@ func process_state(state string) (result []MhrLocation) {
 		loc := <-ch
 		if loc != nil {
 			fmt.Println(loc.RinkName)
+			loc.Province = state.Value
 			allVenues = append(allVenues, *loc)
 		}
 	}
