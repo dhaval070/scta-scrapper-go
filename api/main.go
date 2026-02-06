@@ -493,7 +493,7 @@ func rinkReport(c *gin.Context) {
 		w.Flush()
 
 		c.Writer.Header().Add("content-type", "text/csv")
-		c.Writer.Header().Add("content-disposition", "attachment;filename=rink_report.csv")
+		c.Writer.Header().Add("content-disposition", "attachment;filename=events_report.csv")
 		c.Writer.Write(b.Bytes())
 		return
 	}
