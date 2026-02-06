@@ -1401,6 +1401,7 @@ func getEvents(c *gin.Context) {
 	surfaceID := c.Query("surface_id")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
+	export := c.Query("export")
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -1431,12 +1432,44 @@ func getEvents(c *gin.Context) {
 	}
 
 	var total int64
-	if err := baseQuery.Count(&total).Error; err != nil {
-		sendError(c, err)
-		return
+	if export == "" {
+		if err := baseQuery.Count(&total).Error; err != nil {
+			sendError(c, err)
+			return
+		}
 	}
 
 	var result []model.Event
+	if export != "" {
+		if err := baseQuery.Find(&result).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		var b = &bytes.Buffer{}
+		w := csv.NewWriter(b)
+		w.Write([]string{"ID", "Site", "Date/Time", "Home Team", "Gues Team", "Location", "Division", "Surface ID"})
+
+		for _, row := range result {
+			w.Write([]string{
+				fmt.Sprint(row.ID),
+				row.Site,
+				row.Datetime.Format("2006-01-02 15:04"),
+				row.HomeTeam,
+				row.GuestTeam,
+				row.Location,
+				row.Division,
+				fmt.Sprint(row.SurfaceID),
+			})
+		}
+		w.Flush()
+
+		c.Writer.Header().Add("content-type", "text/csv")
+		c.Writer.Header().Add("content-disposition", "attachment;filename=rink_report.csv")
+		c.Writer.Write(b.Bytes())
+
+		return
+	}
 	if err := baseQuery.Limit(perPageNum).Offset(offset).Find(&result).Error; err != nil {
 		sendError(c, err)
 		return
