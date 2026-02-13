@@ -8,3 +8,6 @@ EXTERNAL_ADDRESS_FETCHER: false
 SMTP_CONFIG:
   HOST: "send.smtp.com"
   PORT: 465
+SURFACE_REPORT:
+  MAIL_TO:
+    - test@test.com

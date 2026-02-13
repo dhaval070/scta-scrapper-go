@@ -139,8 +139,17 @@ func runReport(cmd *cobra.Command, args []string) {
 		log.Fatal("error closing file", err)
 	}
 
+	log.Println("report generated")
+
 	if email {
-		sendEmail(filePath)
+		if len(cfg.SurfaceReport.MailTo) == 0 {
+			log.Println("no receipient configured for surface report")
+			return
+		}
+		if err = sendEmail(filePath); err != nil {
+			log.Fatal(err)
+		}
+		log.Println("report sent")
 	}
 }
 
@@ -156,7 +165,11 @@ func sendEmail(filePath string) error {
 		return fmt.Errorf("failed to connect to smtp server %w", err)
 	}
 
-	email := mail.NewMSG().SetFrom("noreply@gos.com").AddTo().SetSubject("surface report")
+	now := time.Now()
+
+	subject := "Surface Checklist for date - " + now.Format("2006-01-02")
+	email := mail.NewMSG().SetFrom("screduler@dd.com").AddTo(cfg.SurfaceReport.MailTo...).SetSubject(subject)
+
 	email.Attach(&mail.File{
 		FilePath: filePath,
 	})

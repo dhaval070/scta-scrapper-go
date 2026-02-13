@@ -8,14 +8,19 @@ import (
 )
 
 type Config struct {
-	DbDSN                  string     `mapstructure:"DB_DSN"`
-	ApiKey                 string     `mapstructure:"API_KEY"`
-	ImportUrl              string     `mapstructure:"IMPORT_URL"`
-	GameSheetAPIKey        string     `mapstructure:"GAMESHEET_API_KEY"`
-	GamesheetStartDate     string     `mapstructure:"GAMESHEET_START_DATE"`
-	MaxRequestsPerHost     int        `mapstructure:"MAX_REQUESTS_PER_HOST"`
-	ExternalAddressFetcher bool       `mapstructure:"EXTERNAL_ADDRESS_FETCHER"`
-	SmtpConfig             SmtpConfig `mapstructure:"SMTP_CONFIG"`
+	DbDSN                  string        `mapstructure:"DB_DSN"`
+	ApiKey                 string        `mapstructure:"API_KEY"`
+	ImportUrl              string        `mapstructure:"IMPORT_URL"`
+	GameSheetAPIKey        string        `mapstructure:"GAMESHEET_API_KEY"`
+	GamesheetStartDate     string        `mapstructure:"GAMESHEET_START_DATE"`
+	MaxRequestsPerHost     int           `mapstructure:"MAX_REQUESTS_PER_HOST"`
+	ExternalAddressFetcher bool          `mapstructure:"EXTERNAL_ADDRESS_FETCHER"`
+	SmtpConfig             SmtpConfig    `mapstructure:"SMTP_CONFIG"`
+	SurfaceReport          SurfaceReport `mapstructure:"SURFACE_REPORT"`
+}
+
+type SurfaceReport struct {
+	MailTo []string `mapstructure:"MAIL_TO"`
 }
 
 type SmtpConfig struct {
