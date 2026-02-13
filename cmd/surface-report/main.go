@@ -168,7 +168,7 @@ func sendEmail(filePath string) error {
 	now := time.Now()
 
 	subject := "Surface Checklist for date - " + now.Format("2006-01-02")
-	email := mail.NewMSG().SetFrom("screduler@dd.com").AddTo(cfg.SurfaceReport.MailTo...).SetSubject(subject)
+	email := mail.NewMSG().SetFrom("screduler@gameonstream.com").AddTo(cfg.SurfaceReport.MailTo...).SetSubject(subject)
 
 	email.Attach(&mail.File{
 		FilePath: filePath,
