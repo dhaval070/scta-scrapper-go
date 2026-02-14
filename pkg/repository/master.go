@@ -5,6 +5,7 @@ import (
 	"calendar-scrapper/pkg/entity"
 	"encoding/json"
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -62,6 +63,12 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 			// Build surfaces
 			for _, surface := range loc.Surfaces {
 				jsonSurfaceIDs[surface.ID] = true
+				var deletedAt *time.Time = nil
+
+				if surface.ClosedFrom > 0 {
+					t := time.Now()
+					deletedAt = &t
+				}
 				s := model.Surface{
 					ID:         surface.ID,
 					LocationID: loc.ID,
@@ -73,7 +80,7 @@ func (r *Repository) MasterImportJson(js []entity.JsonLocation) {
 					ComingSoon: surface.ComingSoon,
 					Online:     surface.Online,
 					Status:     surface.Status["name"].(string),
-					DeletedAt:  nil,
+					DeletedAt:  deletedAt,
 				}
 				if len(surface.Sports) > 0 {
 					s.Sports = surface.Sports[0]["name"].(string)
