@@ -100,7 +100,7 @@ func runReport(cmd *cobra.Command, args []string) {
 		whereClause +
 		`
 	GROUP BY e.surface_id, date(e.datetime)
-	ORDER BY location_name, surface_name, surface_id, day_of_week, start_time`
+	ORDER BY start_time,location_name, surface_name, surface_id, day_of_week`
 
 	var result []SurfaceReport
 	if err := repo.DB.Raw(query, dates...).Scan(&result).Error; err != nil {

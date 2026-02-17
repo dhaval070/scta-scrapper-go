@@ -8,14 +8,16 @@ const TableNameSitesLocation = "sites_locations"
 
 // SitesLocation mapped from table <sites_locations>
 type SitesLocation struct {
-	Site       string `gorm:"column:site;primaryKey" json:"site"`
-	Location   string `gorm:"column:location;primaryKey" json:"location"`
-	LocationID int32  `gorm:"column:location_id" json:"location_id"`
-	Loc        string `gorm:"column:loc" json:"loc"`
-	Surface    string `gorm:"column:surface" json:"surface"`
-	Address    string `gorm:"column:address" json:"address"`
-	MatchType  string `gorm:"column:match_type" json:"match_type"`
-	SurfaceID  int32  `gorm:"column:surface_id;not null" json:"surface_id"`
+	Site          string `gorm:"column:site;not null" json:"site"`
+	Location      string `gorm:"column:location" json:"location"`
+	LocationID    int32  `gorm:"column:location_id" json:"location_id"`
+	Loc           string `gorm:"column:loc" json:"loc"`
+	Surface       string `gorm:"column:surface" json:"surface"`
+	Address       string `gorm:"column:address" json:"address"`
+	MatchType     string `gorm:"column:match_type" json:"match_type"`
+	SurfaceID     int32  `gorm:"column:surface_id;not null" json:"surface_id"`
+	MhrLocationID int32  `gorm:"column:mhr_location_id;not null" json:"mhr_location_id"`
+	MhrMatchType  string `gorm:"column:mhr_match_type" json:"mhr_match_type"`
 }
 
 // TableName SitesLocation's table name

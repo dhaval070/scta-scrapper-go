@@ -204,12 +204,21 @@ func (r *SiteRepository) ImportLoc(locations []model.SitesLocation) error {
 
 	switch {
 	case r.site == "lugsports":
-		return r.RunMatchLocationsAllStates()
+		if err := r.RunMatchLocationsAllStates(); err != nil {
+			return err
+		}
+		return r.RunMatchLocationsAllStatesMHR()
 	case strings.HasPrefix(r.site, "gs_") || r.site == "atlantichockeyfederation" || r.site == "rockieshockeyleague" || r.site == "allpeacehockey" || r.site == "cahlhockey":
-		return r.MatchGamesheet()
+		if err := r.MatchGamesheet(); err != nil {
+			return err
+		}
+		return r.MatchGamesheetMHR()
 
 	default:
-		return r.RunMatchLocations()
+		if err := r.RunMatchLocations(); err != nil {
+			return err
+		}
+		return r.RunMatchMHRLocations()
 	}
 }
 
@@ -490,7 +499,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 			l.postal_code<>'' AND
 			position(l.postal_code in s.address) AND
 			s.site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 
 		`UPDATE
 			sites_locations s,
@@ -502,7 +511,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
 			position(left(l.postal_code,3) in s.address) AND
 			site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 
 		`UPDATE
 			sites_locations s,
@@ -513,7 +522,7 @@ func (r *SiteRepository) RunMatchLocationsAllStates() error {
 		WHERE
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
 			s.site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 	}
 
 	return r.DB.Transaction(func(db *gorm.DB) error {
@@ -644,4 +653,253 @@ func (r *Repository) ImportMappings(site string, m map[string]int32) error {
 		}
 	}
 	return nil
+}
+
+func (r *SiteRepository) RunMatchLocationsAllStatesMHR() error {
+	err := r.DB.Exec(`update sites_locations sl, mhr_locations ml set sl.mhr_location_id=ml.mhr_id
+		where sl.site=? and sl.location_id=ml.livebarn_location_id and sl.location_id != 0`, r.site).Error
+
+	if err != nil {
+		return err
+	}
+
+	var queries = []string{
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.mhr_match_type='postal code'
+		WHERE
+			l.postal_code<>'' AND
+			position(l.postal_code in s.address) AND
+			s.site=? AND
+			s.mhr_location_id=0`,
+
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.mhr_match_type="partial"
+		WHERE
+			position(regexp_substr(l.address, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
+			position(left(l.postal_code,3) in s.address) AND
+			site=? AND
+			s.mhr_location_id=0`,
+
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.match_type='address'
+		WHERE
+			position(regexp_substr(l.address, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
+			s.site=? AND
+			s.mhr_location_id=0`,
+	}
+
+	return r.DB.Transaction(func(db *gorm.DB) error {
+		for _, q := range queries {
+			if err := r.DB.Exec(q, r.site).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// Matches gamesheet season locations with MHR locations and surfaces
+func (r *SiteRepository) MatchGamesheetMHR() error {
+	var err error
+
+	err = r.DB.Exec(`update sites_locations sl, mhr_locations ml set sl.mhr_location_id=ml.mhr_id
+		where sl.site=? and sl.location_id=ml.livebarn_location_id and sl.location_id != 0`, r.site).Error
+
+	if err != nil {
+		return err
+	}
+	// Load all locations and unmatched sites_locations into memory for efficient matching
+	var allLocations []model.MhrLocation
+	if err = r.DB.Find(&allLocations).Error; err != nil {
+		return err
+	}
+
+	var unmatchedSiteLocs []model.SitesLocation
+	if err = r.DB.Where("site = ? AND mhr_location_id = 0", r.site).Find(&unmatchedSiteLocs).Error; err != nil {
+		return err
+	}
+
+	// Match in memory - find best (longest) location name match for each site location
+	type matchResult struct {
+		siteLocation string
+		MhrID        int32
+	}
+	var matches []matchResult
+
+	for _, sl := range unmatchedSiteLocs {
+		var bestMatch *model.MhrLocation
+		var bestLen int
+		for i := range allLocations {
+			loc := &allLocations[i]
+			if strings.Contains(strings.ToLower(sl.Location), strings.ToLower(loc.RinkName)) {
+				if len(loc.RinkName) > bestLen {
+					bestMatch = loc
+					bestLen = len(loc.RinkName)
+				}
+			}
+		}
+		if bestMatch != nil {
+			matches = append(matches, matchResult{sl.Location, bestMatch.MhrID})
+		}
+	}
+
+	// Batch update matched location_ids
+	err = r.DB.Transaction(func(tx *gorm.DB) error {
+		for _, m := range matches {
+			if err := tx.Exec("UPDATE sites_locations SET mhr_location_id = ? WHERE site = ? AND location = ? AND mhr_location_id != -1",
+				m.MhrID, r.site, m.siteLocation).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	var siteLoc []model.SitesLocation
+	err = r.DB.Raw(`SELECT site, location, mhr_location_id FROM sites_locations WHERE site =?
+		AND mhr_location_id = 0`, r.site).Scan(&siteLoc).Error
+	if err != nil {
+		return err
+	}
+
+	var ids = make([]int, 0, len(allLocations))
+	for _, l := range allLocations {
+		ids = append(ids, int(l.MhrID))
+	}
+
+	// Create location map for fast lookup
+	locMap := map[int32]*model.MhrLocation{}
+	for i := range allLocations {
+		locMap[allLocations[i].MhrID] = &allLocations[i]
+	}
+
+	for _, sl := range siteLoc {
+		_, err := r.MatchMHRLocByTokens(sl, allLocations, locMap)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// splits slite location words and match with each MHR location.
+func (r *SiteRepository) MatchMHRLocByTokens(sl model.SitesLocation, locations []model.MhrLocation, locMap map[int32]*model.MhrLocation) (bool, error) {
+	var err error
+
+	tokens := strings.Split(sl.Location, " ")
+	locMatched := false
+
+TOKENS_LOOP:
+	// match each token with MHR location.
+	for _, t := range tokens {
+		if len(t) == 0 || reNonAlphaNum.MatchString(t) || blackList[strings.ToLower(t)] {
+			continue
+		}
+		var id int32 = 0
+
+		for _, l := range locations {
+			if strings.Contains(l.RinkName, t) {
+				// if more than one location matched then skip token.
+				if id != 0 {
+					continue TOKENS_LOOP
+				}
+				id = l.MhrID
+			}
+		}
+		if id == 0 {
+			continue
+		}
+
+		err = r.DB.Transaction(func(tx *gorm.DB) error {
+			// set location id
+			err = tx.Exec(`UPDATE sites_locations set mhr_location_id=? WHERE site=? AND location=? AND mhr_location_id != -1`, id, sl.Site, sl.Location).Error
+			if err != nil {
+				return fmt.Errorf("failed to set mhr location id, %w", err)
+			}
+			locMatched = true
+			return nil
+		})
+		if err != nil {
+			return false, err
+		}
+		break
+	}
+	return locMatched, nil
+}
+
+func (r *SiteRepository) RunMatchMHRLocations() error {
+	var err error
+	err = r.DB.Exec(`update sites_locations sl, mhr_locations ml set sl.mhr_location_id=ml.mhr_id
+		where sl.site=? and sl.location_id=ml.livebarn_location_id and sl.location_id != 0`, r.site).Error
+
+	if err != nil {
+		return err
+	}
+
+	var queries = []string{
+		`UPDATE sites_locations SET loc= regexp_replace(location, ' (.+)','') WHERE site=?`,
+
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.mhr_match_type='postal code'
+		WHERE
+			l.postal_code<>'' AND
+			position(l.postal_code in s.address) AND
+			l.province="Ontario" AND s.site=? AND s.mhr_location_id != -1`,
+
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.mhr_match_type="partial"
+		WHERE
+			l.province="Ontario" AND
+			position(regexp_substr(l.address, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
+			position(left(l.postal_code,3) in s.address) AND
+			site=? AND
+			s.mhr_location_id != -1`,
+
+		`UPDATE
+			sites_locations s,
+			mhr_locations l
+		SET
+			s.mhr_location_id = l.mhr_id,
+			s.mhr_match_type='address'
+		WHERE
+			position(regexp_substr(l.address, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') IN s.address) AND
+			l.province="Ontario" AND
+			s.site=? AND
+			s.mhr_location_id != -1`,
+	}
+
+	return r.DB.Transaction(func(db *gorm.DB) error {
+		for _, q := range queries {
+			if err := r.DB.Exec(q, r.site).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }

@@ -12,19 +12,21 @@ const TableNameEvent = "events"
 
 // Event mapped from table <events>
 type Event struct {
-	ID          uint64    `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Site        string    `gorm:"column:site;not null" json:"site"`
-	SourceType  string    `gorm:"column:source_type" json:"source_type"`
-	Datetime    time.Time `gorm:"column:datetime;not null" json:"datetime"`
-	HomeTeam    string    `gorm:"column:home_team;not null" json:"home_team"`
-	OidHome     string    `gorm:"column:oid_home" json:"oid_home"`
-	GuestTeam   string    `gorm:"column:guest_team;not null" json:"guest_team"`
-	OidGuest    string    `gorm:"column:oid_guest" json:"oid_guest"`
-	Location    string    `gorm:"column:location;not null" json:"location"`
-	Division    string    `gorm:"column:division;not null" json:"division"`
-	LocationID  int32     `gorm:"column:location_id;not null" json:"location_id"`
-	SurfaceID   int32     `gorm:"column:surface_id;not null" json:"surface_id"`
-	DateCreated time.Time `gorm:"column:date_created;not null;default:current_timestamp()" json:"date_created"`
+	ID            int64     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Site          string    `gorm:"column:site;not null" json:"site"`
+	SourceType    string    `gorm:"column:source_type" json:"source_type"`
+	Datetime      time.Time `gorm:"column:datetime;not null" json:"datetime"`
+	HomeTeam      string    `gorm:"column:home_team;not null" json:"home_team"`
+	OidHome       string    `gorm:"column:oid_home" json:"oid_home"`
+	GuestTeam     string    `gorm:"column:guest_team;not null" json:"guest_team"`
+	OidGuest      string    `gorm:"column:oid_guest" json:"oid_guest"`
+	Location      string    `gorm:"column:location" json:"location"`
+	Division      string    `gorm:"column:division" json:"division"`
+	LocationID    int32     `gorm:"column:location_id" json:"location_id"`
+	SurfaceID     int32     `gorm:"column:surface_id;not null" json:"surface_id"`
+	DateCreated   time.Time `gorm:"column:date_created;not null;default:CURRENT_TIMESTAMP" json:"date_created"`
+	Edate         time.Time `gorm:"column:edate" json:"edate"`
+	MhrLocationID int32     `gorm:"column:mhr_location_id;not null" json:"mhr_location_id"`
 }
 
 // TableName Event's table name
