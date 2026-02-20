@@ -63,7 +63,7 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 
 	var surface model.Surface
 	if err = r.DB.First(&surface, siteLoc.SurfaceID).Error; err != nil {
-		log.Panicln(err)
+		log.Println(err)
 		return nil
 	}
 	return &surface

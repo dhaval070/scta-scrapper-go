@@ -1,0 +1,4 @@
+-- Drop composite indexes added for site-specific filtering optimization
+DROP INDEX idx_sites_locations_site_surface_id_location_id ON sites_locations;
+DROP INDEX idx_sites_locations_site_mhr_location_id ON sites_locations;
+DROP INDEX idx_sites_locations_site_location_id ON sites_locations;
