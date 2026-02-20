@@ -73,7 +73,7 @@ func main() {
 func getMigrate() (*migrate.Migrate, error) {
 	config.Init("config", ".")
 	cfg := config.MustReadConfig()
-	
+
 	// Ensure multiStatements=true is in DSN for multiple SQL statements per migration
 	dsn := cfg.DbDSN
 	if !strings.Contains(dsn, "multiStatements=true") {
@@ -83,7 +83,7 @@ func getMigrate() (*migrate.Migrate, error) {
 			dsn += "?multiStatements=true"
 		}
 	}
-	
+
 	db, err := gorm.Open(mysqlDriver.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -174,13 +174,13 @@ func runCreate(cmd *cobra.Command, args []string) {
 	name := args[0]
 	migrationsDir := "database/migrations"
 	ext := "sql"
-	
+
 	version := time.Now().Format("20060102150405")
-	
+
 	if err := os.MkdirAll(migrationsDir, 0755); err != nil {
 		log.Fatalf("Failed to create migrations directory: %v", err)
 	}
-	
+
 	versionGlob := filepath.Join(migrationsDir, version+"_*."+ext)
 	matches, err := filepath.Glob(versionGlob)
 	if err != nil {
@@ -189,17 +189,17 @@ func runCreate(cmd *cobra.Command, args []string) {
 	if len(matches) > 0 {
 		log.Fatalf("Duplicate migration version: %s", version)
 	}
-	
+
 	for _, direction := range []string{"up", "down"} {
 		basename := fmt.Sprintf("%s_%s.%s.%s", version, name, direction, ext)
 		filename := filepath.Join(migrationsDir, basename)
-		
+
 		f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0666)
 		if err != nil {
 			log.Fatalf("Failed to create migration file: %v", err)
 		}
 		f.Close()
-		
+
 		absPath, _ := filepath.Abs(filename)
 		fmt.Println(absPath)
 	}

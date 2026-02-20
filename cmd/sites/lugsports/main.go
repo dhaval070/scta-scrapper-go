@@ -204,7 +204,7 @@ func getMore(seasonId, lastID, ticket string) ([]Event, error) {
 	for i, v := range data["schedule"] {
 		address, err := url.QueryUnescape(v.FacilityAddress)
 		if err != nil {
-			panic(fmt.Errorf("failed to unescape address %s ", v.FacilityAddress))
+			return nil, fmt.Errorf("failed to unescape address %s ", v.FacilityAddress)
 		}
 		data["schedule"][i].FacilityAddress = address
 	}

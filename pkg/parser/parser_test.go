@@ -18,7 +18,18 @@ func TestParseTime(t *testing.T) {
 	assert.Equal(t, "17:30", result)
 }
 
+type mockFetcher struct{}
+
+func (m *mockFetcher) Fetch(url, class string) (string, error) {
+	return "", nil
+}
+
 func TestParseSchedules(t *testing.T) {
+	// Set a mock fetcher to avoid nil pointer dereference
+	originalFetcher := VenueFetcher
+	defer func() { VenueFetcher = originalFetcher }()
+	VenueFetcher = &mockFetcher{}
+
 	var cases = map[string]struct {
 		file string
 	}{

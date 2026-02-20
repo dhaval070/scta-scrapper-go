@@ -50,17 +50,20 @@ func main() {
 
 	divisions, err := fetchDivisions()
 	if err != nil {
-		panic(fmt.Errorf("atlantichockey %w", err))
+		log.Fatalf("failed to fetch divisions: %v", err)
 	}
 
 	var allGames = [][]string{}
-	var creds = fetchCreds()
+	creds, err := fetchCreds()
+	if err != nil {
+		log.Fatalf("failed to fetch credentials: %v", err)
+	}
 
 	var lock = sync.Mutex{}
 
 	cutoff, err := time.Parse("2006-1-02", strconv.Itoa(yyyy)+"-"+strconv.Itoa(mm)+"-01")
 	if err != nil {
-		panic(fmt.Errorf("failed parse cutoff date %w", err))
+		log.Fatalf("failed to parse cutoff date: %v", err)
 	}
 
 	var wg = sync.WaitGroup{}
@@ -153,7 +156,9 @@ func fetchSchedules(division Division, cutoff time.Time, creds *Creds) ([]Game, 
 
 	r := map[string][]Game{}
 
-	jsoniter.Unmarshal(b, &r)
+	if err := jsoniter.Unmarshal(b, &r); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
 	var filtered = []Game{}
 	for i := range r["games"] {
 		dt, err := time.Parse("2006-01-02 15:04:05", r["games"][i].Date+" "+r["games"][i].Time)
@@ -169,17 +174,17 @@ func fetchSchedules(division Division, cutoff time.Time, creds *Creds) ([]Game, 
 	return filtered, nil
 }
 
-func fetchCreds() *Creds {
+func fetchCreds() (*Creds, error) {
 	// fmt.Println("fetching creds")
 	resp, err := cl.Get(baseUrl)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	body := string(b)
@@ -191,27 +196,27 @@ func fetchCreds() *Creds {
 
 	username := usernameRe.FindStringSubmatch(body)
 	if len(username) == 0 {
-		panic("username not found")
+		return nil, fmt.Errorf("username not found")
 	}
 	// fmt.Printf("%+v\n", username)
 	secret := secretRe.FindStringSubmatch(body)
 	if len(secret) == 0 {
-		panic("secret not found")
+		return nil, fmt.Errorf("secret not found")
 	}
 	apiUrl := apiUrlRe.FindStringSubmatch(body)
 	if len(apiUrl) == 0 {
-		panic("api url not found")
+		return nil, fmt.Errorf("api url not found")
 	}
 	leagueId := leagueIdRe.FindStringSubmatch(body)
 	if len(leagueId) == 0 {
-		panic("league id not found")
+		return nil, fmt.Errorf("league id not found")
 	}
 	return &Creds{
 		username: username[1],
 		secret:   secret[1],
 		apiUrl:   apiUrl[1],
 		leagueId: leagueId[1],
-	}
+	}, nil
 }
 func signUrl(username, secret, apiUrl, path string, params map[string]string) string {
 	authTimestamp := strconv.FormatInt(time.Now().Unix(), 10)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -118,6 +119,7 @@ func runScraper(cmd *cobra.Command, args []string) {
 			names[i] = strings.TrimSpace(name)
 		}
 		log.Printf("Loading %d specified site(s): %v\n", len(names), names)
+		sites = make([]siteconfig.SiteConfig, 0, len(names))
 		for _, name := range names {
 			site, err := loader.GetSite(name)
 			if err != nil {
@@ -160,13 +162,13 @@ func runScraper(cmd *cobra.Command, args []string) {
 	successCount := 0
 	failCount := 0
 	totalEvents := 0
-	var zeroEventSites []string
+	zeroEventSites := make([]string, 0, len(siteResults)/2)
 
 	for _, res := range siteResults {
 		if res.success {
 			successCount++
 			totalEvents += res.eventCount
-			status := fmt.Sprintf("%d", res.eventCount)
+			status := strconv.Itoa(res.eventCount)
 			log.Printf("%-30s %10s", res.siteName, status)
 			if res.eventCount == 0 {
 				zeroEventSites = append(zeroEventSites, res.siteName)
@@ -196,7 +198,11 @@ func runScraper(cmd *cobra.Command, args []string) {
 // processSitesWithPool processes multiple sites using a worker pool
 func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, workers int) []scraperResult {
 	// Create channels
-	jobs := make(chan siteconfig.SiteConfig, len(sites))
+	jobsBufferSize := workers * 2
+	if jobsBufferSize > len(sites) {
+		jobsBufferSize = len(sites)
+	}
+	jobs := make(chan siteconfig.SiteConfig, jobsBufferSize)
 	type result struct {
 		siteName   string
 		success    bool
@@ -245,7 +251,7 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 	close(results)
 
 	// Collect results
-	var scraperResults []scraperResult
+	scraperResults := make([]scraperResult, 0, len(sites))
 	for res := range results {
 		scraperResults = append(scraperResults, scraperResult(res))
 	}
@@ -297,7 +303,7 @@ func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyy
 		dir := filepath.Dir(*flags.Outfile)
 		basename := filepath.Base(*flags.Outfile)
 
-		outfile := filepath.Join(dir, fmt.Sprintf("%s_%s", site.SiteName, basename))
+		outfile := filepath.Join(dir, site.SiteName+"_"+basename)
 		log.Printf("Writing output to: %s\n", outfile)
 		if err := cmdutil.WriteOutput(outfile, result); err != nil {
 			return eventCount, fmt.Errorf("failed to write output: %w", err)

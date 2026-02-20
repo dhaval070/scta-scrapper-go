@@ -2,6 +2,7 @@ package main
 
 import (
 	"calendar-scrapper/pkg/cmdutil"
+	"calendar-scrapper/pkg/htmlutil"
 	"calendar-scrapper/pkg/parser"
 	"flag"
 	"fmt"
@@ -46,7 +47,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	result := ParseSchedules(doc, mm, yyyy)
+	result, err := ParseSchedules(doc, mm, yyyy)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if len(result) == 0 {
 		return
 	}
@@ -65,17 +69,17 @@ func main() {
 
 }
 
-func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
+func ParseSchedules(doc *html.Node, mm, yyyy int) ([][]string, error) {
 	contents := htmlquery.OutputHTML(doc, true)
 	if strings.Contains(contents, "No games scheduled") {
 		log.Println("not games scheduled for alliancehockey")
-		return [][]string{}
+		return [][]string{}, nil
 	}
 
 	nodes := htmlquery.Find(doc, `//div[contains(@class, "day-details")]`)
 	if len(nodes) == 0 {
 		log.Println(htmlquery.OutputHTML(doc, true))
-		panic("day details not found")
+		return nil, fmt.Errorf("day details not found")
 	}
 
 	node := nodes[0]
@@ -94,6 +98,9 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 
 	for _, parent := range listItems {
 		items := htmlquery.Find(parent, `div[2]`)
+		if len(items) == 0 {
+			continue
+		}
 		item := items[0]
 		content := htmlquery.OutputHTML(item, true)
 
@@ -135,8 +142,14 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 			log.Println(err)
 			continue
 		}
+		if subjectText == nil {
+			continue
+		}
 
 		ch := subjectText.FirstChild
+		if ch == nil {
+			continue
+		}
 		homeTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 		location, err := parser.QueryInnerText(item, `//div[@class="location remote"]`)
 		if err != nil {
@@ -144,15 +157,11 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 			continue
 		}
 
-		item = htmlquery.Find(parent, `div[1]//a[@class="remote"]`)[0]
+		links := htmlquery.Find(parent, `div[1]//a[@class="remote"]`)
 		var url string
 		var address string
-
-		for _, attr := range item.Attr {
-			if attr.Key == "href" {
-				url = attr.Val
-				break
-			}
+		if len(links) > 0 {
+			url = htmlutil.GetAttr(links[0], "href")
 		}
 		if url != "" {
 			wg.Add(1)
@@ -168,7 +177,7 @@ func ParseSchedules(doc *html.Node, mm, yyyy int) [][]string {
 		}
 	}
 	wg.Wait()
-	return result
+	return result, nil
 }
 
 func getVenueAddress(url string) string {

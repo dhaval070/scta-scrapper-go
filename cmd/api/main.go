@@ -116,9 +116,11 @@ func listSites(c echo.Context) error {
 
 		if parserConfigJSON.Valid {
 			var parserConfig interface{}
-			if err := json.Unmarshal([]byte(parserConfigJSON.String), &parserConfig); err == nil {
-				site.ParserConfig = parserConfig
+			if err := json.Unmarshal([]byte(parserConfigJSON.String), &parserConfig); err != nil {
+				log.Printf("Error unmarshaling parser config for site %d: %v", site.ID, err)
+				return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse site configuration"})
 			}
+			site.ParserConfig = parserConfig
 		}
 
 		sites = append(sites, site)
@@ -168,9 +170,11 @@ func getSite(c echo.Context) error {
 
 	if parserConfigJSON.Valid {
 		var parserConfig interface{}
-		if err := json.Unmarshal([]byte(parserConfigJSON.String), &parserConfig); err == nil {
-			site.ParserConfig = parserConfig
+		if err := json.Unmarshal([]byte(parserConfigJSON.String), &parserConfig); err != nil {
+			log.Printf("Error unmarshaling parser config for site %s: %v", id, err)
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse site configuration"})
 		}
+		site.ParserConfig = parserConfig
 	}
 
 	return c.JSON(http.StatusOK, site)

@@ -109,6 +109,9 @@ func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 
 		for _, parent := range listItems {
 			item := htmlquery.FindOne(parent, `div[2]`)
+			if item == nil {
+				continue
+			}
 			content := htmlquery.OutputHTML(item, true)
 
 			if strings.Contains(content, "All Day") || strings.Contains(content, "time-secondary") || strings.Contains(content, "Cancelled") {
@@ -133,8 +136,14 @@ func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 				log.Println(err)
 				continue
 			}
+			if subjectText == nil {
+				continue
+			}
 
 			ch := subjectText.FirstChild
+			if ch == nil {
+				continue
+			}
 			homeTeam := strings.ReplaceAll(htmlquery.InnerText(ch), "@ ", "")
 			location, err := QueryInnerText(item, `//div[@class="location remote"]`)
 			if err != nil {
@@ -142,17 +151,19 @@ func ParseSchedules(site string, baseUrl string, doc *html.Node) [][]string {
 				continue
 			}
 
-			item = htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)[0]
+			links := htmlquery.Find(parent, `div[1]//a[@class="remote" or @class="local"]`)
 			var url string
 			var address string
 			var class string
-
-			for _, attr := range item.Attr {
-				if attr.Key == "href" {
-					url = attr.Val
-					break
-				} else if attr.Key == "class" {
-					class = attr.Val
+			if len(links) > 0 {
+				item = links[0]
+				for _, attr := range item.Attr {
+					if attr.Key == "href" {
+						url = attr.Val
+						break
+					} else if attr.Key == "class" {
+						class = attr.Val
+					}
 				}
 			}
 

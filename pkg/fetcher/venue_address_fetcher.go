@@ -17,9 +17,10 @@ import (
 // VenueAddressFetcher fetches venue addresses with caching and request deduplication.
 // It ensures only one HTTP request is made per URL, even with concurrent calls.
 type VenueAddressFetcher struct {
-	client *http.Client
-	cache  map[string]*cacheEntry
-	mu     sync.RWMutex
+	client       *http.Client
+	cache        map[string]*cacheEntry
+	mu           sync.RWMutex
+	maxCacheSize int
 }
 
 // cacheEntry holds cached response and in-progress request information
@@ -40,8 +41,9 @@ func NewVenueAddressFetcher(client *http.Client) *VenueAddressFetcher {
 	}
 
 	return &VenueAddressFetcher{
-		client: client,
-		cache:  make(map[string]*cacheEntry),
+		client:       client,
+		cache:        make(map[string]*cacheEntry),
+		maxCacheSize: 50000,
 	}
 }
 
@@ -107,6 +109,7 @@ func (f *VenueAddressFetcher) fetch(cacheKey, url, class string) (string, error)
 		done:     make(chan struct{}),
 		inFlight: true,
 	}
+	f.evictIfNeeded()
 	f.cache[cacheKey] = entry
 	f.mu.Unlock()
 
@@ -245,6 +248,31 @@ func (f *VenueAddressFetcher) ClearCache() {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.cache = make(map[string]*cacheEntry)
+}
+
+// evictIfNeeded removes excess cache entries when cache size exceeds maxCacheSize.
+// Must be called with f.mu.Lock() held.
+func (f *VenueAddressFetcher) evictIfNeeded() {
+	if len(f.cache) < f.maxCacheSize {
+		return
+	}
+	// Evict 10% of entries, but keep in-flight requests
+	target := f.maxCacheSize * 9 / 10 // reduce to 90% of max
+	toDelete := len(f.cache) - target
+	if toDelete <= 0 {
+		return
+	}
+	// Iterate over map and delete entries that are not in-flight
+	deleted := 0
+	for key, entry := range f.cache {
+		if !entry.inFlight {
+			delete(f.cache, key)
+			deleted++
+			if deleted >= toDelete {
+				break
+			}
+		}
+	}
 }
 
 // CacheSize returns the number of cached entries
