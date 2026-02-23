@@ -136,6 +136,7 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			Division:    g.Division + " " + g.Category,
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
+			Edate:       dt,
 		})
 
 		r[0] = g.GameID
