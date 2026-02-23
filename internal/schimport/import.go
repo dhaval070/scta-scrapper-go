@@ -17,7 +17,6 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
-	"gorm.io/datatypes"
 )
 
 /*
@@ -114,8 +113,6 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			continue
 		}
 
-		edate := datatypes.Date(dt)
-
 		if dt.Before(cutOffDate) {
 			continue
 		}
@@ -139,7 +136,6 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			Division:    g.Division + " " + g.Category,
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
-			Edate:       edate,
 		})
 
 		r[0] = g.GameID
