@@ -17,6 +17,7 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
+	"gorm.io/datatypes"
 )
 
 /*
@@ -112,11 +113,8 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			log.Printf("error: failed parsing: date: %s , time: %s", g.StartDate, g.StartTime)
 			continue
 		}
-		edate, err := time.Parse("2006-01-02", g.StartDate)
-		if err != nil {
-			log.Println("error: failed to parse date")
-			continue
-		}
+
+		edate := datatypes.Date(dt)
 
 		if dt.Before(cutOffDate) {
 			continue
