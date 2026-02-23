@@ -112,6 +112,11 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			log.Printf("error: failed parsing: date: %s , time: %s", g.StartDate, g.StartTime)
 			continue
 		}
+		edate, err := time.Parse("2006-01-02", g.StartDate)
+		if err != nil {
+			log.Println("error: failed to parse date")
+			continue
+		}
 
 		if dt.Before(cutOffDate) {
 			continue
@@ -136,7 +141,7 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 			Division:    g.Division + " " + g.Category,
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
-			Edate:       dt,
+			Edate:       edate,
 		})
 
 		r[0] = g.GameID
