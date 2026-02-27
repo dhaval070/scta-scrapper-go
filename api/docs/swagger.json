@@ -74,6 +74,50 @@
                     }
                 }
             }
+        },
+        "/sites-config/{id}/toggle": {
+            "post": {
+                "description": "Toggles the enabled status of a site configuration. If enabled is NULL, sets to true.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SitesConfig"
+                ],
+                "summary": "Toggle site configuration enabled status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site Config ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SitesConfigResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Site config not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -220,6 +264,54 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.SitesConfigResponse": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "games_scraped": {
+                    "type": "integer"
+                },
+                "home_team": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_scraped_at": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "parser_config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "parser_type": {
+                    "type": "string"
+                },
+                "scrape_frequency_hours": {
+                    "type": "integer"
+                },
+                "site_name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         }

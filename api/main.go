@@ -134,6 +134,7 @@ func main() {
 	r.POST("/sites-config", app.createSitesConfig)
 	r.PUT("/sites-config/:id", app.updateSitesConfig)
 	r.DELETE("/sites-config/:id", app.deleteSitesConfig)
+	r.POST("/sites-config/:id/toggle", app.toggleSitesConfigEnabled)
 
 	// Swagger documentation endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

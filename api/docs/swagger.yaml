@@ -96,6 +96,38 @@ definitions:
       total:
         type: integer
     type: object
+  models.SitesConfigResponse:
+    properties:
+      base_url:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      enabled:
+        type: boolean
+      games_scraped:
+        type: integer
+      home_team:
+        type: string
+      id:
+        type: integer
+      last_scraped_at:
+        type: string
+      notes:
+        type: string
+      parser_config:
+        additionalProperties: {}
+        type: object
+      parser_type:
+        type: string
+      scrape_frequency_hours:
+        type: integer
+      site_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
 host: localhost:8000
 info:
   contact:
@@ -144,6 +176,36 @@ paths:
       summary: Get paginated site location mappings
       tags:
       - Mappings
+  /sites-config/{id}/toggle:
+    post:
+      consumes:
+      - application/json
+      description: Toggles the enabled status of a site configuration. If enabled
+        is NULL, sets to true.
+      parameters:
+      - description: Site Config ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SitesConfigResponse'
+        "404":
+          description: Site config not found
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      summary: Toggle site configuration enabled status
+      tags:
+      - SitesConfig
 schemes:
 - http
 - https

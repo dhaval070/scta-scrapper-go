@@ -118,6 +118,47 @@ func (app *App) deleteSitesConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Sites config deleted successfully"})
 }
 
+// toggleSitesConfigEnabled toggles the enabled status of a site configuration
+// @Summary Toggle site configuration enabled status
+// @Description Toggles the enabled status of a site configuration. If enabled is NULL, sets to true.
+// @Tags SitesConfig
+// @Accept json
+// @Produce json
+// @Param id path string true "Site Config ID"
+// @Success 200 {object} models.SitesConfigResponse
+// @Failure 404 {object} object "Site config not found"
+// @Failure 500 {object} object "Internal server error"
+// @Router /sites-config/{id}/toggle [post]
+func (app *App) toggleSitesConfigEnabled(c *gin.Context) {
+	id := c.Param("id")
+	var sitesConfig model.SitesConfig
+
+	if err := app.db.First(&sitesConfig, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Sites config not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
+
+	if !sitesConfig.Enabled.Valid {
+		sitesConfig.Enabled = sql.NullBool{Bool: true, Valid: true}
+	} else {
+		sitesConfig.Enabled = sql.NullBool{
+			Bool:  !sitesConfig.Enabled.Bool,
+			Valid: true,
+		}
+	}
+
+	if err := app.db.Save(&sitesConfig).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, convertToSitesConfigResponse(sitesConfig))
+}
+
 // getParserTypes returns all available parser types
 func (app *App) getParserTypes(c *gin.Context) {
 	parserTypes := []string{
