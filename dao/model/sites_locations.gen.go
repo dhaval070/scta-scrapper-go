@@ -8,8 +8,8 @@ const TableNameSitesLocation = "sites_locations"
 
 // SitesLocation mapped from table <sites_locations>
 type SitesLocation struct {
-	Site          string `gorm:"column:site;not null" json:"site"`
-	Location      string `gorm:"column:location" json:"location"`
+	Site          string `gorm:"column:site;primaryKey" json:"site"`
+	Location      string `gorm:"column:location;primaryKey" json:"location"`
 	LocationID    int32  `gorm:"column:location_id" json:"location_id"`
 	Loc           string `gorm:"column:loc" json:"loc"`
 	Surface       string `gorm:"column:surface" json:"surface"`

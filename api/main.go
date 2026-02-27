@@ -94,7 +94,7 @@ func main() {
 	}
 	r.Use(app.AuthMiddleware())
 
-	r.GET("/site-locations/:site", app.getSiteLoc)
+	r.GET("/site-locations", app.getSiteLoc)
 	r.GET("/mhr-locations", app.getMHRLoc)
 	r.POST("/mhr-set-location", app.setMHRLoc)
 	r.POST("/mhr-set-surface", app.setMHRSurface)

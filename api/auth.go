@@ -84,7 +84,7 @@ func (app *App) AuthMiddleware() gin.HandlerFunc {
 		defer s.SessionRelease(c.Writer)
 
 		url := c.Request.URL.String()
-		if url != "/unset-mapping" && url != "/swagger/" && url != "/login" && url != "/logout" {
+		if url != "/swagger/" && url != "/login" && url != "/logout" {
 			if s.Get("username") == nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": "Session expired",

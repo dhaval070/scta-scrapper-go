@@ -1,41 +1,5 @@
 basePath: /
 definitions:
-  main.RinkReportItem:
-    properties:
-      city:
-        type: string
-      edate:
-        type: string
-      json_report:
-        additionalProperties:
-          type: integer
-        type: object
-      location_id:
-        type: integer
-      province:
-        type: string
-      rink:
-        type: string
-      total:
-        type: integer
-    type: object
-  main.RinkReportResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/main.RinkReportItem'
-        type: array
-      end_date:
-        type: string
-      page:
-        type: integer
-      perPage:
-        type: integer
-      start_date:
-        type: string
-      total:
-        type: integer
-    type: object
   model.Location:
     properties:
       address1:
@@ -98,37 +62,7 @@ definitions:
       venue_id:
         type: integer
     type: object
-  models.CreateUserInput:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    required:
-    - password
-    - username
-    type: object
-  models.Login:
-    properties:
-      created_at:
-        type: string
-      password:
-        type: string
-      updated_at:
-        type: string
-      username:
-        type: string
-    type: object
-  models.SetLocationInput:
-    properties:
-      location:
-        type: string
-      site:
-        type: string
-      surface_id:
-        type: integer
-    type: object
-  models.SiteLocResult:
+  models.SiteLoc:
     properties:
       address:
         type: string
@@ -149,68 +83,18 @@ definitions:
       surface_id:
         type: integer
     type: object
-  models.SitesConfigResponse:
+  models.SiteLocResult:
     properties:
-      base_url:
-        type: string
-      created_at:
-        type: string
-      display_name:
-        type: string
-      enabled:
-        type: boolean
-      home_team:
-        type: string
-      id:
+      data:
+        items:
+          $ref: '#/definitions/models.SiteLoc'
+        type: array
+      page:
         type: integer
-      last_scraped_at:
-        type: string
-      notes:
-        type: string
-      parser_config:
-        additionalProperties: {}
-        type: object
-      parser_type:
-        type: string
-      scrape_frequency_hours:
+      perPage:
         type: integer
-      site_name:
-        type: string
-      updated_at:
-        type: string
-    type: object
-  models.SurfaceResult:
-    properties:
-      id:
+      total:
         type: integer
-      location_address:
-        type: string
-      location_city:
-        type: string
-      location_id:
-        type: integer
-      location_name:
-        type: string
-      name:
-        type: string
-      sports:
-        type: string
-    type: object
-  models.UnsetMappingInput:
-    properties:
-      location:
-        type: string
-      site:
-        type: string
-      type:
-        enum:
-        - location
-        - surface
-        type: string
-    required:
-    - location
-    - site
-    - type
     type: object
 host: localhost:8000
 info:
@@ -225,176 +109,28 @@ info:
   title: Surface API
   version: "1.0"
 paths:
-  /events:
+  /site-locations:
     get:
-      description: Get paginated list of events with optional filters
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Results per page
-        in: query
-        name: perPage
-        type: integer
-      - description: Filter by site
-        in: query
-        name: site
-        type: string
-      - description: Filter by surface ID
-        in: query
-        name: surface_id
-        type: integer
-      - description: Filter by start date (YYYY-MM-DD)
-        in: query
-        name: start_date
-        type: string
-      - description: Filter by end date (YYYY-MM-DD)
-        in: query
-        name: end_date
-        type: string
-      produces:
+      consumes:
       - application/json
-      responses:
-        "200":
-          description: data, page, perPage, total
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Get events
-      tags:
-      - Events
-  /locations:
-    get:
-      description: Get paginated list of locations with their surfaces
+      description: Returns paginated site location mappings for a given site with
+        optional pagination parameters
       parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Results per page
-        in: query
-        name: perPage
-        type: integer
-      - description: Filter by location name
-        in: query
-        name: name
-        type: string
-      - description: Filter by postal code
-        in: query
-        name: postal_code
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: data, page, perPage, total
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Get locations
-      tags:
-      - Locations
-  /logout:
-    get:
-      description: Destroy current session
-      responses:
-        "200":
-          description: OK
-      security:
-      - CookieAuth: []
-      summary: Logout
-      tags:
-      - Authentication
-  /provinces:
-    get:
-      description: Get list of all provinces in Canada
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              properties:
-                id:
-                  format: int32
-                  type: integer
-                province_name:
-                  type: string
-              type: object
-            type: array
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Get provinces
-      tags:
-      - Location
-  /rink-report:
-    get:
-      description: Get paginated rink usage report aggregated by date and location.
-        Supports filtering by rink (partial), province, city, and exporting CSV via
-        'export' query param.
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Results per page
-        in: query
-        name: perPage
-        type: integer
-      - description: Start date (YYYY-MM-DD)
-        in: query
-        name: start_date
-        type: string
-      - description: End date (YYYY-MM-DD)
-        in: query
-        name: end_date
-        type: string
-      - description: Rink name (partial match)
-        in: query
-        name: rink
-        type: string
-      - description: Province ID
-        in: query
-        name: province
-        type: string
-      - description: City name
-        in: query
-        name: city
-        type: string
       - description: Site name
         in: query
         name: site
         type: string
-      - description: If present returns CSV download
+      - description: Filter locations starting with this value
         in: query
-        name: export
+        name: location
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: string
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: perPage
         type: string
       produces:
       - application/json
@@ -402,298 +138,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.RinkReportResponse'
-        "400":
-          description: bad request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SiteLocResult'
       security:
       - CookieAuth: []
-      summary: Get rink usage report
-      tags:
-      - Reports
-  /session:
-    get:
-      description: Get current session information
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: username
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Check session
-      tags:
-      - Authentication
-  /set-location:
-    post:
-      consumes:
-      - application/json
-      description: Set Location ID with a SiteLocation Record
-      parameters:
-      - description: Mapping to set
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/models.SetLocationInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.SiteLocResult'
-            type: array
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Set Location ID with a SiteLocation Record
+      summary: Get paginated site location mappings
       tags:
       - Mappings
-  /sites:
-    get:
-      description: Get list of all configured sites
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.SitesConfigResponse'
-            type: array
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Get sites
-      tags:
-      - Sites
-  /surfaces:
-    get:
-      description: Get list of all surfaces with location details, optionally filtered
-        by province
-      parameters:
-      - description: Province name
-        in: query
-        name: province
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.SurfaceResult'
-            type: array
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Get surfaces
-      tags:
-      - Surfaces
-  /unset-mapping:
-    post:
-      consumes:
-      - application/json
-      description: Remove location or surface mapping for a site location
-      parameters:
-      - description: Mapping to unset
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/models.UnsetMappingInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.SiteLocResult'
-            type: array
-        "400":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Unset mapping
-      tags:
-      - Mappings
-  /users:
-    get:
-      description: Get list of all users (passwords are masked)
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Login'
-            type: array
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: List users
-      tags:
-      - Users
-    post:
-      consumes:
-      - application/json
-      description: Create a new user
-      parameters:
-      - description: User information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.CreateUserInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Login'
-        "400":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Add user
-      tags:
-      - Users
-  /users/{username}:
-    delete:
-      description: Delete a user and invalidate their sessions (cannot delete currently
-        logged in user)
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: message
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: error
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Delete user
-      tags:
-      - Users
-  /users/{username}/password:
-    put:
-      consumes:
-      - application/json
-      description: Allow a logged-in user to change their own password. Accepts {"current_password":"old","password":"new","confirm":"new"}.
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      - description: New password
-        in: body
-        name: input
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 'Password changed successfully. Server invalidates sessions;
-            client should force re-login. Example: {\"message\":\"password changed\"}'
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: 'Bad Request. Returned when validation fails or current password
-            is incorrect. Response shape: {\"error\":\"message\", optionally \"attempts_left\":int,
-            \"cooldown_seconds\":int}'
-          schema:
-            additionalProperties: true
-            type: object
-        "429":
-          description: 'Too Many Requests. Returned when rate limit reached. Response
-            shape: {\"error\":\"too many password change attempts, try again later\",
-            \"attempts_left\":0, \"cooldown_seconds\":int}'
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: 'Internal Server Error: {\"error\":\"message\"}'
-          schema:
-            additionalProperties: true
-            type: object
-      security:
-      - CookieAuth: []
-      summary: Change own password
-      tags:
-      - Users
 schemes:
 - http
 - https

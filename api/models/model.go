@@ -11,7 +11,7 @@ type Config struct {
 	Mode   string `mapstructure:"mode"`
 }
 
-type SiteLocResult struct {
+type SiteLoc struct {
 	Site             string         `gorm:"column:site;not null" json:"site"`
 	Location         string         `gorm:"column:location" json:"location"`
 	LocationID       int32          `gorm:"column:location_id" json:"location_id"`
@@ -23,7 +23,7 @@ type SiteLocResult struct {
 	LinkedSurface    model.Surface  `gorm:"foreignKey:SurfaceID"`
 }
 
-func (*SiteLocResult) TableName() string {
+func (*SiteLoc) TableName() string {
 	return "sites_locations"
 }
 
@@ -34,11 +34,18 @@ type MHRLocResult struct {
 	Total   int64         `json:"total"`
 }
 
+type SiteLocResult struct {
+	Data    []SiteLoc `json:"data"`
+	Page    int       `json:"page"`
+	PerPage int       `json:"perPage"`
+	Total   int64     `json:"total"`
+}
+
 type Mapping struct {
 	Site        string `json:"site" gorm:"column:site"`
 	Location    string `json:"location" gorm:"column:location"`
 	SurfaceID   int    `json:"surface_id" gorm:"column:surface_id"`
-	SurfaceName string `gorm:"foreignKey:SurfaceID" gorm:"column:surface_name" json:"surface_name"`
+	SurfaceName string `gorm:"foreignKey:SurfaceID" json:"surface_name"`
 }
 
 type SurfaceResult struct {
@@ -132,6 +139,7 @@ type SitesConfigResponse struct {
 	Notes                *string        `json:"notes"`
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
+	GamesScraped         int32          `json:"games_scraped"`
 }
 
 type SurfaceReport struct {

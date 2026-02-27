@@ -619,7 +619,11 @@ func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDat
 			if err := db.Exec("DELETE FROM events WHERE site=? AND datetime > ?", site, cutOffDate).Error; err != nil {
 				return err
 			}
-			return db.CreateInBatches(records, 50).Error
+			err := db.CreateInBatches(records, 50).Error
+			if err == nil {
+				return db.Exec(`update sites_config set games_scraped=? where site_name=?`, len(records), site).Error
+			}
+			return err
 		})
 
 		if err == nil {

@@ -12,7 +12,7 @@ import (
 
 // setSurface updates surface mapping for a site location
 func (app *App) setSurface(c *gin.Context) {
-	var input = &models.SiteLocResult{}
+	var input = &models.SiteLoc{}
 
 	if err := c.BindJSON(input); err != nil {
 		sendError(c, err)
@@ -38,7 +38,7 @@ func (app *App) setSurface(c *gin.Context) {
 			return
 		}
 	}
-	var result = []models.SiteLocResult{}
+	var result = []models.SiteLoc{}
 
 	if err := app.db.Joins("LinkedSurface").Joins("LiveBarnLocation").Find(&result, "site=?", input.Site).Error; err != nil {
 		sendError(c, err)
@@ -67,7 +67,7 @@ func (app *App) setLocation(c *gin.Context) {
 		return
 	}
 
-	c.AddParam("site", input.Site)
+	c.Request.URL.RawQuery = fmt.Sprintf("site=%s", input.Site)
 	app.getSiteLoc(c)
 }
 
@@ -83,8 +83,8 @@ func (app *App) unsetMapping(c *gin.Context) {
 	updateFields := make(map[string]any)
 
 	if input.Type == "location" {
-		var current models.SiteLocResult
-		if err := app.db.Model(&models.SiteLocResult{}).
+		var current models.SiteLoc
+		if err := app.db.Model(&models.SiteLoc{}).
 			Where("site = ? AND location = ?", input.Site, input.Location).
 			First(&current).Error; err != nil {
 			sendError(c, err)
@@ -99,14 +99,14 @@ func (app *App) unsetMapping(c *gin.Context) {
 		updateFields["surface_id"] = 0
 	}
 
-	if err := app.db.Model(&models.SiteLocResult{}).
+	if err := app.db.Model(&models.SiteLoc{}).
 		Where("site = ? AND location = ?", input.Site, input.Location).
 		Updates(updateFields).Error; err != nil {
 		sendError(c, err)
 		return
 	}
 
-	c.AddParam("site", input.Site)
+	c.Request.URL.RawQuery = fmt.Sprintf("site=%s", input.Site)
 	app.getSiteLoc(c)
 }
 
@@ -135,15 +135,64 @@ func (app *App) setMapping(c *gin.Context) {
 }
 
 // getSiteLoc returns site location mappings for a given site
+// @Summary Get paginated site location mappings
+// @Description Returns paginated site location mappings for a given site with optional pagination parameters
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param site query string false "Site name"
+// @Param location query string false "Filter locations starting with this value"
+// @Param page query string false "Page number (default: 1)"
+// @Param perPage query string false "Items per page (default: 10, max: 100)"
+// @Success 200 {object} models.SiteLocResult
+// @Security CookieAuth
+// @Router /site-locations [get]
 func (app *App) getSiteLoc(c *gin.Context) {
-	site := c.Param("site")
-	var result = []models.SiteLocResult{}
+	site := c.Query("site")
+	location := c.Query("location")
+	page := c.DefaultQuery("page", "1")
+	perPage := c.DefaultQuery("perPage", "10")
+	var pageNum, perPageNum int
+	fmt.Sscanf(page, "%d", &pageNum)
+	fmt.Sscanf(perPage, "%d", &perPageNum)
 
-	if err := app.db.Joins("LinkedSurface").Joins("LiveBarnLocation").Find(&result, "site=?", site).Error; err != nil {
+	if pageNum < 1 {
+		pageNum = 1
+	}
+	if perPageNum < 1 || perPageNum > 100 {
+		perPageNum = 10
+	}
+
+	offset := (pageNum - 1) * perPageNum
+
+	var total int64
+	var result = []models.SiteLoc{}
+
+	baseQuery := app.db.Model(&models.SiteLoc{}).Joins("LinkedSurface").Joins("LiveBarnLocation")
+
+	if site != "" {
+		baseQuery = baseQuery.Where("site=?", site)
+	}
+
+	if location != "" {
+		baseQuery = baseQuery.Where("location LIKE ?", location+"%")
+	}
+
+	if err := baseQuery.Count(&total).Error; err != nil {
 		sendError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, result)
+
+	if err := baseQuery.Offset(offset).Limit(perPageNum).Find(&result).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, models.SiteLocResult{
+		Data:    result,
+		Page:    pageNum,
+		PerPage: perPageNum,
+		Total:   total,
+	})
 }
 
 // getMHRLoc returns paginated MHR location mappings

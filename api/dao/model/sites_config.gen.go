@@ -52,6 +52,7 @@ type SitesConfig struct {
 	Notes                sql.NullString `gorm:"column:notes" json:"notes"`
 	CreatedAt            time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt            time.Time      `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
+	GamesScraped         int32          `gorm:"column:games_scraped;default:0" json:"games_scraped"`
 }
 
 // TableName SitesConfig's table name
@@ -63,12 +64,12 @@ func (*SitesConfig) TableName() string {
 func (sc SitesConfig) MarshalJSON() ([]byte, error) {
 	type Alias SitesConfig
 	return json.Marshal(&struct {
-		DisplayName          string  `json:"display_name"`
-		HomeTeam             string  `json:"home_team"`
-		Enabled              *bool   `json:"enabled"`
+		DisplayName          string     `json:"display_name"`
+		HomeTeam             string     `json:"home_team"`
+		Enabled              *bool      `json:"enabled"`
 		LastScrapedAt        *time.Time `json:"last_scraped_at"`
-		ScrapeFrequencyHours *int32  `json:"scrape_frequency_hours"`
-		Notes                string  `json:"notes"`
+		ScrapeFrequencyHours *int32     `json:"scrape_frequency_hours"`
+		Notes                string     `json:"notes"`
 		*Alias
 	}{
 		DisplayName:          nullStringToString(sc.DisplayName),
