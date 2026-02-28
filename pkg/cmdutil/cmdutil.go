@@ -33,6 +33,18 @@ func ParseCommonFlags() *Flags {
 // result is expected to be [][]string where each row has:
 // [date, site, home, guest, location, division, address]
 func ImportLocations(siteName string, result [][]string) error {
+	// Skip special importers - they use league-specific mapping tables (gthl_mappings, nyhl_mappings, mhl_mappings)
+	// and lack address data, making location import unnecessary
+	specialImporters := map[string]bool{
+		"gthl": true,
+		"nyhl": true,
+		"mhl":  true,
+	}
+	if specialImporters[siteName] {
+		log.Printf("Skipping location import for %s (uses league-specific mapping table)", siteName)
+		return nil
+	}
+
 	config.Init("config", ".")
 	cfg := config.MustReadConfig()
 

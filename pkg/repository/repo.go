@@ -69,14 +69,51 @@ func (r *Repository) GetMatchingSurface(site, loc string) *model.Surface {
 	return &surface
 }
 
-func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, error) {
-	var m model.SitesLocation
+// getSpecialSiteLocation queries the league-specific mapping table for special importers
+// and joins with surfaces table to retrieve location_id
+func (r *Repository) getSpecialSiteLocation(site, loc string) (*model.SitesLocation, error) {
+	var result struct {
+		Location   string
+		SurfaceID  int32
+		LocationID int32
+	}
 
-	err := r.DB.First(&m, "site=? and location=?", site, loc).Error
+	table := site + "_mappings"
+	query := `SELECT m.location, m.surface_id, COALESCE(s.location_id, 0) as location_id
+	          FROM ` + table + ` m
+	          LEFT JOIN surfaces s ON m.surface_id = s.id AND s.deleted_at IS NULL
+	          WHERE m.location = ?`
+
+	err := r.DB.Raw(query, loc).Scan(&result).Error
 	if err != nil {
 		return nil, err
 	}
-	return &m, nil
+
+	return &model.SitesLocation{
+		Site:       site,
+		Location:   result.Location,
+		SurfaceID:  result.SurfaceID,
+		LocationID: result.LocationID,
+	}, nil
+}
+
+func (r *Repository) GetSitesLocation(site, loc string) (*model.SitesLocation, error) {
+	// Special importers use league-specific mapping tables
+	switch site {
+	case "gthl":
+		return r.getSpecialSiteLocation(site, loc)
+	case "nyhl":
+		return r.getSpecialSiteLocation(site, loc)
+	case "mhl":
+		return r.getSpecialSiteLocation(site, loc)
+	default:
+		var m model.SitesLocation
+		err := r.DB.First(&m, "site=? and location=?", site, loc).Error
+		if err != nil {
+			return nil, err
+		}
+		return &m, nil
+	}
 }
 
 func (r *Repository) GetLocation(id int) (*model.Location, error) {

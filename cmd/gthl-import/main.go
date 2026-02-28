@@ -2,16 +2,21 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"time"
 
 	"calendar-scrapper/config"
 	"calendar-scrapper/internal/schimport"
+	"calendar-scrapper/pkg/parser"
 	"calendar-scrapper/pkg/repository"
 
 	"github.com/antchfx/htmlquery"
@@ -29,10 +34,13 @@ var cmd = &cobra.Command{
 }
 
 var (
-	cfg    config.Config
-	repo   *repository.Repository
-	infile *string
-	sdate  *string
+	cfg             config.Config
+	repo            *repository.Repository
+	infile          *string
+	sdate           *string
+	dateFlag        *string
+	outfile         *string
+	importLocations *bool
 )
 
 func init() {
@@ -40,9 +48,62 @@ func init() {
 	cfg = config.MustReadConfig()
 	repo = repository.NewRepository(cfg)
 
-	infile = cmd.Flags().StringP("file", "f", "", "XLS or json file path (required)")
-	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (required) . e.g. -cutoffdate 2023-01-01")
+	infile = cmd.Flags().StringP("file", "f", "", "XLS or json file path")
+	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (YYYY-MM-DD format)")
 
+	// New flags for external parser interface
+	dateFlag = cmd.Flags().String("date", "", "Month and year in mmyyyy format (e.g., 022025)")
+	outfile = cmd.Flags().String("outfile", "", "Output file (use '-' for stdout)")
+	importLocations = cmd.Flags().Bool("import-locations", false, "Import locations to database")
+
+}
+
+// gameToCSVRow converts a Game to 7-column CSV format
+func gameToCSVRow(site string, g schimport.Game) []string {
+	// Format datetime as "2006-1-02 15:04"
+	// Parse the date and time
+	timeStr := g.StartTime
+	if strings.Contains(timeStr, "PM") {
+		// Convert PM times
+		parts := strings.Split(strings.TrimSuffix(timeStr, " PM"), ":")
+		if len(parts) == 2 {
+			hour, _ := strconv.Atoi(parts[0])
+			if hour < 12 {
+				hour += 12
+			}
+			timeStr = fmt.Sprintf("%02d:%s", hour, parts[1])
+		}
+	} else if strings.Contains(timeStr, "AM") {
+		timeStr = strings.TrimSuffix(timeStr, " AM")
+		parts := strings.Split(timeStr, ":")
+		if len(parts) == 2 && parts[0] == "12" {
+			timeStr = fmt.Sprintf("00:%s", parts[1])
+		}
+	}
+
+	datetime := fmt.Sprintf("%s %s", g.StartDate, timeStr)
+	// Convert to standard format
+	t, err := time.Parse("2006-01-02 15:04", datetime)
+	if err != nil {
+		// Try alternative format
+		t, err = time.Parse("1/2/2006 15:04", datetime)
+		if err != nil {
+			log.Printf("Warning: cannot parse datetime %s: %v", datetime, err)
+			t = time.Now()
+		}
+	}
+
+	formattedDatetime := t.Format("2006-1-02 15:04")
+
+	return []string{
+		formattedDatetime,             // datetime
+		site,                          // site
+		g.Home,                        // home team
+		g.Visitor,                     // guest team
+		g.Rink,                        // location
+		g.Division + " " + g.Category, // division
+		"",                            // address (empty for special importers)
+	}
 }
 
 func main() {
@@ -62,6 +123,94 @@ func main() {
 // }
 
 func runGthl() error {
+	// External parser mode: output CSV format
+	if *outfile != "" {
+		return runExternalParserMode()
+	}
+
+	// Legacy mode: use -f and -d flags
+	return runLegacyMode()
+}
+
+func runExternalParserMode() error {
+	// Warn about import-locations flag (not supported for special importers)
+	if *importLocations {
+		log.Println("Warning: --import-locations not supported for special importers (gthl, nyhl, mhl)")
+	}
+
+	// Validate date flag
+	if *dateFlag == "" {
+		return fmt.Errorf("--date flag is required when --outfile is specified")
+	}
+
+	// Parse mmyyyy date using parser package (panics on invalid input)
+	mm, yyyy := parser.ParseMonthYear(*dateFlag)
+
+	// Use first day of month as cutoff date for API
+	cdate := time.Date(yyyy, time.Month(mm), 1, 0, 0, 0, 0, time.UTC)
+
+	// Get mappings
+	m, err := repo.GetGthlMappings()
+	if err != nil {
+		return err
+	}
+
+	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
+
+	// Fetch data from API
+	b, err := importer.FetchJson("gthl", cdate)
+	if err != nil {
+		return err
+	}
+
+	var data schimport.Data
+	if err = json.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	if len(data.Games) == 0 {
+		log.Println("no games to import")
+		return nil
+	}
+
+	// Prepare CSV output
+	var output io.Writer
+	if *outfile == "-" {
+		output = os.Stdout
+	} else {
+		f, err := os.Create(*outfile)
+		if err != nil {
+			return fmt.Errorf("failed to create output file: %w", err)
+		}
+		defer f.Close()
+		output = f
+	}
+
+	writer := csv.NewWriter(output)
+
+	// Process games
+	for _, game := range data.Games {
+		sid, ok := m[game.Rink]
+		if !ok || sid == 0 {
+			log.Printf("skipping unmapped location: %s", game.Rink)
+			continue
+		}
+
+		row := gameToCSVRow("gthl", game)
+		if err := writer.Write(row); err != nil {
+			return fmt.Errorf("failed to write CSV row: %w", err)
+		}
+	}
+
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		return fmt.Errorf("CSV flush error: %w", err)
+	}
+
+	return nil
+}
+
+func runLegacyMode() error {
 	var cdate time.Time
 	var err error
 
