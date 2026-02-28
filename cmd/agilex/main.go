@@ -1,3 +1,4 @@
+// This command handles sites like gthl, nyhl and mhl that use agilex.ca api
 package main
 
 import (
@@ -26,10 +27,10 @@ import (
 )
 
 var cmd = &cobra.Command{
-	Use:   "gthl-import",
-	Short: "Import gthl schedule",
+	Use:   "agilex",
+	Short: "Import schedule for GTHL, NYHL, or MHL via Agilex API",
 	RunE: func(c *cobra.Command, args []string) error {
-		return runGthl()
+		return runAgilex()
 	},
 }
 
@@ -41,6 +42,7 @@ var (
 	dateFlag        *string
 	outfile         *string
 	importLocations *bool
+	leagueFlag      *string
 )
 
 func init() {
@@ -50,12 +52,11 @@ func init() {
 
 	infile = cmd.Flags().StringP("file", "f", "", "XLS or json file path")
 	sdate = cmd.Flags().StringP("cutoffdate", "d", "", "date-from to import events (YYYY-MM-DD format)")
-
+	leagueFlag = cmd.Flags().String("league", "", "League: gthl, nyhl, or mhl (required)")
 	// New flags for external parser interface
 	dateFlag = cmd.Flags().String("date", "", "Month and year in mmyyyy format (e.g., 022025)")
 	outfile = cmd.Flags().String("outfile", "", "Output file (use '-' for stdout)")
 	importLocations = cmd.Flags().Bool("import-locations", false, "Import locations to database")
-
 }
 
 // gameToCSVRow converts a Game to 7-column CSV format
@@ -108,31 +109,30 @@ func gameToCSVRow(site string, g schimport.Game) []string {
 
 func main() {
 	if err := cmd.Execute(); err != nil {
-		log.Printf("gthl import failed %v\n", err)
+		log.Printf("agilex import failed %v\n", err)
 	}
 }
 
-// func detectContentCharset(body io.Reader) string {
-// 	r := bufio.NewReader(body)
-// 	if data, err := r.Peek(1024); err == nil {
-// 		if _, name, ok := charset.DetermineEncoding(data, ""); ok {
-// 			return name
-// 		}
-// 	}
-// 	return "utf-8"
-// }
+func runAgilex() error {
+	// Validate league flag
+	if *leagueFlag == "" {
+		return fmt.Errorf("--league flag is required (gthl, nyhl, mhl)")
+	}
+	site := *leagueFlag
+	if site != "gthl" && site != "nyhl" && site != "mhl" {
+		return fmt.Errorf("invalid league: %s, must be gthl, nyhl, or mhl", site)
+	}
 
-func runGthl() error {
 	// External parser mode: output CSV format
 	if *outfile != "" {
-		return runExternalParserMode()
+		return runExternalParserMode(site)
 	}
 
 	// Legacy mode: use -f and -d flags
-	return runLegacyMode()
+	return runLegacyMode(site)
 }
 
-func runExternalParserMode() error {
+func runExternalParserMode(site string) error {
 	// Warn about import-locations flag (not supported for special importers)
 	if *importLocations {
 		log.Println("Warning: --import-locations not supported for special importers (gthl, nyhl, mhl)")
@@ -149,8 +149,8 @@ func runExternalParserMode() error {
 	// Use first day of month as cutoff date for API
 	cdate := time.Date(yyyy, time.Month(mm), 1, 0, 0, 0, 0, time.UTC)
 
-	// Get mappings
-	m, err := repo.GetGthlMappings()
+	// Get mappings using generic method
+	m, err := repo.GetMappings(site)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func runExternalParserMode() error {
 	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
 
 	// Fetch data from API
-	b, err := importer.FetchJson("gthl", cdate)
+	b, err := importer.FetchJson(site, cdate)
 	if err != nil {
 		return err
 	}
@@ -196,7 +196,7 @@ func runExternalParserMode() error {
 			continue
 		}
 
-		row := gameToCSVRow("gthl", game)
+		row := gameToCSVRow(site, game)
 		if err := writer.Write(row); err != nil {
 			return fmt.Errorf("failed to write CSV row: %w", err)
 		}
@@ -210,7 +210,7 @@ func runExternalParserMode() error {
 	return nil
 }
 
-func runLegacyMode() error {
+func runLegacyMode(site string) error {
 	var cdate time.Time
 	var err error
 
@@ -223,7 +223,7 @@ func runLegacyMode() error {
 		cdate = time.Now()
 	}
 
-	m, err := repo.GetGthlMappings()
+	m, err := repo.GetMappings(site)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func runLegacyMode() error {
 	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
 
 	if *infile == "" {
-		return importer.FetchAndImport("gthl", m, cdate)
+		return importer.FetchAndImport(site, m, cdate)
 	}
 
 	b, err := os.ReadFile(*infile)
@@ -251,7 +251,7 @@ func runLegacyMode() error {
 
 	switch path.Ext(*infile) {
 	case ".json":
-		return importer.ImportJson("gthl", data, cdate, m)
+		return importer.ImportJson(site, data, cdate, m)
 
 	case ".xlx":
 		// convert utf16 to utf8
@@ -263,7 +263,7 @@ func runLegacyMode() error {
 			return fmt.Errorf("failed to read file %s, %w", *infile, err)
 		}
 
-		return importer.Importxls("gthl", doc, cdate, m)
+		return importer.Importxls(site, doc, cdate, m)
 	}
 	return errors.New("invalid file format")
 }

@@ -174,6 +174,20 @@ func (r *Repository) GetMhlMappings() (map[string]int, error) {
 	return m, nil
 }
 
+// GetMappings returns mappings for the specified league (gthl, nyhl, mhl)
+func (r *Repository) GetMappings(league string) (map[string]int, error) {
+	switch league {
+	case "gthl":
+		return r.GetGthlMappings()
+	case "nyhl":
+		return r.GetNyhlMappings()
+	case "mhl":
+		return r.GetMhlMappings()
+	default:
+		return nil, fmt.Errorf("unknown league: %s", league)
+	}
+}
+
 type SiteRepository struct {
 	site string
 	Repository
