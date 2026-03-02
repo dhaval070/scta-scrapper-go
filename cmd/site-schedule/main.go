@@ -110,6 +110,11 @@ func main() {
 		}
 	}
 
+	err = repo.DB.Exec(`update sites_config set games_scraped=? where site_name=?`, len(result), *site).Error
+	if err != nil {
+		log.Printf("database error: failed to update site_scraped count for site %s , %w\n", *site, err.Error())
+	}
+
 	if *insert {
 		log.Println("importing")
 		if err = importEvents(repo, *site, result, cdate); err != nil {

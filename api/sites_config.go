@@ -177,13 +177,14 @@ func (app *App) getParserTypes(c *gin.Context) {
 // Helper function to convert model to response
 func convertToSitesConfigResponse(sc model.SitesConfig) models.SitesConfigResponse {
 	response := models.SitesConfigResponse{
-		ID:           sc.ID,
-		SiteName:     sc.SiteName,
-		BaseURL:      sc.BaseURL,
-		ParserType:   sc.ParserType,
-		CreatedAt:    sc.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:    sc.UpdatedAt.Format("2006-01-02 15:04:05"),
-		GamesScraped: sc.GamesScraped,
+		ID:            sc.ID,
+		SiteName:      sc.SiteName,
+		BaseURL:       sc.BaseURL,
+		ParserType:    sc.ParserType,
+		CreatedAt:     sc.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:     sc.UpdatedAt.Format("2006-01-02 15:04:05"),
+		GamesScraped:  sc.GamesScraped,
+		GamesImported: sc.GamesImported,
 	}
 
 	if sc.DisplayName.Valid {

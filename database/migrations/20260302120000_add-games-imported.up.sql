@@ -1,0 +1,1 @@
+ALTER TABLE `sites_config` ADD `games_imported` INT NOT NULL DEFAULT '0' AFTER `games_scraped`;

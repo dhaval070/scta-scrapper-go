@@ -140,6 +140,7 @@ type SitesConfigResponse struct {
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 	GamesScraped         int32          `json:"games_scraped"`
+	GamesImported        int32          `json:"games_imported"`
 }
 
 type SurfaceReport struct {
