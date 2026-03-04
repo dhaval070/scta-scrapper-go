@@ -94,7 +94,7 @@ func gameToCSVRow(site string, g schimport.Game) []string {
 		}
 	}
 
-	formattedDatetime := t.Format("2006-1-02 15:04")
+	formattedDatetime := t.Format("2006-01-02 15:04")
 
 	return []string{
 		formattedDatetime,             // datetime
