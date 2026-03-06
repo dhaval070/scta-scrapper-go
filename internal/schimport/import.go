@@ -42,16 +42,18 @@ import (
 var client = http.Client{}
 
 type Importer struct {
-	repo   *repository.Repository
-	apiKey string
-	url    string
+	repo         *repository.Repository
+	apiKey       string
+	url          string
+	OutputWriter io.Writer
 }
 
 func NewImporter(repo *repository.Repository, apiKey, url string) *Importer {
 	return &Importer{
-		repo:   repo,
-		apiKey: apiKey,
-		url:    url,
+		repo:         repo,
+		apiKey:       apiKey,
+		url:          url,
+		OutputWriter: os.Stdout,
 	}
 }
 
@@ -101,7 +103,11 @@ func (i *Importer) ImportJson(site string, data Data, cutOffDate time.Time, mapp
 
 	m := []*model.Event{}
 
-	ww := csv.NewWriter(os.Stdout)
+	outputWriter := i.OutputWriter
+	if outputWriter == nil {
+		outputWriter = os.Stdout
+	}
+	ww := csv.NewWriter(outputWriter)
 	var r = make([]string, 11)
 
 	mappingUpdates := map[string]int32{}
@@ -213,7 +219,11 @@ func (i *Importer) Importxls(site string, root *html.Node, cutOffDate time.Time,
 		return err
 	}
 
-	ww := csv.NewWriter(os.Stdout)
+	outputWriter := i.OutputWriter
+	if outputWriter == nil {
+		outputWriter = os.Stdout
+	}
+	ww := csv.NewWriter(outputWriter)
 
 	var r = make([]string, 11)
 

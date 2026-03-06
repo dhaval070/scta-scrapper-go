@@ -41,6 +41,8 @@ sd=`echo $dt|sed 's/-//g'`
 
 dir="var/$sd"
 d1="$dir/with-surface"
+# Agilex sites that output 11-column CSV directly
+agilex_sites="gthl nyhl mhl"
 
 yyyy=`echo $sd|cut -c 1-4`
 mm=`echo $sd|cut -c 5-6`
@@ -69,10 +71,23 @@ for csv_file in $tmpdir/*_schedules.csv; do
         echo "Processing $site"
 
         f="$dir/$site.csv"
+        
+        # Check if site is an agilex site (gthl, nyhl, mhl)
+        case "$site" in
+            gthl|nyhl|mhl)
+                # Agilex sites: copy 11-column CSV directly to with-surface/
+                cp "$csv_file" "$d1/$site.csv"
+                continue
+                ;;
+        esac
+
+        # Non-agilex sites: process through csv-trim-last and site-schedule
         ./bin/csv-trim-last -infile "$csv_file" > $f
         ./bin/site-schedule -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
     fi
 done
+
+wait
 
 # Clean up temporary directory
 rm -rf $tmpdir

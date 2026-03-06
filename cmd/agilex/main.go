@@ -125,6 +125,10 @@ func runAgilex() error {
 
 	// External parser mode: output CSV format
 	if *outfile != "" {
+		if *outfile == "-" {
+			// Legacy mode with stdout output for global scraper
+			return runLegacyModeWithStdout(site)
+		}
 		return runExternalParserMode(site)
 	}
 
@@ -146,8 +150,9 @@ func runExternalParserMode(site string) error {
 	// Parse mmyyyy date using parser package (panics on invalid input)
 	mm, yyyy := parser.ParseMonthYear(*dateFlag)
 
-	// Use first day of month as cutoff date for API
-	cdate := time.Date(yyyy, time.Month(mm), 1, 0, 0, 0, 0, time.UTC)
+	// Use month/year from --date flag with current day as cutoff date for API
+	now := time.Now()
+	cdate := time.Date(yyyy, time.Month(mm), now.Day(), 0, 0, 0, 0, now.Location())
 
 	// Get mappings using generic method
 	m, err := repo.GetMappings(site)
@@ -266,4 +271,30 @@ func runLegacyMode(site string) error {
 		return importer.Importxls(site, doc, cdate, m)
 	}
 	return errors.New("invalid file format")
+}
+
+func runLegacyModeWithStdout(site string) error {
+	// Validate date flag
+	if *dateFlag == "" {
+		return fmt.Errorf("--date flag is required when --outfile is specified")
+	}
+
+	// Parse mmyyyy date using parser package (panics on invalid input)
+	mm, yyyy := parser.ParseMonthYear(*dateFlag)
+
+	// Use month/year from --date flag with current day as cutoff date for API
+	now := time.Now()
+	cdate := time.Date(yyyy, time.Month(mm), now.Day(), 0, 0, 0, 0, now.Location())
+
+	// Get mappings
+	m, err := repo.GetMappings(site)
+	if err != nil {
+		return err
+	}
+
+	// Create importer (default OutputWriter is os.Stdout)
+	importer := schimport.NewImporter(repo, cfg.ApiKey, cfg.ImportUrl)
+
+	// Fetch and import (writes CSV to stdout, imports to DB)
+	return importer.FetchAndImport(site, m, cdate)
 }
