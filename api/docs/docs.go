@@ -23,6 +23,66 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/mhr-locations": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns paginated MHR location mappings with optional filters. Include export query parameter to download CSV.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Get paginated MHR location mappings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Items per page (default: 10, max: 100)",
+                        "name": "perPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by rink name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province (partial match)",
+                        "name": "province",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Export as CSV when present (any non-empty value)",
+                        "name": "export",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MHRLocResult"
+                        }
+                    }
+                }
+            }
+        },
         "/site-locations": {
             "get": {
                 "security": [
@@ -217,6 +277,82 @@ const docTemplate = `{
                 }
             }
         },
+        "models.MHRLocResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MhrLocation"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.MhrLocation": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "aka": {
+                    "type": "string"
+                },
+                "home_teams": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "linkedSurface": {
+                    "$ref": "#/definitions/model.Surface"
+                },
+                "liveBarnLocation": {
+                    "$ref": "#/definitions/model.Location"
+                },
+                "livebarn_installed": {
+                    "type": "boolean"
+                },
+                "livebarn_location_id": {
+                    "type": "integer"
+                },
+                "livebarn_surface_id": {
+                    "type": "integer"
+                },
+                "mhr_id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "province": {
+                    "type": "string"
+                },
+                "rink_name": {
+                    "type": "string"
+                },
+                "streaming": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SiteLoc": {
             "type": "object",
             "properties": {
@@ -283,6 +419,9 @@ const docTemplate = `{
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "games_imported": {
+                    "type": "integer"
                 },
                 "games_scraped": {
                     "type": "integer"

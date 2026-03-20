@@ -62,6 +62,56 @@ definitions:
       venue_id:
         type: integer
     type: object
+  models.MHRLocResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.MhrLocation'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.MhrLocation:
+    properties:
+      address:
+        type: string
+      aka:
+        type: string
+      home_teams:
+        items:
+          additionalProperties:
+            type: string
+          type: object
+        type: array
+      linkedSurface:
+        $ref: '#/definitions/model.Surface'
+      liveBarnLocation:
+        $ref: '#/definitions/model.Location'
+      livebarn_installed:
+        type: boolean
+      livebarn_location_id:
+        type: integer
+      livebarn_surface_id:
+        type: integer
+      mhr_id:
+        type: integer
+      notes:
+        type: string
+      phone:
+        type: string
+      province:
+        type: string
+      rink_name:
+        type: string
+      streaming:
+        type: string
+      website:
+        type: string
+    type: object
   models.SiteLoc:
     properties:
       address:
@@ -106,6 +156,8 @@ definitions:
         type: string
       enabled:
         type: boolean
+      games_imported:
+        type: integer
       games_scraped:
         type: integer
       home_team:
@@ -141,6 +193,45 @@ info:
   title: Surface API
   version: "1.0"
 paths:
+  /mhr-locations:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated MHR location mappings with optional filters.
+        Include export query parameter to download CSV.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: string
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: perPage
+        type: string
+      - description: Filter by rink name (partial match)
+        in: query
+        name: name
+        type: string
+      - description: Filter by province (partial match)
+        in: query
+        name: province
+        type: string
+      - description: Export as CSV when present (any non-empty value)
+        in: query
+        name: export
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MHRLocResult'
+      security:
+      - CookieAuth: []
+      summary: Get paginated MHR location mappings
+      tags:
+      - Mappings
   /site-locations:
     get:
       consumes:

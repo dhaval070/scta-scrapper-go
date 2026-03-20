@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/csv"
 	"fmt"
 	"net/http"
+	"strings"
 	"surface-api/dao/model"
 	"surface-api/models"
 
@@ -196,6 +199,19 @@ func (app *App) getSiteLoc(c *gin.Context) {
 }
 
 // getMHRLoc returns paginated MHR location mappings
+// @Summary Get paginated MHR location mappings
+// @Description Returns paginated MHR location mappings with optional filters. Include export query parameter to download CSV.
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param page query string false "Page number (default: 1)"
+// @Param perPage query string false "Items per page (default: 10, max: 100)"
+// @Param name query string false "Filter by rink name (partial match)"
+// @Param province query string false "Filter by province (partial match)"
+// @Param export query string false "Export as CSV when present (any non-empty value)"
+// @Success 200 {object} models.MHRLocResult
+// @Security CookieAuth
+// @Router /mhr-locations [get]
 func (app *App) getMHRLoc(c *gin.Context) {
 	var result = []models.MhrLocation{}
 
@@ -203,6 +219,80 @@ func (app *App) getMHRLoc(c *gin.Context) {
 	perPage := c.DefaultQuery("perPage", "10")
 	name := c.Query("name")
 	province := c.Query("province")
+	export := c.Query("export")
+
+	baseQuery := app.db.Model(&models.MhrLocation{})
+
+	if name != "" {
+		baseQuery = baseQuery.Where(`rink_name like ?`, "%"+name+"%")
+	}
+
+	if province != "" {
+		baseQuery = baseQuery.Where(`province like ?`, "%"+province+"%")
+	}
+
+	if export != "" {
+		if err := baseQuery.Joins("LiveBarnLocation").Find(&result).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+
+		var b = &bytes.Buffer{}
+		w := csv.NewWriter(b)
+		w.Write([]string{"MhrID", "RinkName", "Aka", "Address", "Phone", "Website", "Notes", "LivebarnInstalled", "Province", "LivebarnLocationName", "HomeTeams"})
+
+		for _, row := range result {
+			aka := ""
+			if row.Aka != nil {
+				aka = *row.Aka
+			}
+			phone := ""
+			if row.Phone != nil {
+				phone = *row.Phone
+			}
+			website := ""
+			if row.Website != nil {
+				website = *row.Website
+			}
+			notes := ""
+			if row.Notes != nil {
+				notes = *row.Notes
+			}
+			livebarnLocationName := ""
+			if row.LiveBarnLocation.Name != "" {
+				livebarnLocationName = row.LiveBarnLocation.Name
+			}
+			homeTeamsStr := ""
+			if row.HomeTeams != nil {
+				var labels []string
+				for _, ht := range row.HomeTeams {
+					if label, ok := ht["label"]; ok {
+						labels = append(labels, label)
+					}
+				}
+				homeTeamsStr = strings.Join(labels, ", ")
+			}
+			w.Write([]string{
+				fmt.Sprint(row.MhrID),
+				row.RinkName,
+				aka,
+				row.Address,
+				phone,
+				website,
+				notes,
+				fmt.Sprint(row.LivebarnInstalled),
+				row.Province,
+				livebarnLocationName,
+				homeTeamsStr,
+			})
+		}
+		w.Flush()
+
+		c.Writer.Header().Add("content-type", "text/csv")
+		c.Writer.Header().Add("content-disposition", "attachment;filename=mhr_locations.csv")
+		c.Writer.Write(b.Bytes())
+		return
+	}
 
 	var pageNum, perPageNum int
 	fmt.Sscanf(page, "%d", &pageNum)
@@ -218,16 +308,6 @@ func (app *App) getMHRLoc(c *gin.Context) {
 	offset := (pageNum - 1) * perPageNum
 
 	var total int64
-
-	baseQuery := app.db.Model(&models.MhrLocation{})
-
-	if name != "" {
-		baseQuery = baseQuery.Where(`rink_name like ?`, "%"+name+"%")
-	}
-
-	if province != "" {
-		baseQuery = baseQuery.Where(`province like ?`, "%"+province+"%")
-	}
 
 	if err := baseQuery.Count(&total).Error; err != nil {
 		sendError(c, err)
