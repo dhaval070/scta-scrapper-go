@@ -83,6 +83,166 @@ const docTemplate = `{
                 }
             }
         },
+        "/scrape": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Starts scraping for specified site or all enabled sites. Sites already being scraped are skipped. Returns 409 only if ALL requested sites are already running.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Scraping"
+                ],
+                "summary": "Trigger scraping for site(s)",
+                "parameters": [
+                    {
+                        "description": "Scraping request parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.ScrapeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted, returns job status with sites_started and optionally sites_skipped",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "All requested sites are already being scraped",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scrape/status": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns current scraping status for all configured sites",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Scraping"
+                ],
+                "summary": "Get scraping status for all sites",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.ScrapeStatus"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/scrape/status/{site}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns current scraping status for the specified site",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Scraping"
+                ],
+                "summary": "Get scraping status for a site",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.ScrapeStatus"
+                        }
+                    },
+                    "404": {
+                        "description": "Site not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/site-locations": {
             "get": {
                 "security": [
@@ -183,6 +343,55 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.ScrapeRequest": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "description": "Date in YYYY-MM-DD format (optional)",
+                    "type": "string"
+                },
+                "site": {
+                    "description": "Site name (empty for all enabled sites)",
+                    "type": "string"
+                },
+                "workers": {
+                    "description": "Number of workers (optional, default 1)",
+                    "type": "integer"
+                }
+            }
+        },
+        "main.ScrapeStatus": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "Error message if failed",
+                    "type": "string"
+                },
+                "is_due_for_scraping": {
+                    "description": "Whether site is due for scraping",
+                    "type": "boolean"
+                },
+                "last_scraped_at": {
+                    "description": "From sites_config",
+                    "type": "string"
+                },
+                "scrape_frequency": {
+                    "description": "Frequency in hours",
+                    "type": "integer"
+                },
+                "site": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "description": "When scraping started",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "idle, running, completed, failed",
+                    "type": "string"
+                }
+            }
+        },
         "model.Location": {
             "type": "object",
             "properties": {
@@ -374,6 +583,15 @@ const docTemplate = `{
                 "match_type": {
                     "type": "string"
                 },
+                "scraping_error": {
+                    "type": "string"
+                },
+                "scraping_started_at": {
+                    "type": "string"
+                },
+                "scraping_status": {
+                    "type": "string"
+                },
                 "site": {
                     "type": "string"
                 },
@@ -447,6 +665,15 @@ const docTemplate = `{
                 },
                 "scrape_frequency_hours": {
                     "type": "integer"
+                },
+                "scraping_error": {
+                    "type": "string"
+                },
+                "scraping_started_at": {
+                    "type": "string"
+                },
+                "scraping_status": {
+                    "type": "string"
                 },
                 "site_name": {
                     "type": "string"

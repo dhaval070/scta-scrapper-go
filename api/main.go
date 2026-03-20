@@ -62,6 +62,10 @@ func init() {
 		panic(err)
 	}
 
+	if cfg.ScraperPath == "" {
+		panic("scraper_path is empty in config")
+	}
+
 	db, err = gorm.Open(mysql.Open(cfg.DB_DSN))
 	if err != nil {
 		panic(err)
@@ -81,6 +85,7 @@ func init() {
 	}
 	go sess.GC()
 	app = NewApp(db, cfg, sess)
+	app.resetStuckScrapingJobs()
 }
 
 func main() {
@@ -135,6 +140,11 @@ func main() {
 	r.PUT("/sites-config/:id", app.updateSitesConfig)
 	r.DELETE("/sites-config/:id", app.deleteSitesConfig)
 	r.POST("/sites-config/:id/toggle", app.toggleSitesConfigEnabled)
+
+	// Scraping routes
+	r.POST("/scrape", app.triggerScrape)
+	r.GET("/scrape/status", app.getAllScrapeStatus)
+	r.GET("/scrape/status/:site", app.getScrapeStatus)
 
 	// Swagger documentation endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

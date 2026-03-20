@@ -1,5 +1,40 @@
 basePath: /
 definitions:
+  main.ScrapeRequest:
+    properties:
+      date:
+        description: Date in YYYY-MM-DD format (optional)
+        type: string
+      site:
+        description: Site name (empty for all enabled sites)
+        type: string
+      workers:
+        description: Number of workers (optional, default 1)
+        type: integer
+    type: object
+  main.ScrapeStatus:
+    properties:
+      error:
+        description: Error message if failed
+        type: string
+      is_due_for_scraping:
+        description: Whether site is due for scraping
+        type: boolean
+      last_scraped_at:
+        description: From sites_config
+        type: string
+      scrape_frequency:
+        description: Frequency in hours
+        type: integer
+      site:
+        type: string
+      started_at:
+        description: When scraping started
+        type: string
+      status:
+        description: idle, running, completed, failed
+        type: string
+    type: object
   model.Location:
     properties:
       address1:
@@ -126,6 +161,12 @@ definitions:
         type: integer
       match_type:
         type: string
+      scraping_error:
+        type: string
+      scraping_started_at:
+        type: string
+      scraping_status:
+        type: string
       site:
         type: string
       surface:
@@ -175,6 +216,12 @@ definitions:
         type: string
       scrape_frequency_hours:
         type: integer
+      scraping_error:
+        type: string
+      scraping_started_at:
+        type: string
+      scraping_status:
+        type: string
       site_name:
         type: string
       updated_at:
@@ -232,6 +279,111 @@ paths:
       summary: Get paginated MHR location mappings
       tags:
       - Mappings
+  /scrape:
+    post:
+      consumes:
+      - application/json
+      description: Starts scraping for specified site or all enabled sites. Sites
+        already being scraped are skipped. Returns 409 only if ALL requested sites
+        are already running.
+      parameters:
+      - description: Scraping request parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.ScrapeRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted, returns job status with sites_started and optionally
+            sites_skipped
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: All requested sites are already being scraped
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Trigger scraping for site(s)
+      tags:
+      - Scraping
+  /scrape/status:
+    get:
+      consumes:
+      - application/json
+      description: Returns current scraping status for all configured sites
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.ScrapeStatus'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get scraping status for all sites
+      tags:
+      - Scraping
+  /scrape/status/{site}:
+    get:
+      consumes:
+      - application/json
+      description: Returns current scraping status for the specified site
+      parameters:
+      - description: Site name
+        in: path
+        name: site
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.ScrapeStatus'
+        "404":
+          description: Site not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get scraping status for a site
+      tags:
+      - Scraping
   /site-locations:
     get:
       consumes:

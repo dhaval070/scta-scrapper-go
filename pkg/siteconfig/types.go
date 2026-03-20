@@ -15,6 +15,9 @@ type SiteConfig struct {
 	LastScrapedAt        *time.Time `gorm:"type:timestamp null"`
 	ScrapeFrequencyHours int        `gorm:"default:24"`
 	Notes                string     `gorm:"type:text"`
+	ScrapingStatus       string     `gorm:"type:VARCHAR(20);default:'idle'"`
+	ScrapingStartedAt    *time.Time `gorm:"type:timestamp null"`
+	ScrapingError        string     `gorm:"type:text"`
 	CreatedAt            time.Time  `gorm:"autoCreateTime"`
 	UpdatedAt            time.Time  `gorm:"autoUpdateTime"`
 }

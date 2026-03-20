@@ -6,21 +6,25 @@ import (
 )
 
 type Config struct {
-	DB_DSN string `mapstructure:"DB_DSN"`
-	Port   string `mapstructure:"port"`
-	Mode   string `mapstructure:"mode"`
+	DB_DSN      string `mapstructure:"DB_DSN"`
+	Port        string `mapstructure:"port"`
+	Mode        string `mapstructure:"mode"`
+	ScraperPath string `mapstructure:"scraper_path"`
 }
 
 type SiteLoc struct {
-	Site             string         `gorm:"column:site;not null" json:"site"`
-	Location         string         `gorm:"column:location" json:"location"`
-	LocationID       int32          `gorm:"column:location_id" json:"location_id"`
-	Address          string         `gorm:"column:address" json:"address"`
-	MatchType        string         `gorm:"column:match_type" json:"match_type"`
-	SurfaceID        int32          `gorm:"column:surface_id;not null" json:"surface_id"`
-	Surface          string         `gorm:"column:surface" json:"surface"`
-	LiveBarnLocation model.Location `gorm:"foreignKey:LocationID"`
-	LinkedSurface    model.Surface  `gorm:"foreignKey:SurfaceID"`
+	Site              string         `gorm:"column:site;not null" json:"site"`
+	Location          string         `gorm:"column:location" json:"location"`
+	LocationID        int32          `gorm:"column:location_id" json:"location_id"`
+	Address           string         `gorm:"column:address" json:"address"`
+	MatchType         string         `gorm:"column:match_type" json:"match_type"`
+	SurfaceID         int32          `gorm:"column:surface_id;not null" json:"surface_id"`
+	Surface           string         `gorm:"column:surface" json:"surface"`
+	ScrapingStatus    string         `gorm:"-" json:"scraping_status,omitempty"`
+	ScrapingStartedAt *time.Time     `gorm:"-" json:"scraping_started_at,omitempty"`
+	ScrapingError     *string        `gorm:"-" json:"scraping_error,omitempty"`
+	LiveBarnLocation  model.Location `gorm:"foreignKey:LocationID"`
+	LinkedSurface     model.Surface  `gorm:"foreignKey:SurfaceID"`
 }
 
 func (*SiteLoc) TableName() string {
@@ -137,6 +141,9 @@ type SitesConfigResponse struct {
 	LastScrapedAt        *string        `json:"last_scraped_at"`
 	ScrapeFrequencyHours *int32         `json:"scrape_frequency_hours"`
 	Notes                *string        `json:"notes"`
+	ScrapingStatus       string         `json:"scraping_status"`
+	ScrapingStartedAt    *string        `json:"scraping_started_at"`
+	ScrapingError        *string        `json:"scraping_error"`
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 	GamesScraped         int32          `json:"games_scraped"`
