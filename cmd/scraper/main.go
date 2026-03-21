@@ -12,6 +12,7 @@ import (
 	"calendar-scrapper/config"
 	"calendar-scrapper/pkg/cmdutil"
 	"calendar-scrapper/pkg/parser"
+	"calendar-scrapper/pkg/repository"
 	"calendar-scrapper/pkg/scraper"
 	"calendar-scrapper/pkg/siteconfig"
 
@@ -28,6 +29,8 @@ var (
 	dateFlag        string
 	outfile         string
 	importLocations bool
+	importEvents    bool
+	cutoffDate      string
 )
 
 var rootCmd = &cobra.Command{
@@ -54,6 +57,8 @@ func init() {
 	rootCmd.Flags().StringVar(&dateFlag, "date", "", "Date in MMYYYY or MM/YYYY format (default: current month)")
 	rootCmd.Flags().StringVar(&outfile, "outfile", "", "Output file path for scraped data")
 	rootCmd.Flags().BoolVar(&importLocations, "import-locations", false, "Import locations to database")
+	rootCmd.Flags().BoolVar(&importEvents, "import-events", false, "Import events to database")
+	rootCmd.Flags().StringVar(&cutoffDate, "cutoff-date", "", "Cutoff date for event import (YYYY-MM-DD) (default: today)")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -85,6 +90,19 @@ func runScraper(cmd *cobra.Command, args []string) {
 	// Initialize configuration
 	config.Init("config", ".")
 	cfg := config.MustReadConfig()
+
+	// Parse cutoff date (UTC)
+	cutoffTime := time.Now().UTC().Truncate(24 * time.Hour)
+	if cutoffDate != "" {
+		parsed, err := time.Parse("2006-01-02", cutoffDate)
+		if err != nil {
+			log.Fatalf("Invalid cutoff-date format: %v", err)
+		}
+		cutoffTime = parsed.UTC().Truncate(24 * time.Hour)
+	}
+
+	// Create repository for database operations
+	repo := repository.NewRepository(cfg)
 
 	// Initialize parser with rate limiting config
 	parser.InitWithConfig(cfg.MaxRequestsPerHost, cfg.ExternalAddressFetcher)
@@ -144,10 +162,12 @@ func runScraper(cmd *cobra.Command, args []string) {
 		Date:            &dateFlag,
 		Outfile:         &outfile,
 		ImportLocations: &importLocations,
+		ImportEvents:    &importEvents,
+		CutoffDate:      &cutoffDate,
 	}
 
 	// Process sites using worker pool
-	siteResults := processSitesWithPool(sites, loader, mm, yyyy, flags, workers)
+	siteResults := processSitesWithPool(sites, loader, mm, yyyy, flags, repo, cutoffTime, workers)
 
 	// Summary
 	log.Printf("\n========================================")
@@ -196,12 +216,10 @@ func runScraper(cmd *cobra.Command, args []string) {
 }
 
 // processSitesWithPool processes multiple sites using a worker pool
-func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, workers int) []scraperResult {
+func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, repo *repository.Repository, cutoffTime time.Time, workers int) []scraperResult {
 	// Create channels
-	jobsBufferSize := workers * 2
-	if jobsBufferSize > len(sites) {
-		jobsBufferSize = len(sites)
-	}
+	jobsBufferSize := min(workers*2, len(sites))
+
 	jobs := make(chan siteconfig.SiteConfig, jobsBufferSize)
 	type result struct {
 		siteName   string
@@ -222,7 +240,7 @@ func processSitesWithPool(sites []siteconfig.SiteConfig, loader *siteconfig.Load
 				log.Printf("[Worker %d] Processing: %s (%s)", workerID, site.DisplayName, site.SiteName)
 				log.Printf("[Worker %d] ========================================", workerID)
 
-				eventCount, err := processSite(&site, loader, mm, yyyy, flags)
+				eventCount, err := processSite(&site, loader, mm, yyyy, flags, repo, cutoffTime)
 				if err != nil {
 					log.Printf("[Worker %d] ❌ ERROR scraping %s: %v\n", workerID, site.SiteName, err)
 					results <- result{siteName: site.SiteName, success: false, err: err, eventCount: 0}
@@ -267,7 +285,7 @@ type scraperResult struct {
 }
 
 // processSite handles scraping and output for a single site
-func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags) (int, error) {
+func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, repo *repository.Repository, cutoffTime time.Time) (int, error) {
 	// Create scraper
 	s, err := scraper.New(site, loader)
 	if err != nil {
@@ -296,6 +314,15 @@ func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyy
 			return eventCount, fmt.Errorf("failed to import locations: %w", err)
 		}
 		log.Printf("✓ Locations imported\n")
+	}
+
+	// Import events if requested
+	if *flags.ImportEvents {
+		log.Printf("Importing events to database...\n")
+		if err := cmdutil.ImportEventsFromRows(repo, site.SiteName, result, cutoffTime); err != nil {
+			return eventCount, fmt.Errorf("failed to import events: %w", err)
+		}
+		log.Printf("✓ Events imported\n")
 	}
 
 	// Write output if requested

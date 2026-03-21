@@ -149,7 +149,7 @@ func (app *App) triggerScrape(c *gin.Context) {
 	cmdArgs = append(cmdArgs, "--sites", sitesList)
 
 	// Add import-locations flag (always import locations)
-	cmdArgs = append(cmdArgs, "--import-locations")
+	cmdArgs = append(cmdArgs, "--import-locations", "--import-events")
 
 	// Add date if provided
 	if req.Date != "" {
