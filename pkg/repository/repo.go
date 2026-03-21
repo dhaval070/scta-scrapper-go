@@ -611,7 +611,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			p.id=l.province_id AND
 			p.province_name="Ontario" AND
 			s.site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 
 		`UPDATE
 			sites_locations s,
@@ -626,7 +626,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			position(regexp_substr(address1, '^[a-zA-Z0-9]+ [a-zA-Z0-9]+') in s.address) AND
 			position(left(l.postal_code,3) in s.address) AND
 			site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 
 		`UPDATE
 			sites_locations s,
@@ -640,7 +640,7 @@ func (r *SiteRepository) RunMatchLocations() error {
 			p.id=l.province_id AND
 			p.province_name="Ontario" AND
 			s.site=? AND
-			s.location_id=0 AND s.location_id != -1`,
+			s.location_id=0`,
 	}
 
 	return r.DB.Transaction(func(db *gorm.DB) error {
