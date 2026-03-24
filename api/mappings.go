@@ -239,7 +239,7 @@ func (app *App) getMHRLoc(c *gin.Context) {
 
 		var b = &bytes.Buffer{}
 		w := csv.NewWriter(b)
-		w.Write([]string{"MhrID", "RinkName", "Aka", "Address", "Phone", "Website", "Notes", "LivebarnInstalled", "Province", "LivebarnLocationName", "HomeTeams"})
+		w.Write([]string{"MhrID", "RinkName", "Aka", "Address", "Phone", "Website", "Notes", "LivebarnInstalled", "Province", "LivebarnLocationId", "LivebarnLocationName", "HomeTeams"})
 
 		for _, row := range result {
 			aka := ""
@@ -282,6 +282,7 @@ func (app *App) getMHRLoc(c *gin.Context) {
 				notes,
 				fmt.Sprint(row.LivebarnInstalled),
 				row.Province,
+				fmt.Sprint(row.LivebarnLocationId),
 				livebarnLocationName,
 				homeTeamsStr,
 			})
