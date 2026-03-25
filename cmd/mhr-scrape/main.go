@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var rootCmd = &cobra.Command{
@@ -118,8 +119,9 @@ func runScraper(cmd *cobra.Command, args []string) {
 			venues := process_state(state)
 
 			if len(venues) > 0 {
+				// Skip existing records (do not update)
 				err := repo.DB.Transaction(func(tx *gorm.DB) error {
-					return repo.DB.Save(venues).Error
+					return tx.Clauses(clause.OnConflict{DoNothing: true}).Save(venues).Error
 				})
 				if err != nil {
 					log.Println("failed to insert to db", err)
