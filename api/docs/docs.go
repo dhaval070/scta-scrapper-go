@@ -68,6 +68,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Sort column (mhr_id, created_at)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction (asc, desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Export as CSV when present (any non-empty value)",
                         "name": "export",
                         "in": "query"
@@ -515,6 +527,9 @@ const docTemplate = `{
                 "aka": {
                     "type": "string"
                 },
+                "created_at": {
+                    "type": "string"
+                },
                 "home_teams": {
                     "type": "array",
                     "items": {
@@ -523,6 +538,9 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
+                },
+                "lb_notes": {
+                    "type": "string"
                 },
                 "linkedSurface": {
                     "$ref": "#/definitions/model.Surface"
@@ -555,6 +573,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "streaming": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 },
                 "website": {

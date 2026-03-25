@@ -13,6 +13,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SetMhrLbNotesInput struct {
+	MhrID   int    `json:"mhr_id" binding:"required"`
+	LbNotes string `json:"lb_notes"`
+}
+
+type GetMhrLbNotesResponse struct {
+	MhrID   int    `json:"mhr_id"`
+	LbNotes string `json:"lb_notes"`
+}
+
 // setSurface updates surface mapping for a site location
 func (app *App) setSurface(c *gin.Context) {
 	var input = &models.SiteLoc{}
@@ -208,6 +218,9 @@ func (app *App) getSiteLoc(c *gin.Context) {
 // @Param perPage query string false "Items per page (default: 10, max: 100)"
 // @Param name query string false "Filter by rink name (partial match)"
 // @Param province query string false "Filter by province (partial match)"
+// @Param livebarn_location_id query string false "Filter by LiveBarn location mapping status (0 for unmapped, 1 for mapped)"
+// @Param sort query string false "Sort column (mhr_id, created_at)"
+// @Param order query string false "Sort direction (asc, desc)"
 // @Param export query string false "Export as CSV when present (any non-empty value)"
 // @Success 200 {object} models.MHRLocResult
 // @Security CookieAuth
@@ -219,7 +232,10 @@ func (app *App) getMHRLoc(c *gin.Context) {
 	perPage := c.DefaultQuery("perPage", "10")
 	name := c.Query("name")
 	province := c.Query("province")
+	livebarnLocationIdStr := c.Query("livebarn_location_id")
 	export := c.Query("export")
+	sort := c.DefaultQuery("sort", "mhr_id")
+	order := c.DefaultQuery("order", "asc")
 
 	baseQuery := app.db.Model(&models.MhrLocation{})
 
@@ -231,6 +247,27 @@ func (app *App) getMHRLoc(c *gin.Context) {
 		baseQuery = baseQuery.Where(`province like ?`, "%"+province+"%")
 	}
 
+	if livebarnLocationIdStr != "" {
+		var livebarnLocationId int
+		if _, err := fmt.Sscanf(livebarnLocationIdStr, "%d", &livebarnLocationId); err == nil {
+			if livebarnLocationId == 0 {
+				baseQuery = baseQuery.Where("livebarn_location_id = ?", 0)
+			} else if livebarnLocationId == 1 {
+				baseQuery = baseQuery.Where("livebarn_location_id != ?", 0)
+			}
+		}
+	}
+
+	allowedSorts := map[string]bool{"mhr_id": true, "created_at": true}
+	if !allowedSorts[sort] {
+		sort = "mhr_id"
+	}
+	allowedOrders := map[string]bool{"asc": true, "desc": true}
+	if !allowedOrders[order] {
+		order = "asc"
+	}
+	baseQuery = baseQuery.Order(fmt.Sprintf("%s %s", sort, order))
+
 	if export != "" {
 		if err := baseQuery.Joins("LiveBarnLocation").Find(&result).Error; err != nil {
 			sendError(c, err)
@@ -239,7 +276,7 @@ func (app *App) getMHRLoc(c *gin.Context) {
 
 		var b = &bytes.Buffer{}
 		w := csv.NewWriter(b)
-		w.Write([]string{"MhrID", "RinkName", "Aka", "Address", "Phone", "Website", "Notes", "LivebarnInstalled", "Province", "LivebarnLocationId", "LivebarnLocationName", "HomeTeams"})
+		w.Write([]string{"MhrID", "RinkName", "Aka", "Address", "Phone", "Website", "Notes", "LivebarnInstalled", "Province", "LivebarnLocationId", "LivebarnLocationName", "HomeTeams", "Livebarn Notes"})
 
 		for _, row := range result {
 			aka := ""
@@ -285,6 +322,7 @@ func (app *App) getMHRLoc(c *gin.Context) {
 				fmt.Sprint(row.LivebarnLocationId),
 				livebarnLocationName,
 				homeTeamsStr,
+				row.LbNotes,
 			})
 		}
 		w.Flush()
@@ -504,4 +542,72 @@ func (app *App) SetRampMappings(c *gin.Context) {
 
 	c.AddParam("province", input.Province)
 	app.rampMappings(c)
+}
+
+// setMhrLbNotes updates lb_notes for a MHR location
+// @Summary Update LiveBarn notes for MHR location
+// @Description Updates the lb_notes field for a specific MHR location
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param input body SetMhrLbNotesInput true "MHR ID and LiveBarn notes"
+// @Success 200 {object} gin.H "Success message"
+// @Security CookieAuth
+// @Router /mhr-lb-notes [post]
+func (app *App) setMhrLbNotes(c *gin.Context) {
+	var input SetMhrLbNotesInput
+
+	if err := c.BindJSON(&input); err != nil {
+		sendError(c, err)
+		return
+	}
+
+	if err := app.db.Exec(`UPDATE mhr_locations SET lb_notes = ? WHERE mhr_id = ?`, input.LbNotes, input.MhrID).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "LiveBarn notes updated successfully",
+		"mhr_id":  input.MhrID,
+	})
+}
+
+// getMhrLbNotes retrieves lb_notes for a MHR location
+// @Summary Get LiveBarn notes for MHR location
+// @Description Retrieves the lb_notes field for a specific MHR location
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param mhr_id path int true "MHR location ID"
+// @Success 200 {object} GetMhrLbNotesResponse "LiveBarn notes"
+// @Failure 404 {object} gin.H "MHR location not found"
+// @Security CookieAuth
+// @Router /mhr-lb-notes/{mhr_id} [get]
+func (app *App) getMhrLbNotes(c *gin.Context) {
+	mhrIDStr := c.Param("mhr_id")
+	var mhrID int
+	if _, err := fmt.Sscanf(mhrIDStr, "%d", &mhrID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid MHR ID format",
+		})
+		return
+	}
+
+	var result GetMhrLbNotesResponse
+
+	if err := app.db.Raw(`SELECT mhr_id, lb_notes FROM mhr_locations WHERE mhr_id = ?`, mhrID).Scan(&result).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	// Check if record was found (Scan doesn't return ErrRecordNotFound for Raw queries)
+	if result.MhrID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "MHR location not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

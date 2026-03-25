@@ -4,24 +4,31 @@
 
 package model
 
+import (
+	"time"
+)
+
 const TableNameMhrLocation = "mhr_locations"
 
 // MhrLocation mapped from table <mhr_locations>
 type MhrLocation struct {
-	MhrID              int32  `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
-	RinkName           string `gorm:"column:rink_name;not null" json:"rink_name"`
-	Aka                string `gorm:"column:aka" json:"aka"`
-	Address            string `gorm:"column:address;not null" json:"address"`
-	Phone              string `gorm:"column:phone" json:"phone"`
-	Website            string `gorm:"column:website" json:"website"`
-	Streaming          string `gorm:"column:streaming" json:"streaming"`
-	Notes              string `gorm:"column:notes" json:"notes"`
-	LivebarnInstalled  int32  `gorm:"column:livebarn_installed;not null" json:"livebarn_installed"`
-	LivebarnLocationID int32  `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
-	LivebarnSurfaceID  int32  `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
-	HomeTeams          string `gorm:"column:home_teams" json:"home_teams"`
-	Province           string `gorm:"column:province;not null" json:"province"`
-	PostalCode         string `gorm:"column:postal_code;not null" json:"postal_code"`
+	MhrID              int32     `gorm:"column:mhr_id;primaryKey" json:"mhr_id"`
+	RinkName           string    `gorm:"column:rink_name;not null" json:"rink_name"`
+	Aka                string    `gorm:"column:aka" json:"aka"`
+	Address            string    `gorm:"column:address;not null" json:"address"`
+	Phone              string    `gorm:"column:phone" json:"phone"`
+	Website            string    `gorm:"column:website" json:"website"`
+	Streaming          string    `gorm:"column:streaming" json:"streaming"`
+	Notes              string    `gorm:"column:notes" json:"notes"`
+	LivebarnInstalled  int32     `gorm:"column:livebarn_installed;not null" json:"livebarn_installed"`
+	LivebarnLocationID int32     `gorm:"column:livebarn_location_id" json:"livebarn_location_id"`
+	LivebarnSurfaceID  int32     `gorm:"column:livebarn_surface_id" json:"livebarn_surface_id"`
+	HomeTeams          string    `gorm:"column:home_teams" json:"home_teams"`
+	Province           string    `gorm:"column:province;not null" json:"province"`
+	PostalCode         string    `gorm:"column:postal_code;not null" json:"postal_code"`
+	CreatedAt          time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt          time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
+	LbNotes            string    `gorm:"column:lb_notes" json:"lb_notes"`
 }
 
 // TableName MhrLocation's table name

@@ -104,6 +104,8 @@ func main() {
 	r.POST("/mhr-set-location", app.setMHRLoc)
 	r.POST("/mhr-set-surface", app.setMHRSurface)
 	r.POST("/mhr-unset-mapping", app.unsetMHRMapping)
+	r.POST("/mhr-lb-notes", app.setMhrLbNotes)
+	r.GET("/mhr-lb-notes/:mhr_id", app.getMhrLbNotes)
 	r.GET("/mappings/:site", app.getMappings)
 	r.GET("/sites", app.getSites)
 	r.GET("/surfaces", app.getSurfaces)

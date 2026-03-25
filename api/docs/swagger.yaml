@@ -116,12 +116,16 @@ definitions:
         type: string
       aka:
         type: string
+      created_at:
+        type: string
       home_teams:
         items:
           additionalProperties:
             type: string
           type: object
         type: array
+      lb_notes:
+        type: string
       linkedSurface:
         $ref: '#/definitions/model.Surface'
       liveBarnLocation:
@@ -143,6 +147,8 @@ definitions:
       rink_name:
         type: string
       streaming:
+        type: string
+      updated_at:
         type: string
       website:
         type: string
@@ -262,6 +268,14 @@ paths:
       - description: Filter by province (partial match)
         in: query
         name: province
+        type: string
+      - description: Sort column (mhr_id, created_at)
+        in: query
+        name: sort
+        type: string
+      - description: Sort direction (asc, desc)
+        in: query
+        name: order
         type: string
       - description: Export as CSV when present (any non-empty value)
         in: query

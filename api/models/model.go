@@ -194,6 +194,9 @@ type MhrLocation struct {
 	LinkedSurface      model.Surface       `gorm:"foreignKey:LivebarnSurfaceId"`
 	HomeTeams          []map[string]string `gorm:"column:home_teams;serializer:json" json:"home_teams"`
 	Province           string              `gorm:"column:province" json:"province"`
+	LbNotes            string              `gorm:"column:lb_notes" json:"lb_notes"`
+	CreatedAt          time.Time           `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt          time.Time           `gorm:"column:updated_at" json:"updated_at"`
 }
 
 func (MhrLocation) TableName() string {
