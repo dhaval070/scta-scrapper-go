@@ -43,28 +43,62 @@ func New(config *siteconfig.SiteConfig, loader *siteconfig.Loader) (*Scraper, er
 	}, nil
 }
 
+// normalizeRows converts 7-column CSV rows to 8 columns by adding an empty event_id column
+// Rows should be [datetime, site, home, guest, location, division, address]
+// Returns [datetime, site, home, guest, location, division, event_id, address]
+func normalizeRows(rows [][]string) [][]string {
+	normalized := make([][]string, 0, len(rows))
+	for _, row := range rows {
+		switch len(row) {
+		case 7:
+			// datetime, site, home, guest, location, division, address
+			// Insert empty event_id at index 6, shift address to index 7
+			normalized = append(normalized, []string{
+				row[0], row[1], row[2], row[3], row[4], row[5], "", row[6],
+			})
+		case 8:
+			// Already has event_id; keep as-is
+			normalized = append(normalized, row)
+		default:
+			// Unexpected length; keep unchanged (log warning if needed)
+			normalized = append(normalized, row)
+		}
+	}
+	return normalized
+}
+
 // Scrape performs the scraping based on the site's parser type
 func (s *Scraper) Scrape(mm, yyyy int) ([][]string, error) {
 	log.Printf("[%s] Starting scrape for %d/%d\n", s.config.SiteName, mm, yyyy)
 
+	var result [][]string
+	var err error
+
 	switch s.config.ParserType {
 	case siteconfig.ParserTypeDayDetails:
-		return s.scrapeDayDetails(mm, yyyy)
+		result, err = s.scrapeDayDetails(mm, yyyy)
 	case siteconfig.ParserTypeDayDetailsParser1:
-		return s.scrapeDayDetailsParser1(mm, yyyy)
+		result, err = s.scrapeDayDetailsParser1(mm, yyyy)
 	case siteconfig.ParserTypeDayDetailsParser2:
-		return s.scrapeDayDetailsParser2(mm, yyyy)
+		result, err = s.scrapeDayDetailsParser2(mm, yyyy)
 	case siteconfig.ParserTypeGroupBased:
-		return s.scrapeGroupBased(mm, yyyy)
+		result, err = s.scrapeGroupBased(mm, yyyy)
 	case siteconfig.ParserTypeMonthBased:
-		return s.scrapeMonthBased(mm, yyyy)
+		result, err = s.scrapeMonthBased(mm, yyyy)
 	case siteconfig.ParserTypeExternal:
-		return s.scrapeExternal(mm, yyyy)
+		result, err = s.scrapeExternal(mm, yyyy)
 	case siteconfig.ParserTypeCustom:
-		return s.scrapeCustom(mm, yyyy)
+		result, err = s.scrapeCustom(mm, yyyy)
 	default:
 		return nil, fmt.Errorf("unsupported parser type: %s", s.config.ParserType)
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Normalize all rows to 8 columns
+	return normalizeRows(result), nil
 }
 
 func loadUrl(url string) (io.Reader, error) {

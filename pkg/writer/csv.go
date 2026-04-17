@@ -33,6 +33,7 @@ func WriteEvents(w io.Writer, data []*model.Event) error {
 			rec.GuestTeam,
 			rec.Location,
 			rec.Division,
+			rec.EventID,
 			fmt.Sprint(rec.SurfaceID),
 		}
 		if err = ww.Write(row); err != nil {

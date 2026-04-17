@@ -222,6 +222,7 @@ func WriteEvents(w io.Writer, data []Event) error {
 			rec.AwayTeam,
 			rec.Facility,
 			rec.HomeDivision,
+			rec.ID,
 			rec.FacilityAddress,
 		}
 		if err = ww.Write(row); err != nil {

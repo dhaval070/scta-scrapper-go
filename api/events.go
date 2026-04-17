@@ -72,7 +72,7 @@ func (app *App) getEvents(c *gin.Context) {
 
 		var b = &bytes.Buffer{}
 		w := csv.NewWriter(b)
-		w.Write([]string{"ID", "Site", "Date/Time", "Home Team", "Gues Team", "Location", "Division", "Surface ID"})
+		w.Write([]string{"ID", "Site", "Date/Time", "Home Team", "Guest Team", "Location", "Division", "Event ID", "Surface ID"})
 
 		for _, row := range result {
 			w.Write([]string{
@@ -83,6 +83,7 @@ func (app *App) getEvents(c *gin.Context) {
 				row.GuestTeam,
 				row.Location,
 				row.Division,
+				row.EventID,
 				fmt.Sprint(row.SurfaceID),
 			})
 		}

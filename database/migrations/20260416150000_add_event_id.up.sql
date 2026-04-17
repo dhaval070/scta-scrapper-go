@@ -1,0 +1,1 @@
+ALTER TABLE events ADD COLUMN event_id VARCHAR(128) DEFAULT NULL AFTER oid_guest;

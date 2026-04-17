@@ -41,15 +41,48 @@ func ParseCommonFlags() *Flags {
 	return f
 }
 
+// normalizeCSVRows ensures all CSV rows have 8 columns by adding empty event_id if needed
+// Input: 7 columns [datetime, site, home, guest, location, division, address]
+//
+//	8 columns [datetime, site, home, guest, location, division, event_id, address]
+//
+// Output: 8 columns [datetime, site, home, guest, location, division, event_id, address]
+func normalizeCSVRows(rows [][]string) [][]string {
+	normalized := make([][]string, 0, len(rows))
+	for _, row := range rows {
+		switch len(row) {
+		case 7:
+			// Add empty event_id at index 6, shift address to index 7
+			normalized = append(normalized, []string{
+				row[0], row[1], row[2], row[3], row[4], row[5], "", row[6],
+			})
+		case 8:
+			// Already has event_id
+			normalized = append(normalized, row)
+		default:
+			// Skip invalid rows
+			log.Printf("Warning: skipping row with invalid column count %d: %v", len(row), row)
+		}
+	}
+	return normalized
+}
+
 // ImportLocations imports location data to the database
 // This is used by virtually all site scrapers (72+ sites)
 // result is expected to be [][]string where each row has:
-// [date, site, home, guest, location, division, address]
+// 8 columns: [date, site, home, guest, location, division, event_id, address] (after normalization)
 func ImportLocations(siteName string, result [][]string) error {
 	// Skip special importers - they use league-specific mapping tables (gthl_mappings, nyhl_mappings, mhl_mappings)
 	// and lack address data, making location import unnecessary
 	if SpecialImporters[siteName] {
 		log.Printf("Skipping location import for %s (uses league-specific mapping table)", siteName)
+		return nil
+	}
+
+	// Normalize all rows to 8 columns
+	result = normalizeCSVRows(result)
+	if len(result) == 0 {
+		log.Printf("No valid rows to import locations for %s", siteName)
 		return nil
 	}
 
@@ -60,9 +93,11 @@ func ImportLocations(siteName string, result [][]string) error {
 	for _, r := range result {
 		log.Printf("%+v\n", r)
 
+		// After normalization, all rows have 8 columns
+		// address is always at index 7
 		l := model.SitesLocation{
 			Location: r[4],
-			Address:  r[6],
+			Address:  r[7],
 		}
 		locations = append(locations, l)
 	}
@@ -98,7 +133,7 @@ func WriteOutput(outfile string, result [][]string) error {
 }
 
 // ImportEventsFromRows imports events from scraped rows to the database
-// Rows are expected to have 7 columns: [datetime, site, home, guest, location, division, address]
+// Rows are expected to have 8 columns: [datetime, site, home, guest, location, division, event_id, address] (after normalization)
 func ImportEventsFromRows(repo *repository.Repository, site string, rows [][]string, cutoffDate time.Time) error {
 	// Skip special importers - they already import events via their own binaries
 	if SpecialImporters[site] {
@@ -111,12 +146,18 @@ func ImportEventsFromRows(repo *repository.Repository, site string, rows [][]str
 		log.Printf("database error: failed to update games_scraped count for site %s: %v", site, err)
 	}
 
+	// Normalize all rows to 8 columns
+	rows = normalizeCSVRows(rows)
+	if len(rows) == 0 {
+		log.Printf("No valid rows to import events for %s", site)
+		return nil
+	}
+
 	var events []*model.Event
 	for _, row := range rows {
-		if len(row) != 7 {
-			log.Printf("Invalid row length %d, skipping: %v", len(row), row)
-			continue
-		}
+		// After normalization, all rows have 8 columns
+		// event_id is at index 6, address at index 7
+		eventID := row[6]
 
 		// Parse datetime
 		dt, err := time.Parse("2006-1-02 15:04", row[0])
@@ -151,6 +192,7 @@ func ImportEventsFromRows(repo *repository.Repository, site string, rows [][]str
 			GuestTeam:   row[3],
 			Location:    row[4],
 			Division:    row[5],
+			EventID:     eventID,
 			LocationID:  siteLoc.LocationID,
 			SurfaceID:   siteLoc.SurfaceID,
 			DateCreated: time.Now(),

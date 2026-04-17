@@ -20,6 +20,7 @@ type Event struct {
 	OidHome       string    `gorm:"column:oid_home" json:"oid_home"`
 	GuestTeam     string    `gorm:"column:guest_team;not null" json:"guest_team"`
 	OidGuest      string    `gorm:"column:oid_guest" json:"oid_guest"`
+	EventID       string    `gorm:"column:event_id" json:"event_id"`
 	Location      string    `gorm:"column:location" json:"location"`
 	Division      string    `gorm:"column:division" json:"division"`
 	LocationID    int32     `gorm:"column:location_id" json:"location_id"`

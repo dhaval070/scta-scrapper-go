@@ -30,7 +30,7 @@ type ScheduleResponse struct {
 }
 
 type Game struct {
-	ID                 int64     `json:"id"`
+	ID                 int       `json:"id"`
 	GameType           string    `json:"gameType"`
 	Number             string    `json:"number"`
 	Location           string    `json:"location"`
@@ -265,7 +265,7 @@ func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeaso
 				continue
 			}
 
-			result = append(result, []string{game.ScheduledStartTime.Format("2006-01-02 15:04"), season.Site, game.Home.Title, game.Visitor.Title, game.Location, game.Home.Division.Title, ""})
+			result = append(result, []string{game.ScheduledStartTime.Format("2006-01-02 15:04"), season.Site, game.Home.Title, game.Visitor.Title, game.Location, game.Home.Division.Title, strconv.Itoa(game.ID), ""})
 			totalGames++
 		}
 	}

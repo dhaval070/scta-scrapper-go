@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -204,6 +205,7 @@ func get_venue(mhrId string, ch chan *MhrLocation) {
 		log.Printf("read error %v\n", err)
 		return
 	}
+	c := string(b[:])
 
 	doc, err := htmlquery.Parse(bytes.NewReader(b))
 	if err != nil {
@@ -214,6 +216,8 @@ func get_venue(mhrId string, ch chan *MhrLocation) {
 
 	if err != nil {
 		log.Printf("failed %s, %v", url, err)
+		log.Println("content", c)
+		os.Exit(1)
 		return
 	}
 	loc.MhrID, _ = strconv.Atoi(mhrId)

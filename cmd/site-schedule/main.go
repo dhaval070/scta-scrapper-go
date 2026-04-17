@@ -19,6 +19,24 @@ import (
 
 var repo *repository.Repository
 
+// normalizeRowColumns ensures a CSV row has 7 columns by adding an empty event_id column if needed
+// Input should be 6 columns: [datetime, site, home, guest, location, division]
+// or 7 columns: [datetime, site, home, guest, location, division, event_id]
+// Returns 7 columns: [datetime, site, home, guest, location, division, event_id]
+func normalizeRowColumns(row []string) []string {
+	switch len(row) {
+	case 6:
+		// Insert empty event_id at index 6
+		return []string{row[0], row[1], row[2], row[3], row[4], row[5], ""}
+	case 7:
+		// Already has event_id column
+		return row
+	default:
+		// Unexpected length, return as-is (will cause error downstream)
+		return row
+	}
+}
+
 func attachSurfaceID(site string, r io.Reader) [][]string {
 	rr := csv.NewReader(r)
 
@@ -30,8 +48,11 @@ func attachSurfaceID(site string, r io.Reader) [][]string {
 			break
 		}
 
-		if len(r) != 6 {
-			log.Fatalf("invalid columns %+v\n", r)
+		// Normalize to 7 columns (add empty event_id if missing)
+		r = normalizeRowColumns(r)
+
+		if len(r) != 7 {
+			log.Fatalf("invalid columns after normalization %+v\n", r)
 		}
 
 		sl, err := repo.GetSitesLocation(site, r[4])
@@ -104,6 +125,8 @@ func main() {
 			if errors.Is(err, io.EOF) {
 				break
 			}
+			// Normalize to 7 columns (add empty event_id if missing)
+			r = normalizeRowColumns(r)
 			// add 0 surface ID
 			r = append(r, "0", "0")
 			result = append(result, r)
@@ -124,9 +147,21 @@ func main() {
 
 	ww := csv.NewWriter(os.Stdout)
 
-	err = ww.WriteAll(result)
-	if err != nil {
-		panic(err)
+	// Write rows, skipping column 6 (event_id) to maintain 8-column output format
+	for _, row := range result {
+		if len(row) == 9 {
+			// Expected format: [datetime, site, home, guest, location, division, event_id, location_id, surface_id]
+			// Output format: [datetime, site, home, guest, location, division, location_id, surface_id]
+			outRow := []string{row[0], row[1], row[2], row[3], row[4], row[5], row[7], row[8]}
+			if err := ww.Write(outRow); err != nil {
+				panic(err)
+			}
+		} else {
+			// Fallback for unexpected lengths (should not happen after normalization)
+			if err := ww.Write(row); err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	ww.Flush()
@@ -142,13 +177,22 @@ func importEvents(repo *repository.Repository, site string, result [][]string, c
 
 	m := make([]*model.Event, 0, len(result))
 	for _, rec := range result {
-		locationId, err := strconv.Atoi(rec[6])
-		if err != nil {
-			return fmt.Errorf("failed to parse surfaceid %s, %w", rec[6], err)
+		// After normalization, rows should have 9 columns:
+		// [datetime, site, home, guest, location, division, event_id, location_id, surface_id]
+		if len(rec) != 9 {
+			log.Printf("Warning: skipping row with unexpected column count %d: %v", len(rec), rec)
+			continue
 		}
-		sid, err := strconv.Atoi(rec[7])
+
+		// Column indices are now fixed
+		eventID := rec[6]
+		locationId, err := strconv.Atoi(rec[7])
 		if err != nil {
-			return fmt.Errorf("failed to parse surfaceid %s, %w", rec[6], err)
+			return fmt.Errorf("failed to parse locationId %s, %w", rec[7], err)
+		}
+		sid, err := strconv.Atoi(rec[8])
+		if err != nil {
+			return fmt.Errorf("failed to parse surfaceId %s, %w", rec[8], err)
 		}
 		dt, err := time.Parse("2006-1-02 15:04", rec[0])
 		if err != nil {
@@ -167,6 +211,7 @@ func importEvents(repo *repository.Repository, site string, result [][]string, c
 			GuestTeam:   rec[3],
 			Location:    rec[4],
 			Division:    rec[5],
+			EventID:     eventID,
 			LocationID:  int32(locationId),
 			SurfaceID:   int32(sid),
 			DateCreated: time.Now(),
