@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -93,15 +92,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: failed to parse event_id '%s' as integer: %v", event.EventID, err)
 	}
+	// https://livebarn.com/en/video/4424/2026-02-01/10:00
+	broadcastUrl := "https://livebarn.com/en/video/" + event.EventID + "/" + event.Datetime.Format("2006-01-02") + "/" + event.Datetime.Format("15:04")
 
 	body := claimRequest{}
 	body.Data.Games = []claimGame{
 		{
 			GameID:         gameID,
 			SurfaceID:      int(event.SurfaceID),
-			BroadcastURL:   "",
-			BroadcasterURL: "",
-			VODURL:         "",
+			BroadcastURL:   broadcastUrl,
+			BroadcasterURL: "https://livebarn.com/",
+			VODURL:         broadcastUrl,
 			HighlightsURL:  "",
 		},
 	}
@@ -112,17 +113,8 @@ func main() {
 	}
 
 	apiURL := "https://dev-gateway.gamesheet.io/broadcaster/games"
-	fmt.Println("--- CURL COMMAND ---")
-	fmt.Printf("curl -X POST '%s' \\\n", apiURL)
-	fmt.Printf("  -H 'X-GAMESHEET-PARTNER-APIKEY: %s' \\\n", cfg.GameSheetAPIKey)
-	fmt.Printf("  -H 'Content-Type: application/json' \\\n")
-	fmt.Printf("  -d '%s'\n", string(jsonBody))
-
 	log.Printf("--- REQUEST ---")
 	log.Printf("POST %s", apiURL)
-	log.Printf("Headers:")
-	log.Printf("  X-GAMESHEET-PARTNER-APIKEY: %s", cfg.GameSheetAPIKey)
-	log.Printf("  Content-Type: application/json")
 	log.Printf("Body: %s", string(jsonBody))
 
 	req, err := http.NewRequest("POST", apiURL, bytes.NewReader(jsonBody))
