@@ -12,7 +12,6 @@ type Config struct {
 	ApiKey                 string        `mapstructure:"API_KEY"`
 	ImportUrl              string        `mapstructure:"IMPORT_URL"`
 	GameSheetAPIKey        string        `mapstructure:"GAMESHEET_API_KEY"`
-	GamesheetStartDate     string        `mapstructure:"GAMESHEET_START_DATE"`
 	MaxRequestsPerHost     int           `mapstructure:"MAX_REQUESTS_PER_HOST"`
 	ExternalAddressFetcher bool          `mapstructure:"EXTERNAL_ADDRESS_FETCHER"`
 	SmtpConfig             SmtpConfig    `mapstructure:"SMTP_CONFIG"`
@@ -50,10 +49,6 @@ func ReadConfig() (Config, error) {
 
 	if cfg.DbDSN == "" {
 		return cfg, errors.New("DB_DSN is required in config")
-	}
-
-	if cfg.GamesheetStartDate == "" {
-		return cfg, errors.New("GAMESHEET_START_DATE is required in config")
 	}
 
 	if cfg.SmtpConfig.Host == "" {

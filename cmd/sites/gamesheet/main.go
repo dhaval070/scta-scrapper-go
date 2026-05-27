@@ -19,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const URL = "https://gateway.gamesheet.io/stats/schedule?filter[seasons]=%s&filter[start]=%s&filter[end]=2026-04-30&filter[teams]&filter[divisions]"
+const URL = "https://gateway.gamesheet.io/stats/schedule?filter[seasons]=%s&filter[start]=%s&filter[end]=%s&filter[teams]&filter[divisions]"
 
 type ScheduleResponse struct {
 	Status string `json:"status"`
@@ -195,7 +195,9 @@ func initDB(cfg *config.Config) (*gorm.DB, error) {
 func fetchSchedules(db *gorm.DB, cfg *config.Config, season model.GamesheetSeason) ([][]string, error) {
 	seasonID := season.ID
 	// Build the API URL
-	url := fmt.Sprintf(URL, fmt.Sprintf("%d", seasonID), cfg.GamesheetStartDate)
+	startDate := time.Now().Format("2006-01-02")
+	endDate := time.Now().AddDate(0, 2, 0).Format("2006-01-02")
+	url := fmt.Sprintf(URL, fmt.Sprintf("%d", seasonID), startDate, endDate)
 
 	// Create request
 	req, err := http.NewRequest("GET", url, nil)
