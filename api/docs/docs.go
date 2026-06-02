@@ -23,6 +23,90 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/mhr-lb-notes": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Updates the lb_notes field for a specific MHR location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Update LiveBarn notes for MHR location",
+                "parameters": [
+                    {
+                        "description": "MHR ID and LiveBarn notes",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.SetMhrLbNotesInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/mhr-lb-notes/{mhr_id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Retrieves the lb_notes field for a specific MHR location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Get LiveBarn notes for MHR location",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MHR location ID",
+                        "name": "mhr_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "LiveBarn notes",
+                        "schema": {
+                            "$ref": "#/definitions/main.GetMhrLbNotesResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "MHR location not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/mhr-locations": {
             "get": {
                 "security": [
@@ -64,6 +148,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by province (partial match)",
                         "name": "province",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by LiveBarn location mapping status (0 for unmapped, 1 for mapped)",
+                        "name": "livebarn_location_id",
                         "in": "query"
                     },
                     {
@@ -355,6 +445,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.GetMhrLbNotesResponse": {
+            "type": "object",
+            "properties": {
+                "lb_notes": {
+                    "type": "string"
+                },
+                "mhr_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "main.ScrapeRequest": {
             "type": "object",
             "properties": {
@@ -401,6 +502,20 @@ const docTemplate = `{
                 "status": {
                     "description": "idle, running, completed, failed",
                     "type": "string"
+                }
+            }
+        },
+        "main.SetMhrLbNotesInput": {
+            "type": "object",
+            "required": [
+                "mhr_id"
+            ],
+            "properties": {
+                "lb_notes": {
+                    "type": "string"
+                },
+                "mhr_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -632,6 +747,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.SiteLoc"
                     }
+                },
+                "events_matched": {
+                    "type": "integer"
+                },
+                "games_claimed": {
+                    "type": "integer"
                 },
                 "page": {
                     "type": "integer"

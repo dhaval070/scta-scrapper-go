@@ -9,6 +9,7 @@ import (
 	"strings"
 	"surface-api/dao/model"
 	"surface-api/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -200,12 +201,23 @@ func (app *App) getSiteLoc(c *gin.Context) {
 		sendError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, models.SiteLocResult{
+
+	resp := models.SiteLocResult{
 		Data:    result,
 		Page:    pageNum,
 		PerPage: perPageNum,
 		Total:   total,
-	})
+	}
+
+	if site != "" {
+		stats, err := app.getClaimStats("gs_"+site, time.Now())
+		if err == nil {
+			resp.EventsMatched = &stats.EventsMatched
+			resp.GamesClaimed = &stats.GamesClaimed
+		}
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
 // getMHRLoc returns paginated MHR location mappings
@@ -551,7 +563,7 @@ func (app *App) SetRampMappings(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param input body SetMhrLbNotesInput true "MHR ID and LiveBarn notes"
-// @Success 200 {object} gin.H "Success message"
+// @Success 200 {object} map[string]interface{} "Success message"
 // @Security CookieAuth
 // @Router /mhr-lb-notes [post]
 func (app *App) setMhrLbNotes(c *gin.Context) {
@@ -581,7 +593,7 @@ func (app *App) setMhrLbNotes(c *gin.Context) {
 // @Produce json
 // @Param mhr_id path int true "MHR location ID"
 // @Success 200 {object} GetMhrLbNotesResponse "LiveBarn notes"
-// @Failure 404 {object} gin.H "MHR location not found"
+// @Failure 404 {object} map[string]interface{} "MHR location not found"
 // @Security CookieAuth
 // @Router /mhr-lb-notes/{mhr_id} [get]
 func (app *App) getMhrLbNotes(c *gin.Context) {

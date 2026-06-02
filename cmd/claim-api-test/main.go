@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -31,7 +32,7 @@ type Event struct {
 
 type claimGame struct {
 	GameID         int    `json:"gameId"`
-	SurfaceID      int    `json:"surfaceId"`
+	SurfaceID      string `json:"surfaceId"`
 	BroadcastURL   string `json:"broadcastUrl"`
 	BroadcasterURL string `json:"broadcasterUrl"`
 	VODURL         string `json:"vodUrl"`
@@ -99,7 +100,7 @@ func main() {
 	body.Data.Games = []claimGame{
 		{
 			GameID:         gameID,
-			SurfaceID:      int(event.SurfaceID),
+			SurfaceID:      fmt.Sprintf("%d", event.SurfaceID),
 			BroadcastURL:   broadcastUrl,
 			BroadcasterURL: "https://livebarn.com/",
 			VODURL:         broadcastUrl,
@@ -112,7 +113,7 @@ func main() {
 		log.Fatalf("ERROR: failed to marshal request body: %v", err)
 	}
 
-	apiURL := "https://dev-gateway.gamesheet.io/broadcaster/games"
+	apiURL := "https://gateway.gamesheet.io/broadcaster/games"
 	log.Printf("--- REQUEST ---")
 	log.Printf("POST %s", apiURL)
 	log.Printf("Body: %s", string(jsonBody))

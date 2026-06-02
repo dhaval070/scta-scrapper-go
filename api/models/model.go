@@ -39,10 +39,12 @@ type MHRLocResult struct {
 }
 
 type SiteLocResult struct {
-	Data    []SiteLoc `json:"data"`
-	Page    int       `json:"page"`
-	PerPage int       `json:"perPage"`
-	Total   int64     `json:"total"`
+	Data           []SiteLoc `json:"data"`
+	Page           int       `json:"page"`
+	PerPage        int       `json:"perPage"`
+	Total          int64     `json:"total"`
+	EventsMatched  *int      `json:"events_matched,omitempty"`
+	GamesClaimed   *int      `json:"games_claimed,omitempty"`
 }
 
 type Mapping struct {

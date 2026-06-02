@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  main.GetMhrLbNotesResponse:
+    properties:
+      lb_notes:
+        type: string
+      mhr_id:
+        type: integer
+    type: object
   main.ScrapeRequest:
     properties:
       date:
@@ -34,6 +41,15 @@ definitions:
       status:
         description: idle, running, completed, failed
         type: string
+    type: object
+  main.SetMhrLbNotesInput:
+    properties:
+      lb_notes:
+        type: string
+      mhr_id:
+        type: integer
+    required:
+    - mhr_id
     type: object
   model.Location:
     properties:
@@ -186,6 +202,10 @@ definitions:
         items:
           $ref: '#/definitions/models.SiteLoc'
         type: array
+      events_matched:
+        type: integer
+      games_claimed:
+        type: integer
       page:
         type: integer
       perPage:
@@ -246,6 +266,59 @@ info:
   title: Surface API
   version: "1.0"
 paths:
+  /mhr-lb-notes:
+    post:
+      consumes:
+      - application/json
+      description: Updates the lb_notes field for a specific MHR location
+      parameters:
+      - description: MHR ID and LiveBarn notes
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.SetMhrLbNotesInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update LiveBarn notes for MHR location
+      tags:
+      - Mappings
+  /mhr-lb-notes/{mhr_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the lb_notes field for a specific MHR location
+      parameters:
+      - description: MHR location ID
+        in: path
+        name: mhr_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: LiveBarn notes
+          schema:
+            $ref: '#/definitions/main.GetMhrLbNotesResponse'
+        "404":
+          description: MHR location not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get LiveBarn notes for MHR location
+      tags:
+      - Mappings
   /mhr-locations:
     get:
       consumes:
@@ -268,6 +341,11 @@ paths:
       - description: Filter by province (partial match)
         in: query
         name: province
+        type: string
+      - description: Filter by LiveBarn location mapping status (0 for unmapped, 1
+          for mapped)
+        in: query
+        name: livebarn_location_id
         type: string
       - description: Sort column (mhr_id, created_at)
         in: query
