@@ -95,7 +95,7 @@ func (app *App) getEvents(c *gin.Context) {
 		}
 	}
 
-	var result []models.EventWithClaim
+	result := make([]models.EventWithClaim, 0)
 	if export != "" {
 		if err := baseQuery.Scan(&result).Error; err != nil {
 			sendError(c, err)
