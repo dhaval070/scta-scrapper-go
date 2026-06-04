@@ -51,6 +51,13 @@ definitions:
     required:
     - mhr_id
     type: object
+  main.UpdateEventInput:
+    properties:
+      surface_id:
+        type: integer
+      update_future:
+        type: boolean
+    type: object
   model.Location:
     properties:
       address1:
@@ -111,6 +118,64 @@ definitions:
       uuid:
         type: string
       venue_id:
+        type: integer
+    type: object
+  models.EventWithClaim:
+    properties:
+      claim_created_at:
+        type: string
+      claim_error_message:
+        type: string
+      claim_http_status_code:
+        type: integer
+      claim_status:
+        type: integer
+      claim_updated_at:
+        type: string
+      date_created:
+        type: string
+      datetime:
+        type: string
+      division:
+        type: string
+      edate:
+        type: string
+      event_id:
+        type: string
+      guest_team:
+        type: string
+      home_team:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      location_id:
+        type: integer
+      mhr_location_id:
+        type: integer
+      oid_guest:
+        type: string
+      oid_home:
+        type: string
+      site:
+        type: string
+      source_type:
+        type: string
+      surface_id:
+        type: integer
+    type: object
+  models.EventsResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.EventWithClaim'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
         type: integer
     type: object
   models.MHRLocResult:
@@ -266,6 +331,98 @@ info:
   title: Surface API
   version: "1.0"
 paths:
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of events with optional filters for site,
+        surface, date range, and claim status
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: string
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: perPage
+        type: string
+      - description: Filter by site name
+        in: query
+        name: site
+        type: string
+      - description: Filter by surface ID
+        in: query
+        name: surface_id
+        type: string
+      - description: Filter by start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: Filter by end date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Export as CSV when present (any non-empty value)
+        in: query
+        name: export
+        type: string
+      - description: Filter by claim status (success or error)
+        in: query
+        name: claim_status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EventsResult'
+        "400":
+          description: Invalid claim_status value
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get paginated events
+      tags:
+      - Events
+  /events/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates the surface_id (and location_id) for a single event or
+        all future events at the same location
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Event update parameters
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.UpdateEventInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Event or Surface not found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update event surface assignment
+      tags:
+      - Events
   /mhr-lb-notes:
     post:
       consumes:

@@ -169,6 +169,22 @@ type EventWithLocation struct {
 	DisplayName  string `json:"display_name"`
 }
 
+type EventWithClaim struct {
+	model.Event
+	ClaimStatus          *int8      `json:"claim_status,omitempty"`
+	ClaimHTTPStatusCode  *int       `json:"claim_http_status_code,omitempty"`
+	ClaimErrorMessage    *string    `json:"claim_error_message,omitempty"`
+	ClaimCreatedAt       *time.Time `json:"claim_created_at,omitempty"`
+	ClaimUpdatedAt       *time.Time `json:"claim_updated_at,omitempty"`
+}
+
+type EventsResult struct {
+	Data    []EventWithClaim `json:"data"`
+	Page    int              `json:"page"`
+	PerPage int              `json:"perPage"`
+	Total   int64            `json:"total"`
+}
+
 type UnsetMappingInput struct {
 	Site     string `json:"site" binding:"required"`
 	Location string `json:"location" binding:"required"`

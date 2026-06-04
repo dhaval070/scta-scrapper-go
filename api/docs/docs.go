@@ -23,6 +23,145 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/events": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns paginated list of events with optional filters for site, surface, date range, and claim status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get paginated events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Items per page (default: 10, max: 100)",
+                        "name": "perPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by site name",
+                        "name": "site",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by surface ID",
+                        "name": "surface_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by start date (YYYY-MM-DD)",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by end date (YYYY-MM-DD)",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Export as CSV when present (any non-empty value)",
+                        "name": "export",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by claim status (success or error)",
+                        "name": "claim_status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.EventsResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid claim_status value",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Updates the surface_id (and location_id) for a single event or all future events at the same location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Update event surface assignment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event update parameters",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.UpdateEventInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Event or Surface not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/mhr-lb-notes": {
             "post": {
                 "security": [
@@ -519,6 +658,17 @@ const docTemplate = `{
                 }
             }
         },
+        "main.UpdateEventInput": {
+            "type": "object",
+            "properties": {
+                "surface_id": {
+                    "type": "integer"
+                },
+                "update_future": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.Location": {
             "type": "object",
             "properties": {
@@ -609,6 +759,94 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "venue_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.EventWithClaim": {
+            "type": "object",
+            "properties": {
+                "claim_created_at": {
+                    "type": "string"
+                },
+                "claim_error_message": {
+                    "type": "string"
+                },
+                "claim_http_status_code": {
+                    "type": "integer"
+                },
+                "claim_status": {
+                    "type": "integer"
+                },
+                "claim_updated_at": {
+                    "type": "string"
+                },
+                "date_created": {
+                    "type": "string"
+                },
+                "datetime": {
+                    "type": "string"
+                },
+                "division": {
+                    "type": "string"
+                },
+                "edate": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "guest_team": {
+                    "type": "string"
+                },
+                "home_team": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "location_id": {
+                    "type": "integer"
+                },
+                "mhr_location_id": {
+                    "type": "integer"
+                },
+                "oid_guest": {
+                    "type": "string"
+                },
+                "oid_home": {
+                    "type": "string"
+                },
+                "site": {
+                    "type": "string"
+                },
+                "source_type": {
+                    "type": "string"
+                },
+                "surface_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.EventsResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.EventWithClaim"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
                     "type": "integer"
                 }
             }
