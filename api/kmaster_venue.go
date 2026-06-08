@@ -19,6 +19,9 @@ import (
 // @Produce json
 // @Param page query int false "Page number (default 1)"
 // @Param perPage query int false "Items per page (default 10, max 100)"
+// @Param country query string false "Filter by country"
+// @Param state query string false "Filter by province/state"
+// @Param livebarn query bool false "Filter by livebarn venue match status"
 // @Success 200 {object} models.KVenueResult "Paginated venue list"
 // @Failure 500 {object} object "Internal server error"
 // @Security CookieAuth
@@ -37,11 +40,35 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 	}
 	offset := (pageNum - 1) * perPageNum
 
+	country := c.Query("country")
+	state := c.Query("state")
+	livebarn := c.Query("livebarn")
+
+	query := app.db.Model(&model.KmasterVenueList{})
+	if country != "" {
+		query = query.Where("country = ?", country)
+	}
+	if state != "" {
+		query = query.Where("province_state = ?", state)
+	}
+	if livebarn != "" {
+		livebarnBool, err := strconv.ParseBool(livebarn)
+		if err == nil {
+			if livebarnBool {
+				query = query.Where("livebarn_venue_id IN (?) AND livebarn_venue_id != 0",
+					app.db.Model(&model.Location{}).Select("id"))
+			} else {
+				query = query.Where("livebarn_venue_id NOT IN (?) OR livebarn_venue_id = 0",
+					app.db.Model(&model.Location{}).Select("id"))
+			}
+		}
+	}
+
 	var total int64
-	app.db.Model(&model.KmasterVenueList{}).Count(&total)
+	query.Count(&total)
 
 	var venues []model.KmasterVenueList
-	if err := app.db.Offset(offset).Limit(perPageNum).Order("id DESC").Find(&venues).Error; err != nil {
+	if err := query.Session(&gorm.Session{}).Offset(offset).Limit(perPageNum).Order("id DESC").Find(&venues).Error; err != nil {
 		sendError(c, err)
 		return
 	}

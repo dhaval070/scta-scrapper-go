@@ -192,6 +192,24 @@ const docTemplate = `{
                         "description": "Items per page (default 10, max 100)",
                         "name": "perPage",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by country",
+                        "name": "country",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province/state",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by livebarn venue match status",
+                        "name": "livebarn",
+                        "in": "query"
                     }
                 ],
                 "responses": {

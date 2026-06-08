@@ -544,6 +544,18 @@ paths:
         in: query
         name: perPage
         type: integer
+      - description: Filter by country
+        in: query
+        name: country
+        type: string
+      - description: Filter by province/state
+        in: query
+        name: state
+        type: string
+      - description: Filter by livebarn venue match status
+        in: query
+        name: livebarn
+        type: boolean
       produces:
       - application/json
       responses:
