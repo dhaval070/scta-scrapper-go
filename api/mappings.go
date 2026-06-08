@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type SetMhrLbNotesInput struct {
@@ -621,5 +623,37 @@ func (app *App) getMhrLbNotes(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, result)
+}
+
+// getMHRLocationByID returns a single MHR location with LiveBarn associations
+// @Summary Get MHR location by ID
+// @Description Returns a single MHR location with its LiveBarn location and surface associations
+// @Tags Mappings
+// @Accept json
+// @Produce json
+// @Param mhr_id path int true "MHR location ID"
+// @Success 200 {object} models.MhrLocation
+// @Failure 400 {object} object "Invalid MHR ID format"
+// @Failure 404 {object} object "MHR location not found"
+// @Failure 500 {object} object "Internal server error"
+// @Security CookieAuth
+// @Router /mhr-locations/{mhr_id} [get]
+func (app *App) getMHRLocationByID(c *gin.Context) {
+	mhrIDStr := c.Param("mhr_id")
+	var mhrID int
+	if _, err := fmt.Sscanf(mhrIDStr, "%d", &mhrID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid MHR ID format"})
+		return
+	}
+	var result models.MhrLocation
+	if err := app.db.Joins("LinkedSurface").Joins("LiveBarnLocation").First(&result, mhrID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "MHR location not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
 	c.JSON(http.StatusOK, result)
 }

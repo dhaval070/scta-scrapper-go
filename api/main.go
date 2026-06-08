@@ -106,6 +106,7 @@ func main() {
 	r.POST("/mhr-unset-mapping", app.unsetMHRMapping)
 	r.POST("/mhr-lb-notes", app.setMhrLbNotes)
 	r.GET("/mhr-lb-notes/:mhr_id", app.getMhrLbNotes)
+	r.GET("/mhr-locations/:mhr_id", app.getMHRLocationByID)
 	r.GET("/mappings/:site", app.getMappings)
 	r.GET("/sites", app.getSites)
 	r.GET("/surfaces", app.getSurfaces)
@@ -125,6 +126,7 @@ func main() {
 	r.GET("/ramp-provinces", app.rampProvinces)
 	r.POST("/set-ramp-mapping", app.SetRampMappings)
 	r.GET("/locations", app.getLocations)
+	r.GET("/locations/:id", app.getLocationByID)
 	r.GET("/events", app.getEvents)
 	r.PUT("/events/:id", app.updateEvent)
 

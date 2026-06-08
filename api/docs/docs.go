@@ -448,6 +448,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/locations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns a LiveBarn location with its associated surfaces",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "Get LiveBarn location by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Location ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/main.LocationWithSurfaces"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Location not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/mhr-lb-notes": {
             "post": {
                 "security": [
@@ -605,6 +660,61 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.MHRLocResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/mhr-locations/{mhr_id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns a single MHR location with its LiveBarn location and surface associations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mappings"
+                ],
+                "summary": "Get MHR location by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MHR location ID",
+                        "name": "mhr_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.MhrLocation"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid MHR ID format",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "MHR location not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -878,6 +988,65 @@ const docTemplate = `{
                 },
                 "mhr_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "main.LocationWithSurfaces": {
+            "type": "object",
+            "properties": {
+                "address1": {
+                    "type": "string"
+                },
+                "address2": {
+                    "type": "string"
+                },
+                "all_sheets_count": {
+                    "type": "integer"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "integer"
+                },
+                "recording_hours_local": {
+                    "type": "string"
+                },
+                "surfaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Surface"
+                    }
+                },
+                "total_surfaces": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "venue_status": {
+                    "type": "string"
+                },
+                "zone": {
+                    "type": "string"
                 }
             }
         },

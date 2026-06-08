@@ -1,12 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"surface-api/dao/model"
 	"surface-api/models"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // LocationWithSurfaces represents a location with its associated surfaces
@@ -117,4 +119,31 @@ func (app *App) getLocations(c *gin.Context) {
 		"perPage": perPageNum,
 		"total":   total,
 	})
+}
+
+// getLocationByID returns a single LiveBarn location with its surfaces
+// @Summary Get LiveBarn location by ID
+// @Description Returns a LiveBarn location with its associated surfaces
+// @Tags Locations
+// @Accept json
+// @Produce json
+// @Param id path int true "Location ID"
+// @Success 200 {object} LocationWithSurfaces
+// @Failure 400 {object} object "Invalid ID"
+// @Failure 404 {object} object "Location not found"
+// @Failure 500 {object} object "Internal server error"
+// @Security CookieAuth
+// @Router /locations/{id} [get]
+func (app *App) getLocationByID(c *gin.Context) {
+	id := c.Param("id")
+	var result LocationWithSurfaces
+	if err := app.db.Preload("Surfaces").First(&result, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Location not found"})
+			return
+		}
+		sendError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }
