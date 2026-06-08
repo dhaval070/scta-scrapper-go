@@ -39,12 +39,67 @@ type MHRLocResult struct {
 }
 
 type SiteLocResult struct {
-	Data           []SiteLoc `json:"data"`
-	Page           int       `json:"page"`
-	PerPage        int       `json:"perPage"`
-	Total          int64     `json:"total"`
-	EventsMatched  *int      `json:"events_matched,omitempty"`
-	GamesClaimed   *int      `json:"games_claimed,omitempty"`
+	Data          []SiteLoc `json:"data"`
+	Page          int       `json:"page"`
+	PerPage       int       `json:"perPage"`
+	Total         int64     `json:"total"`
+	EventsMatched *int      `json:"events_matched,omitempty"`
+	GamesClaimed  *int      `json:"games_claimed,omitempty"`
+}
+
+type KmasterVenueListInput struct {
+	Validate          *int8  `json:"validate"`
+	LivebarnVenueID   *int   `json:"livebarn_venue_id"`
+	MhrVenueID        *int   `json:"mhr_venue_id"`
+	VenueName         string `json:"venue_name" binding:"required"`
+	Surfaces          *int   `json:"surfaces"`
+	City              string `json:"city"`
+	RinkAddress       string `json:"rink_address"`
+	PostalCode        string `json:"postal_code"`
+	ProvinceState     string `json:"province_state"`
+	Country           string `json:"country"`
+	CompanyNameAlt1   string `json:"company_name_alt1"`
+	CompanyNameAlt2   string `json:"company_name_alt2"`
+	CompanyNameAlt3   string `json:"company_name_alt3"`
+	ParentCompany     string `json:"parent_company"`
+	VenueType         string `json:"venue_type"`
+	AccountStatus     string `json:"account_status"`
+	StreamingPlatform string `json:"streaming_platform"`
+	PhoneNumber       string `json:"phone_number"`
+	Website           string `json:"website"`
+}
+
+type KmasterVenueListResponse struct {
+	ID                     uint64 `json:"id"`
+	Validate               int8   `json:"validate"`
+	LivebarnVenueID        int    `json:"livebarn_venue_id"`
+	MhrVenueID             int    `json:"mhr_venue_id"`
+	VenueName              string `json:"venue_name"`
+	Surfaces               int    `json:"surfaces"`
+	City                   string `json:"city"`
+	RinkAddress            string `json:"rink_address"`
+	PostalCode             string `json:"postal_code"`
+	ProvinceState          string `json:"province_state"`
+	Country                string `json:"country"`
+	CompanyNameAlt1        string `json:"company_name_alt1"`
+	CompanyNameAlt2        string `json:"company_name_alt2"`
+	CompanyNameAlt3        string `json:"company_name_alt3"`
+	ParentCompany          string `json:"parent_company"`
+	VenueType              string `json:"venue_type"`
+	AccountStatus          string `json:"account_status"`
+	StreamingPlatform      string `json:"streaming_platform"`
+	PhoneNumber            string `json:"phone_number"`
+	Website                string `json:"website"`
+	CreatedAt              string `json:"created_at"`
+	UpdatedAt              string `json:"updated_at"`
+	LivebarnVenueIDMatched bool   `json:"livebarn_venue_id_matched"`
+	MhrVenueIDMatched      bool   `json:"mhr_venue_id_matched"`
+}
+type KVenueResult struct {
+	Data    []KmasterVenueListResponse `json:"data"`
+	Page    int                        `json:"page"`
+	PerPage int                        `json:"perPage"`
+	Total   int64                      `json:"total"`
 }
 
 type Mapping struct {
@@ -171,11 +226,11 @@ type EventWithLocation struct {
 
 type EventWithClaim struct {
 	model.Event
-	ClaimStatus          *int8      `json:"claim_status,omitempty"`
-	ClaimHTTPStatusCode  *int       `json:"claim_http_status_code,omitempty"`
-	ClaimErrorMessage    *string    `json:"claim_error_message,omitempty"`
-	ClaimCreatedAt       *time.Time `json:"claim_created_at,omitempty"`
-	ClaimUpdatedAt       *time.Time `json:"claim_updated_at,omitempty"`
+	ClaimStatus         *int8      `json:"claim_status,omitempty"`
+	ClaimHTTPStatusCode *int       `json:"claim_http_status_code,omitempty"`
+	ClaimErrorMessage   *string    `json:"claim_error_message,omitempty"`
+	ClaimCreatedAt      *time.Time `json:"claim_created_at,omitempty"`
+	ClaimUpdatedAt      *time.Time `json:"claim_updated_at,omitempty"`
 }
 
 type EventsResult struct {

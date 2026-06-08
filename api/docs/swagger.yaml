@@ -178,6 +178,113 @@ definitions:
       total:
         type: integer
     type: object
+  models.KVenueResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.KmasterVenueListResponse'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.KmasterVenueListInput:
+    properties:
+      account_status:
+        type: string
+      city:
+        type: string
+      company_name_alt1:
+        type: string
+      company_name_alt2:
+        type: string
+      company_name_alt3:
+        type: string
+      country:
+        type: string
+      livebarn_venue_id:
+        type: integer
+      mhr_venue_id:
+        type: integer
+      parent_company:
+        type: string
+      phone_number:
+        type: string
+      postal_code:
+        type: string
+      province_state:
+        type: string
+      rink_address:
+        type: string
+      streaming_platform:
+        type: string
+      surfaces:
+        type: integer
+      validate:
+        type: integer
+      venue_name:
+        type: string
+      venue_type:
+        type: string
+      website:
+        type: string
+    required:
+    - venue_name
+    type: object
+  models.KmasterVenueListResponse:
+    properties:
+      account_status:
+        type: string
+      city:
+        type: string
+      company_name_alt1:
+        type: string
+      company_name_alt2:
+        type: string
+      company_name_alt3:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      livebarn_venue_id:
+        type: integer
+      livebarn_venue_id_matched:
+        type: boolean
+      mhr_venue_id:
+        type: integer
+      mhr_venue_id_matched:
+        type: boolean
+      parent_company:
+        type: string
+      phone_number:
+        type: string
+      postal_code:
+        type: string
+      province_state:
+        type: string
+      rink_address:
+        type: string
+      streaming_platform:
+        type: string
+      surfaces:
+        type: integer
+      updated_at:
+        type: string
+      validate:
+        type: integer
+      venue_name:
+        type: string
+      venue_type:
+        type: string
+      website:
+        type: string
+    type: object
   models.MHRLocResult:
     properties:
       data:
@@ -423,6 +530,177 @@ paths:
       summary: Update event surface assignment
       tags:
       - Events
+  /kmaster-venues:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of all venues from the kmaster venue list
+      parameters:
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Items per page (default 10, max 100)
+        in: query
+        name: perPage
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated venue list
+          schema:
+            $ref: '#/definitions/models.KVenueResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: List kmaster venues
+      tags:
+      - KmasterVenue
+    post:
+      consumes:
+      - application/json
+      description: Creates a new venue record in the kmaster venue list
+      parameters:
+      - description: Venue data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.KmasterVenueListInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.KmasterVenueListResponse'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Create kmaster venue
+      tags:
+      - KmasterVenue
+  /kmaster-venues/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a venue record from the kmaster venue list
+      parameters:
+      - description: Venue ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            type: object
+        "404":
+          description: Venue not found
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Delete kmaster venue
+      tags:
+      - KmasterVenue
+    get:
+      consumes:
+      - application/json
+      description: Returns a single venue record from the kmaster venue list
+      parameters:
+      - description: Venue ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KmasterVenueListResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            type: object
+        "404":
+          description: Venue not found
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get kmaster venue by ID
+      tags:
+      - KmasterVenue
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing venue record in the kmaster venue list
+      parameters:
+      - description: Venue ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated venue data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.KmasterVenueListInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.KmasterVenueListResponse'
+        "400":
+          description: Invalid input
+          schema:
+            type: object
+        "404":
+          description: Venue not found
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update kmaster venue
+      tags:
+      - KmasterVenue
   /mhr-lb-notes:
     post:
       consumes:

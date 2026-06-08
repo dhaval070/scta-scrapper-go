@@ -162,6 +162,274 @@ const docTemplate = `{
                 }
             }
         },
+        "/kmaster-venues": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of all venues from the kmaster venue list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "KmasterVenue"
+                ],
+                "summary": "List kmaster venues",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default 10, max 100)",
+                        "name": "perPage",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated venue list",
+                        "schema": {
+                            "$ref": "#/definitions/models.KVenueResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Creates a new venue record in the kmaster venue list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "KmasterVenue"
+                ],
+                "summary": "Create kmaster venue",
+                "parameters": [
+                    {
+                        "description": "Venue data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.KmasterVenueListInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.KmasterVenueListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/kmaster-venues/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns a single venue record from the kmaster venue list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "KmasterVenue"
+                ],
+                "summary": "Get kmaster venue by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Venue ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KmasterVenueListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Venue not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Updates an existing venue record in the kmaster venue list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "KmasterVenue"
+                ],
+                "summary": "Update kmaster venue",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Venue ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated venue data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.KmasterVenueListInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.KmasterVenueListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Venue not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Deletes a venue record from the kmaster venue list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "KmasterVenue"
+                ],
+                "summary": "Delete kmaster venue",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Venue ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Venue not found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/mhr-lb-notes": {
             "post": {
                 "security": [
@@ -848,6 +1116,168 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.KVenueResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.KmasterVenueListResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.KmasterVenueListInput": {
+            "type": "object",
+            "required": [
+                "venue_name"
+            ],
+            "properties": {
+                "account_status": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "company_name_alt1": {
+                    "type": "string"
+                },
+                "company_name_alt2": {
+                    "type": "string"
+                },
+                "company_name_alt3": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "livebarn_venue_id": {
+                    "type": "integer"
+                },
+                "mhr_venue_id": {
+                    "type": "integer"
+                },
+                "parent_company": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_state": {
+                    "type": "string"
+                },
+                "rink_address": {
+                    "type": "string"
+                },
+                "streaming_platform": {
+                    "type": "string"
+                },
+                "surfaces": {
+                    "type": "integer"
+                },
+                "validate": {
+                    "type": "integer"
+                },
+                "venue_name": {
+                    "type": "string"
+                },
+                "venue_type": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.KmasterVenueListResponse": {
+            "type": "object",
+            "properties": {
+                "account_status": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "company_name_alt1": {
+                    "type": "string"
+                },
+                "company_name_alt2": {
+                    "type": "string"
+                },
+                "company_name_alt3": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "livebarn_venue_id": {
+                    "type": "integer"
+                },
+                "livebarn_venue_id_matched": {
+                    "type": "boolean"
+                },
+                "mhr_venue_id": {
+                    "type": "integer"
+                },
+                "mhr_venue_id_matched": {
+                    "type": "boolean"
+                },
+                "parent_company": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_state": {
+                    "type": "string"
+                },
+                "rink_address": {
+                    "type": "string"
+                },
+                "streaming_platform": {
+                    "type": "string"
+                },
+                "surfaces": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "validate": {
+                    "type": "integer"
+                },
+                "venue_name": {
+                    "type": "string"
+                },
+                "venue_type": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
                 }
             }
         },

@@ -148,6 +148,13 @@ func main() {
 	r.GET("/scrape/status", app.getAllScrapeStatus)
 	r.GET("/scrape/status/:site", app.getScrapeStatus)
 
+	// Kmaster venue list CRUD routes
+	r.GET("/kmaster-venues", app.getKmasterVenues)
+	r.GET("/kmaster-venues/:id", app.getKmasterVenueByID)
+	r.POST("/kmaster-venues", app.createKmasterVenue)
+	r.PUT("/kmaster-venues/:id", app.updateKmasterVenue)
+	r.DELETE("/kmaster-venues/:id", app.deleteKmasterVenue)
+
 	// Swagger documentation endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
