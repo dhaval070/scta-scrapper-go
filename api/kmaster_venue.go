@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 	"surface-api/dao/model"
 	"surface-api/models"
 
@@ -13,7 +14,7 @@ import (
 
 // getKmasterVenues retrieves all kmaster venue list records
 // @Summary List kmaster venues
-// @Description Returns a paginated list of all venues from the kmaster venue list
+// @Description Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file with LiveBarn location and surface details.
 // @Tags KmasterVenue
 // @Accept json
 // @Produce json
@@ -22,13 +23,16 @@ import (
 // @Param country query string false "Filter by country"
 // @Param state query string false "Filter by province/state"
 // @Param livebarn query bool false "Filter by livebarn venue match status"
+// @Param export query string false "Export as JSON file download when set to 'json' (returns all matching records with LiveBarn location and surface details, no pagination)"
 // @Success 200 {object} models.KVenueResult "Paginated venue list"
+// @Success 200 {object} models.KmasterVenueExportResult "Downloaded venue list as kmaster-venues-{timestamp}.json"
 // @Failure 500 {object} object "Internal server error"
 // @Security CookieAuth
 // @Router /kmaster-venues [get]
 func (app *App) getKmasterVenues(c *gin.Context) {
 	page := c.DefaultQuery("page", "1")
 	perPage := c.DefaultQuery("perPage", "10")
+	export := c.Query("export")
 
 	pageNum, _ := strconv.Atoi(page)
 	perPageNum, _ := strconv.Atoi(perPage)
@@ -68,9 +72,16 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 	query.Count(&total)
 
 	var venues []model.KmasterVenueList
-	if err := query.Session(&gorm.Session{}).Offset(offset).Limit(perPageNum).Order("id DESC").Find(&venues).Error; err != nil {
-		sendError(c, err)
-		return
+	if export != "" {
+		if err := query.Session(&gorm.Session{}).Order("id DESC").Find(&venues).Error; err != nil {
+			sendError(c, err)
+			return
+		}
+	} else {
+		if err := query.Session(&gorm.Session{}).Offset(offset).Limit(perPageNum).Order("id DESC").Find(&venues).Error; err != nil {
+			sendError(c, err)
+			return
+		}
 	}
 
 	// Collect all IDs for batch cross-checking
@@ -103,6 +114,45 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 		for _, id := range foundMhr {
 			mhrMatch[id] = true
 		}
+	}
+
+	if export != "" {
+		// Batch load locations with surfaces for export
+		locations := map[int]LocationWithSurfaces{}
+		if len(livebarnIDs) > 0 {
+			var locs []LocationWithSurfaces
+			app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
+			for _, loc := range locs {
+				locations[int(loc.ID)] = loc
+			}
+		}
+
+		var exportData []models.KmasterVenueExportItem
+		for _, v := range venues {
+			item := models.KmasterVenueExportItem{
+				KmasterVenueListResponse: convertToKmasterVenueResponse(v, livebarnMatch[v.LivebarnVenueID], mhrMatch[v.MhrVenueID]),
+			}
+			if loc, ok := locations[v.LivebarnVenueID]; ok {
+				item.LivebarnLocation = &models.LivebarnLocationDetail{
+					ID:         loc.ID,
+					Name:       loc.Name,
+					Address1:   loc.Address1,
+					City:       loc.City,
+					PostalCode: loc.PostalCode,
+					ProvinceID: loc.ProvinceID,
+					Surfaces:   loc.Surfaces,
+				}
+			}
+			exportData = append(exportData, item)
+		}
+
+		filename := "kmaster-venues-" + time.Now().Format("2006-01-02-150405") + ".json"
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+		c.JSON(http.StatusOK, models.KmasterVenueExportResult{
+			Data:  exportData,
+			Total: total,
+		})
+		return
 	}
 
 	var response = []models.KmasterVenueListResponse{}

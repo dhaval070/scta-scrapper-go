@@ -102,6 +102,26 @@ type KVenueResult struct {
 	Total   int64                      `json:"total"`
 }
 
+type LivebarnLocationDetail struct {
+	ID         int32           `json:"id"`
+	Name       string          `json:"name"`
+	Address1   string          `json:"address1"`
+	City       string          `json:"city"`
+	PostalCode string          `json:"postal_code"`
+	ProvinceID int32           `json:"province_id"`
+	Surfaces   []model.Surface `json:"surfaces"`
+}
+
+type KmasterVenueExportItem struct {
+	KmasterVenueListResponse
+	LivebarnLocation *LivebarnLocationDetail `json:"livebarn_location,omitempty"`
+}
+
+type KmasterVenueExportResult struct {
+	Data  []KmasterVenueExportItem `json:"data"`
+	Total int64                    `json:"total"`
+}
+
 type Mapping struct {
 	Site        string `json:"site" gorm:"column:site"`
 	Location    string `json:"location" gorm:"column:location"`
