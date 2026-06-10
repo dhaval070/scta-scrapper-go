@@ -98,7 +98,7 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 
 	// Batch check livebarn_venue_id against locations table
 	livebarnMatch := map[int]bool{}
-	if len(livebarnIDs) > 0 {
+	if export == "" && len(livebarnIDs) > 0 {
 		var foundLocations []int
 		app.db.Model(&model.Location{}).Select("id").Where("id IN ?", livebarnIDs).Find(&foundLocations)
 		for _, id := range foundLocations {
@@ -123,7 +123,9 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 			var locs []LocationWithSurfaces
 			app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
 			for _, loc := range locs {
-				locations[int(loc.ID)] = loc
+				id := int(loc.ID)
+				locations[id] = loc
+				livebarnMatch[id] = true
 			}
 		}
 
