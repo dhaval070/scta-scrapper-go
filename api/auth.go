@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"surface-api/models"
 	"time"
 
@@ -84,7 +85,7 @@ func (app *App) AuthMiddleware() gin.HandlerFunc {
 		defer s.SessionRelease(c.Writer)
 
 		url := c.Request.URL.String()
-		if url != "/swagger/" && url != "/login" && url != "/logout" {
+		if !strings.HasPrefix(url, "/api/") && url != "/swagger/" && url != "/login" && url != "/logout" {
 			if s.Get("username") == nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": "Session expired",

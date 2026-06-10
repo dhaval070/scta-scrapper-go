@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 	"surface-api/dao/model"
 	"surface-api/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -117,43 +117,10 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 	}
 
 	if export != "" {
-		// Batch load locations with surfaces for export
-		locations := map[int]LocationWithSurfaces{}
-		if len(livebarnIDs) > 0 {
-			var locs []LocationWithSurfaces
-			app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
-			for _, loc := range locs {
-				id := int(loc.ID)
-				locations[id] = loc
-				livebarnMatch[id] = true
-			}
-		}
-
-		var exportData []models.KmasterVenueExportItem
-		for _, v := range venues {
-			item := models.KmasterVenueExportItem{
-				KmasterVenueListResponse: convertToKmasterVenueResponse(v, livebarnMatch[v.LivebarnVenueID], mhrMatch[v.MhrVenueID]),
-			}
-			if loc, ok := locations[v.LivebarnVenueID]; ok {
-				item.LivebarnLocation = &models.LivebarnLocationDetail{
-					ID:         loc.ID,
-					Name:       loc.Name,
-					Address1:   loc.Address1,
-					City:       loc.City,
-					PostalCode: loc.PostalCode,
-					ProvinceID: loc.ProvinceID,
-					Surfaces:   loc.Surfaces,
-				}
-			}
-			exportData = append(exportData, item)
-		}
-
+		result := app.buildKmasterVenueExport(venues, mhrMatch, total)
 		filename := "kmaster-venues-" + time.Now().Format("2006-01-02-150405") + ".json"
 		c.Header("Content-Disposition", "attachment; filename="+filename)
-		c.JSON(http.StatusOK, models.KmasterVenueExportResult{
-			Data:  exportData,
-			Total: total,
-		})
+		c.JSON(http.StatusOK, result)
 		return
 	}
 
@@ -361,6 +328,52 @@ func (app *App) deleteKmasterVenue(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Venue deleted successfully"})
+}
+
+func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, mhrMatch map[int]bool, total int64) models.KmasterVenueExportResult {
+	livebarnMatch := map[int]bool{}
+
+	var livebarnIDs []int
+	for _, v := range venues {
+		if v.LivebarnVenueID != 0 {
+			livebarnIDs = append(livebarnIDs, v.LivebarnVenueID)
+		}
+	}
+
+	locations := map[int]LocationWithSurfaces{}
+	if len(livebarnIDs) > 0 {
+		var locs []LocationWithSurfaces
+		app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
+		for _, loc := range locs {
+			id := int(loc.ID)
+			locations[id] = loc
+			livebarnMatch[id] = true
+		}
+	}
+
+	var exportData []models.KmasterVenueExportItem
+	for _, v := range venues {
+		item := models.KmasterVenueExportItem{
+			KmasterVenueListResponse: convertToKmasterVenueResponse(v, livebarnMatch[v.LivebarnVenueID], mhrMatch[v.MhrVenueID]),
+		}
+		if loc, ok := locations[v.LivebarnVenueID]; ok {
+			item.LivebarnLocation = &models.LivebarnLocationDetail{
+				ID:         loc.ID,
+				Name:       loc.Name,
+				Address1:   loc.Address1,
+				City:       loc.City,
+				PostalCode: loc.PostalCode,
+				ProvinceID: loc.ProvinceID,
+				Surfaces:   loc.Surfaces,
+			}
+		}
+		exportData = append(exportData, item)
+	}
+
+	return models.KmasterVenueExportResult{
+		Data:  exportData,
+		Total: total,
+	}
 }
 
 func convertToKmasterVenueResponse(v model.KmasterVenueList, livebarnMatch bool, mhrMatch bool) models.KmasterVenueListResponse {
