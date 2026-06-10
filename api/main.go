@@ -158,7 +158,7 @@ func main() {
 	r.DELETE("/kmaster-venues/:id", app.deleteKmasterVenue)
 
 	// API key-protected routes (registered before Swagger to keep Swagger under global auth)
-	apiGroup := r.Group("/api/v1")
+	apiGroup := r.Group("/v1")
 	apiGroup.Use(app.APIKeyMiddleware())
 	apiGroup.GET("/kmaster-venues/export", app.exportKmasterVenuesAPI)
 
