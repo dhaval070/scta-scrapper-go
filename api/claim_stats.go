@@ -14,7 +14,7 @@ func (app *App) getClaimStats(site string, date time.Time) (*ClaimStats, error) 
 
 	var eventsMatched int64
 	if err := app.db.Raw(
-		`SELECT COUNT(*) FROM events WHERE site = ? AND surface_id IS NOT NULL AND surface_id != 0 AND DATE(datetime) = ?`,
+		`SELECT COUNT(*) FROM events WHERE site = ? AND surface_id IS NOT NULL AND surface_id != 0 AND DATE(date_created) = ?`,
 		site, dateStr,
 	).Scan(&eventsMatched).Error; err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (app *App) getClaimStats(site string, date time.Time) (*ClaimStats, error) 
 
 	var gamesClaimed int64
 	if err := app.db.Raw(
-		`SELECT COUNT(*) FROM claim_api_log WHERE status = 1 AND site = ? AND DATE(datetime) = ?`,
+		`SELECT COUNT(*) FROM claim_api_log WHERE status = 1 AND site = ? AND DATE(created_at) = ?`,
 		site, dateStr,
 	).Scan(&gamesClaimed).Error; err != nil {
 		return nil, err
