@@ -214,7 +214,7 @@ func (app *App) getSiteLoc(c *gin.Context) {
 	}
 
 	if site != "" {
-		stats, err := app.getClaimStats("gs_"+site, time.Now())
+		stats, err := app.getClaimStats(site, time.Now())
 
 		if err != nil {
 			log.Println("error : fetching claim stats", err)
