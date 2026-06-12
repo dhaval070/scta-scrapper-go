@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 )
 
@@ -13,8 +14,11 @@ func (app *App) getClaimStats(site string, date time.Time) (*ClaimStats, error) 
 	dateStr := date.Format("2006-01-02")
 
 	var eventsMatched int64
+	query := `SELECT COUNT(*) FROM events WHERE site = ? AND surface_id IS NOT NULL AND surface_id != 0 AND DATE(date_created) = ?`
+	log.Println(query, site, dateStr)
+
 	if err := app.db.Raw(
-		`SELECT COUNT(*) FROM events WHERE site = ? AND surface_id IS NOT NULL AND surface_id != 0 AND DATE(date_created) = ?`,
+		query,
 		site, dateStr,
 	).Scan(&eventsMatched).Error; err != nil {
 		return nil, err

@@ -12,6 +12,8 @@ import (
 	"surface-api/models"
 	"time"
 
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -213,10 +215,14 @@ func (app *App) getSiteLoc(c *gin.Context) {
 
 	if site != "" {
 		stats, err := app.getClaimStats("gs_"+site, time.Now())
-		if err == nil {
-			resp.EventsMatched = &stats.EventsMatched
-			resp.GamesClaimed = &stats.GamesClaimed
+
+		if err != nil {
+			log.Println("error : fetching claim stats", err)
+			sendError(c, err)
+			return
 		}
+		resp.EventsMatched = &stats.EventsMatched
+		resp.GamesClaimed = &stats.GamesClaimed
 	}
 
 	c.JSON(http.StatusOK, resp)
