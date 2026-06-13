@@ -206,6 +206,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Filter by venue name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "description": "Filter by livebarn venue match status",
                         "name": "livebarn",

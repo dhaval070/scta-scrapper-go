@@ -674,6 +674,10 @@ paths:
         in: query
         name: state
         type: string
+      - description: Filter by venue name (partial match)
+        in: query
+        name: name
+        type: string
       - description: Filter by livebarn venue match status
         in: query
         name: livebarn

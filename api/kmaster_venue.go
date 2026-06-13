@@ -22,6 +22,7 @@ import (
 // @Param perPage query int false "Items per page (default 10, max 100)"
 // @Param country query string false "Filter by country"
 // @Param state query string false "Filter by province/state"
+// @Param name query string false "Filter by venue name (partial match)"
 // @Param livebarn query bool false "Filter by livebarn venue match status"
 // @Param export query string false "Export as JSON file download when set to 'json' (returns all matching records with LiveBarn location and surface details, no pagination)"
 // @Success 200 {object} models.KVenueResult "Paginated venue list"
@@ -47,6 +48,7 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 	country := c.Query("country")
 	state := c.Query("state")
 	livebarn := c.Query("livebarn")
+	name := c.Query("name")
 
 	query := app.db.Model(&model.KmasterVenueList{})
 	if country != "" {
@@ -66,6 +68,9 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 					app.db.Model(&model.Location{}).Select("id"))
 			}
 		}
+	}
+	if name != "" {
+		query = query.Where("venue_name LIKE ?", "%"+name+"%")
 	}
 
 	var total int64
