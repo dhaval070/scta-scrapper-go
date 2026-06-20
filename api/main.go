@@ -150,6 +150,10 @@ func main() {
 	r.GET("/scrape/status", app.getAllScrapeStatus)
 	r.GET("/scrape/status/:site", app.getScrapeStatus)
 
+	// Gamesheet routes
+	r.GET("/gamesheet-seasons", app.getGamesheetSeasons)
+	r.POST("/gamesheet-seasons/import", app.importGamesheetSeasons)
+
 	// Kmaster venue list CRUD routes
 	r.GET("/kmaster-venues", app.getKmasterVenues)
 	r.GET("/kmaster-venues/:id", app.getKmasterVenueByID)

@@ -1,6 +1,10 @@
 module surface-api
 
-go 1.25.2
+go 1.25.3
+
+require calendar-scrapper v0.0.0
+
+replace calendar-scrapper => ../
 
 require (
 	github.com/astaxie/beego v1.12.3

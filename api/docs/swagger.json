@@ -160,6 +160,117 @@
                 }
             }
         },
+        "/gamesheet-seasons": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Fetches all seasons from the Gamesheet API and filters out inactive or expired seasons",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gamesheet"
+                ],
+                "summary": "Get active gamesheet seasons",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Exclude seasons already stored in the local gamesheet_seasons table",
+                        "name": "exclude_existing",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.Season"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gamesheet-seasons/import": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Accepts an array of Season objects and inserts them into gamesheet_seasons and sites_config tables within a single transaction. Skips records that already exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Gamesheet"
+                ],
+                "summary": "Import gamesheet seasons",
+                "parameters": [
+                    {
+                        "description": "Array of seasons to import",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.Season"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Number of seasons imported",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/kmaster-venues": {
             "get": {
                 "security": [
@@ -1105,6 +1216,41 @@
                 },
                 "status": {
                     "description": "idle, running, completed, failed",
+                    "type": "string"
+                }
+            }
+        },
+        "main.Season": {
+            "type": "object",
+            "properties": {
+                "age_category": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "game_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "leagueId": {
+                    "type": "integer"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "state_province": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

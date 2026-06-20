@@ -1,3 +1,5 @@
 DB_DSN: "root:bitnami@(127.0.0.1:5506)/sh"
 port: 8000
 scraper_path: "/home/dhaval/hockey/calendar-scraper/scraper"
+GAMESHEET_API_KEY:
+scraper_path: "/home/dhaval/hockey/calendar-scraper/scraper"

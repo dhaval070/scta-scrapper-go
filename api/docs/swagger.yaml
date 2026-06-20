@@ -81,6 +81,29 @@ definitions:
         description: idle, running, completed, failed
         type: string
     type: object
+  main.Season:
+    properties:
+      age_category:
+        type: string
+      country:
+        type: string
+      end:
+        type: string
+      game_type:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      leagueId:
+        type: integer
+      start:
+        type: string
+      state_province:
+        type: string
+      title:
+        type: string
+    type: object
   main.SetMhrLbNotesInput:
     properties:
       lb_notes:
@@ -650,6 +673,80 @@ paths:
       summary: Update event surface assignment
       tags:
       - Events
+  /gamesheet-seasons:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all seasons from the Gamesheet API and filters out inactive
+        or expired seasons
+      parameters:
+      - description: Exclude seasons already stored in the local gamesheet_seasons
+          table
+        in: query
+        name: exclude_existing
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Season'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get active gamesheet seasons
+      tags:
+      - Gamesheet
+  /gamesheet-seasons/import:
+    post:
+      consumes:
+      - application/json
+      description: Accepts an array of Season objects and inserts them into gamesheet_seasons
+        and sites_config tables within a single transaction. Skips records that already
+        exist.
+      parameters:
+      - description: Array of seasons to import
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/main.Season'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Number of seasons imported
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Import gamesheet seasons
+      tags:
+      - Gamesheet
   /kmaster-venues:
     get:
       consumes:
