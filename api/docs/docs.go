@@ -280,7 +280,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file with LiveBarn location and surface details.",
+                "description": "Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file (limited fields + LiveBarn surfaces). Use export=csv to download all records as a CSV file (all fields). No pagination for exports.",
                 "consumes": [
                     "application/json"
                 ],
@@ -330,16 +330,16 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Export as JSON file download when set to 'json' (returns all matching records with LiveBarn location and surface details, no pagination)",
+                        "description": "Export format: 'json' for JSON file download (limited fields + LiveBarn surfaces), 'csv' for CSV file download (all fields). No pagination for exports.",
                         "name": "export",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Downloaded venue list as kmaster-venues-{timestamp}.json",
+                        "description": "Downloaded venue list as kmaster-venues-{timestamp}.csv",
                         "schema": {
-                            "$ref": "#/definitions/models.KmasterVenueExportResult"
+                            "type": "file"
                         }
                     },
                     "500": {
@@ -1487,79 +1487,31 @@ const docTemplate = `{
         "models.KmasterVenueExportItem": {
             "type": "object",
             "properties": {
-                "account_status": {
-                    "type": "string"
-                },
                 "city": {
-                    "type": "string"
-                },
-                "company_name_alt1": {
-                    "type": "string"
-                },
-                "company_name_alt2": {
-                    "type": "string"
-                },
-                "company_name_alt3": {
                     "type": "string"
                 },
                 "country": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
-                },
-                "livebarn_location": {
-                    "$ref": "#/definitions/models.LivebarnLocationDetail"
                 },
                 "livebarn_venue_id": {
                     "type": "integer"
                 },
-                "livebarn_venue_id_matched": {
-                    "type": "boolean"
-                },
                 "mhr_venue_id": {
                     "type": "integer"
-                },
-                "mhr_venue_id_matched": {
-                    "type": "boolean"
-                },
-                "parent_company": {
-                    "type": "string"
-                },
-                "phone_number": {
-                    "type": "string"
-                },
-                "postal_code": {
-                    "type": "string"
                 },
                 "province_state": {
                     "type": "string"
                 },
-                "rink_address": {
-                    "type": "string"
-                },
-                "streaming_platform": {
-                    "type": "string"
-                },
                 "surfaces": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "validate": {
-                    "type": "integer"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.KmasterVenueExportSurface"
+                    }
                 },
                 "venue_name": {
-                    "type": "string"
-                },
-                "venue_type": {
-                    "type": "string"
-                },
-                "website": {
                     "type": "string"
                 }
             }
@@ -1575,6 +1527,17 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.KmasterVenueExportSurface": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -1717,35 +1680,6 @@ const docTemplate = `{
                 },
                 "website": {
                     "type": "string"
-                }
-            }
-        },
-        "models.LivebarnLocationDetail": {
-            "type": "object",
-            "properties": {
-                "address1": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "postal_code": {
-                    "type": "string"
-                },
-                "province_id": {
-                    "type": "integer"
-                },
-                "surfaces": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Surface"
-                    }
                 }
             }
         },

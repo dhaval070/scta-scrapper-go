@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/csv"
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"surface-api/dao/model"
 	"surface-api/models"
 	"time"
@@ -14,7 +17,7 @@ import (
 
 // getKmasterVenues retrieves all kmaster venue list records
 // @Summary List kmaster venues
-// @Description Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file with LiveBarn location and surface details.
+// @Description Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file (limited fields + LiveBarn surfaces). Use export=csv to download all records as a CSV file (all fields). No pagination for exports.
 // @Tags KmasterVenue
 // @Accept json
 // @Produce json
@@ -24,9 +27,10 @@ import (
 // @Param state query string false "Filter by province/state"
 // @Param name query string false "Filter by venue name (partial match)"
 // @Param livebarn query bool false "Filter by livebarn venue match status"
-// @Param export query string false "Export as JSON file download when set to 'json' (returns all matching records with LiveBarn location and surface details, no pagination)"
+// @Param export query string false "Export format: 'json' for JSON file download (limited fields + LiveBarn surfaces), 'csv' for CSV file download (all fields). No pagination for exports."
 // @Success 200 {object} models.KVenueResult "Paginated venue list"
 // @Success 200 {object} models.KmasterVenueExportResult "Downloaded venue list as kmaster-venues-{timestamp}.json"
+// @Success 200 {file} csv "Downloaded venue list as kmaster-venues-{timestamp}.csv"
 // @Failure 500 {object} object "Internal server error"
 // @Security CookieAuth
 // @Router /kmaster-venues [get]
@@ -101,9 +105,17 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 		}
 	}
 
+	if export == "json" {
+		result := app.buildKmasterVenueExport(venues, total)
+		filename := "kmaster-venues-" + time.Now().Format("2006-01-02-150405") + ".json"
+		c.Header("Content-Disposition", "attachment; filename="+filename)
+		c.JSON(http.StatusOK, result)
+		return
+	}
+
 	// Batch check livebarn_venue_id against locations table
 	livebarnMatch := map[int]bool{}
-	if export == "" && len(livebarnIDs) > 0 {
+	if len(livebarnIDs) > 0 {
 		var foundLocations []int
 		app.db.Model(&model.Location{}).Select("id").Where("id IN ?", livebarnIDs).Find(&foundLocations)
 		for _, id := range foundLocations {
@@ -121,11 +133,8 @@ func (app *App) getKmasterVenues(c *gin.Context) {
 		}
 	}
 
-	if export != "" {
-		result := app.buildKmasterVenueExport(venues, mhrMatch, total)
-		filename := "kmaster-venues-" + time.Now().Format("2006-01-02-150405") + ".json"
-		c.Header("Content-Disposition", "attachment; filename="+filename)
-		c.JSON(http.StatusOK, result)
+	if export == "csv" {
+		app.writeKmasterVenueCSV(c, venues, livebarnMatch, mhrMatch)
 		return
 	}
 
@@ -335,9 +344,7 @@ func (app *App) deleteKmasterVenue(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Venue deleted successfully"})
 }
 
-func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, mhrMatch map[int]bool, total int64) models.KmasterVenueExportResult {
-	livebarnMatch := map[int]bool{}
-
+func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, total int64) models.KmasterVenueExportResult {
 	var livebarnIDs []int
 	for _, v := range venues {
 		if v.LivebarnVenueID != 0 {
@@ -350,26 +357,27 @@ func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, mhrMatc
 		var locs []LocationWithSurfaces
 		app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
 		for _, loc := range locs {
-			id := int(loc.ID)
-			locations[id] = loc
-			livebarnMatch[id] = true
+			locations[int(loc.ID)] = loc
 		}
 	}
 
 	var exportData []models.KmasterVenueExportItem
 	for _, v := range venues {
 		item := models.KmasterVenueExportItem{
-			KmasterVenueListResponse: convertToKmasterVenueResponse(v, livebarnMatch[v.LivebarnVenueID], mhrMatch[v.MhrVenueID]),
+			ID:              v.ID,
+			VenueName:       v.VenueName,
+			Country:         v.Country,
+			ProvinceState:   v.ProvinceState,
+			City:            v.City,
+			LivebarnVenueID: v.LivebarnVenueID,
+			MhrVenueID:      v.MhrVenueID,
 		}
 		if loc, ok := locations[v.LivebarnVenueID]; ok {
-			item.LivebarnLocation = &models.LivebarnLocationDetail{
-				ID:         loc.ID,
-				Name:       loc.Name,
-				Address1:   loc.Address1,
-				City:       loc.City,
-				PostalCode: loc.PostalCode,
-				ProvinceID: loc.ProvinceID,
-				Surfaces:   loc.Surfaces,
+			for _, s := range loc.Surfaces {
+				item.Surfaces = append(item.Surfaces, models.KmasterVenueExportSurface{
+					ID:   s.ID,
+					Name: s.Name,
+				})
 			}
 		}
 		exportData = append(exportData, item)
@@ -379,6 +387,87 @@ func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, mhrMatc
 		Data:  exportData,
 		Total: total,
 	}
+}
+
+func (app *App) writeKmasterVenueCSV(c *gin.Context, venues []model.KmasterVenueList, livebarnMatch, mhrMatch map[int]bool) {
+	// Collect livebarn IDs and query their surfaces
+	type surfaceInfo struct {
+		ID   int32
+		Name string
+	}
+	locationSurfaces := map[int][]surfaceInfo{}
+	var livebarnIDs []int
+	for _, v := range venues {
+		if v.LivebarnVenueID != 0 {
+			livebarnIDs = append(livebarnIDs, v.LivebarnVenueID)
+		}
+	}
+	if len(livebarnIDs) > 0 {
+		var locs []LocationWithSurfaces
+		app.db.Where("id IN ?", livebarnIDs).Preload("Surfaces").Find(&locs)
+		for _, loc := range locs {
+			for _, s := range loc.Surfaces {
+				locationSurfaces[int(loc.ID)] = append(locationSurfaces[int(loc.ID)], surfaceInfo{ID: s.ID, Name: s.Name})
+			}
+		}
+	}
+
+	var b bytes.Buffer
+	w := csv.NewWriter(&b)
+	w.Write([]string{
+		"ID", "Validate", "LivebarnVenueID", "MhrVenueID", "VenueName", "Surfaces",
+		"City", "RinkAddress", "PostalCode", "ProvinceState", "Country",
+		"CompanyNameAlt1", "CompanyNameAlt2", "CompanyNameAlt3", "ParentCompany",
+		"VenueType", "AccountStatus", "StreamingPlatform", "PhoneNumber", "Website",
+		"CreatedAt", "UpdatedAt", "LivebarnVenueIDMatched", "MhrVenueIDMatched",
+		"LivebarnSurfaceIDs", "LivebarnSurfaceNames",
+	})
+
+	for _, v := range venues {
+		var surfaceIDs []string
+		var surfaceNames []string
+		if surfaces, ok := locationSurfaces[v.LivebarnVenueID]; ok {
+			for _, s := range surfaces {
+				surfaceIDs = append(surfaceIDs, strconv.Itoa(int(s.ID)))
+				surfaceNames = append(surfaceNames, s.Name)
+			}
+		}
+
+		w.Write([]string{
+			strconv.FormatUint(v.ID, 10),
+			strconv.Itoa(int(v.Validate)),
+			strconv.Itoa(v.LivebarnVenueID),
+			strconv.Itoa(v.MhrVenueID),
+			v.VenueName,
+			strconv.Itoa(v.Surfaces),
+			v.City,
+			v.RinkAddress,
+			v.PostalCode,
+			v.ProvinceState,
+			v.Country,
+			v.CompanyNameAlt1,
+			v.CompanyNameAlt2,
+			v.CompanyNameAlt3,
+			v.ParentCompany,
+			v.VenueType,
+			v.AccountStatus,
+			v.StreamingPlatform,
+			v.PhoneNumber,
+			v.Website,
+			v.CreatedAt.Format("2006-01-02 15:04:05"),
+			v.UpdatedAt.Format("2006-01-02 15:04:05"),
+			strconv.FormatBool(livebarnMatch[v.LivebarnVenueID]),
+			strconv.FormatBool(mhrMatch[v.MhrVenueID]),
+			strings.Join(surfaceIDs, "; "),
+			strings.Join(surfaceNames, "; "),
+		})
+	}
+	w.Flush()
+
+	filename := "kmaster-venues-" + time.Now().Format("2006-01-02-150405") + ".csv"
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Writer.Write(b.Bytes())
 }
 
 func convertToKmasterVenueResponse(v model.KmasterVenueList, livebarnMatch bool, mhrMatch bool) models.KmasterVenueListResponse {

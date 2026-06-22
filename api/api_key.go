@@ -71,22 +71,6 @@ func (app *App) exportKmasterVenuesAPI(c *gin.Context) {
 		return
 	}
 
-	// Batch check mhr_venue_id against mhr_locations table
-	mhrMatch := map[int]bool{}
-	var mhrIDs []int
-	for _, v := range venues {
-		if v.MhrVenueID != 0 {
-			mhrIDs = append(mhrIDs, v.MhrVenueID)
-		}
-	}
-	if len(mhrIDs) > 0 {
-		var foundMhr []int
-		app.db.Model(&model.MhrLocation{}).Select("mhr_id").Where("mhr_id IN ?", mhrIDs).Find(&foundMhr)
-		for _, id := range foundMhr {
-			mhrMatch[id] = true
-		}
-	}
-
-	result := app.buildKmasterVenueExport(venues, mhrMatch, total)
+	result := app.buildKmasterVenueExport(venues, total)
 	c.JSON(http.StatusOK, result)
 }

@@ -103,19 +103,20 @@ type KVenueResult struct {
 	Total   int64                      `json:"total"`
 }
 
-type LivebarnLocationDetail struct {
-	ID         int32           `json:"id"`
-	Name       string          `json:"name"`
-	Address1   string          `json:"address1"`
-	City       string          `json:"city"`
-	PostalCode string          `json:"postal_code"`
-	ProvinceID int32           `json:"province_id"`
-	Surfaces   []model.Surface `json:"surfaces"`
+type KmasterVenueExportSurface struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
 }
 
 type KmasterVenueExportItem struct {
-	KmasterVenueListResponse
-	LivebarnLocation *LivebarnLocationDetail `json:"livebarn_location,omitempty"`
+	ID              uint64                      `json:"id"`
+	VenueName       string                      `json:"venue_name"`
+	Country         string                      `json:"country"`
+	ProvinceState   string                      `json:"province_state"`
+	City            string                      `json:"city"`
+	LivebarnVenueID int                         `json:"livebarn_venue_id"`
+	MhrVenueID      int                         `json:"mhr_venue_id"`
+	Surfaces        []KmasterVenueExportSurface `json:"surfaces,omitempty"`
 }
 
 type KmasterVenueExportResult struct {

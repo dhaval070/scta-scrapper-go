@@ -255,55 +255,23 @@ definitions:
     type: object
   models.KmasterVenueExportItem:
     properties:
-      account_status:
-        type: string
       city:
-        type: string
-      company_name_alt1:
-        type: string
-      company_name_alt2:
-        type: string
-      company_name_alt3:
         type: string
       country:
         type: string
-      created_at:
-        type: string
       id:
         type: integer
-      livebarn_location:
-        $ref: '#/definitions/models.LivebarnLocationDetail'
       livebarn_venue_id:
         type: integer
-      livebarn_venue_id_matched:
-        type: boolean
       mhr_venue_id:
         type: integer
-      mhr_venue_id_matched:
-        type: boolean
-      parent_company:
-        type: string
-      phone_number:
-        type: string
-      postal_code:
-        type: string
       province_state:
         type: string
-      rink_address:
-        type: string
-      streaming_platform:
-        type: string
       surfaces:
-        type: integer
-      updated_at:
-        type: string
-      validate:
-        type: integer
+        items:
+          $ref: '#/definitions/models.KmasterVenueExportSurface'
+        type: array
       venue_name:
-        type: string
-      venue_type:
-        type: string
-      website:
         type: string
     type: object
   models.KmasterVenueExportResult:
@@ -314,6 +282,13 @@ definitions:
         type: array
       total:
         type: integer
+    type: object
+  models.KmasterVenueExportSurface:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
     type: object
   models.KmasterVenueListInput:
     properties:
@@ -408,25 +383,6 @@ definitions:
         type: string
       website:
         type: string
-    type: object
-  models.LivebarnLocationDetail:
-    properties:
-      address1:
-        type: string
-      city:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      postal_code:
-        type: string
-      province_id:
-        type: integer
-      surfaces:
-        items:
-          $ref: '#/definitions/model.Surface'
-        type: array
     type: object
   models.MHRLocResult:
     properties:
@@ -752,8 +708,9 @@ paths:
       consumes:
       - application/json
       description: Returns a paginated list of all venues from the kmaster venue list.
-        Use export=json to download all records as a JSON file with LiveBarn location
-        and surface details.
+        Use export=json to download all records as a JSON file (limited fields + LiveBarn
+        surfaces). Use export=csv to download all records as a CSV file (all fields).
+        No pagination for exports.
       parameters:
       - description: Page number (default 1)
         in: query
@@ -779,8 +736,9 @@ paths:
         in: query
         name: livebarn
         type: boolean
-      - description: Export as JSON file download when set to 'json' (returns all
-          matching records with LiveBarn location and surface details, no pagination)
+      - description: 'Export format: ''json'' for JSON file download (limited fields
+          + LiveBarn surfaces), ''csv'' for CSV file download (all fields). No pagination
+          for exports.'
         in: query
         name: export
         type: string
@@ -788,9 +746,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Downloaded venue list as kmaster-venues-{timestamp}.json
+          description: Downloaded venue list as kmaster-venues-{timestamp}.csv
           schema:
-            $ref: '#/definitions/models.KmasterVenueExportResult'
+            type: file
         "500":
           description: Internal server error
           schema:
