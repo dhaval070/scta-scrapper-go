@@ -1215,6 +1215,46 @@ paths:
       summary: Get paginated site location mappings
       tags:
       - Mappings
+  /sites-config:
+    get:
+      consumes:
+      - application/json
+      description: Returns all site configurations with optional enabled filter, text
+        search, and sorting
+      parameters:
+      - description: Filter by enabled status (true/false)
+        in: query
+        name: enabled
+        type: string
+      - description: Search by site name or display name (partial match)
+        in: query
+        name: search
+        type: string
+      - description: Sort column (site_name, display_name, last_scraped_at, games_scraped,
+          games_imported)
+        in: query
+        name: sort
+        type: string
+      - description: Sort direction (asc, desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SitesConfigResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      summary: List sites configurations
+      tags:
+      - SitesConfig
   /sites-config/{id}/toggle:
     post:
       consumes:

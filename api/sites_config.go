@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"surface-api/dao/model"
 	"surface-api/models"
@@ -12,10 +13,55 @@ import (
 )
 
 // getSitesConfig retrieves all sites config records
+// @Summary List sites configurations
+// @Description Returns all site configurations with optional enabled filter, text search, and sorting
+// @Tags SitesConfig
+// @Accept json
+// @Produce json
+// @Param enabled query string false "Filter by enabled status (true/false)"
+// @Param search query string false "Search by site name or display name (partial match)"
+// @Param sort query string false "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported)"
+// @Param order query string false "Sort direction (asc, desc)"
+// @Success 200 {array} models.SitesConfigResponse
+// @Failure 500 {object} object "Internal server error"
+// @Router /sites-config [get]
 func (app *App) getSitesConfig(c *gin.Context) {
 	var sitesConfigs []model.SitesConfig
 
-	if err := app.db.Find(&sitesConfigs).Error; err != nil {
+	enabled := c.Query("enabled")
+	sort := c.DefaultQuery("sort", "site_name")
+	order := c.DefaultQuery("order", "asc")
+	search := c.Query("search")
+
+	query := app.db.Model(&model.SitesConfig{})
+
+	if enabled != "" {
+		query = query.Where("enabled = ?", enabled == "true")
+	}
+
+	if search != "" {
+		like := "%" + search + "%"
+		query = query.Where("site_name LIKE ? OR display_name LIKE ?", like, like)
+	}
+
+	allowedSorts := map[string]bool{
+		"site_name":       true,
+		"display_name":    true,
+		"last_scraped_at": true,
+		"games_scraped":   true,
+		"games_imported":  true,
+	}
+	if !allowedSorts[sort] {
+		sort = "site_name"
+	}
+	allowedOrders := map[string]bool{"asc": true, "desc": true}
+	if !allowedOrders[order] {
+		order = "asc"
+	}
+
+	query = query.Order(fmt.Sprintf("%s %s", sort, order))
+
+	if err := query.Find(&sitesConfigs).Error; err != nil {
 		sendError(c, err)
 		return
 	}

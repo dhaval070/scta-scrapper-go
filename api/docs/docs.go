@@ -1057,6 +1057,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/sites-config": {
+            "get": {
+                "description": "Returns all site configurations with optional enabled filter, text search, and sorting",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SitesConfig"
+                ],
+                "summary": "List sites configurations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by enabled status (true/false)",
+                        "name": "enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by site name or display name (partial match)",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction (asc, desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.SitesConfigResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/sites-config/{id}/toggle": {
             "post": {
                 "description": "Toggles the enabled status of a site configuration. If enabled is NULL, sets to true.",
