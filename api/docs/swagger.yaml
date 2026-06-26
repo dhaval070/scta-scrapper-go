@@ -638,9 +638,13 @@ paths:
     get:
       consumes:
       - application/json
-      description: Fetches all seasons from the Gamesheet API and filters out inactive
-        or expired seasons
+      description: Fetches seasons from the Gamesheet API or a CSV file, and filters
+        out inactive or expired seasons
       parameters:
+      - description: 'Source of seasons: api (default) or csv'
+        in: query
+        name: source
+        type: string
       - description: Exclude seasons already stored in the local gamesheet_seasons
           table
         in: query
@@ -655,6 +659,12 @@ paths:
             items:
               $ref: '#/definitions/main.Season'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:

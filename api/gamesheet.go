@@ -29,17 +29,33 @@ type Season struct {
 
 // getGamesheetSeasons returns active gamesheet seasons
 // @Summary Get active gamesheet seasons
-// @Description Fetches all seasons from the Gamesheet API and filters out inactive or expired seasons
+// @Description Fetches seasons from the Gamesheet API or a CSV file, and filters out inactive or expired seasons
 // @Tags Gamesheet
 // @Accept json
 // @Produce json
+// @Param source query string false "Source of seasons: api (default) or csv"
 // @Param exclude_existing query bool false "Exclude seasons already stored in the local gamesheet_seasons table"
 // @Success 200 {array} Season
+// @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Security CookieAuth
 // @Router /gamesheet-seasons [get]
 func (app *App) getGamesheetSeasons(c *gin.Context) {
-	seasons, err := gamesheet.FetchActiveSeasons(app.cfg.GameSheetAPIKey)
+	source := c.DefaultQuery("source", "api")
+
+	var seasons []gamesheet.Season
+	var err error
+
+	switch source {
+	case "api":
+		seasons, err = gamesheet.FetchActiveSeasons(app.cfg.GameSheetAPIKey)
+	case "csv":
+		seasons, err = gamesheet.FetchSeasonsFromCSV(app.cfg.GameSheetCSVPath)
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid source: must be 'api' or 'csv'"})
+		return
+	}
+
 	if err != nil {
 		sendError(c, err)
 		return

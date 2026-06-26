@@ -3,3 +3,4 @@ port: 8000
 scraper_path: "/home/dhaval/hockey/calendar-scraper/scraper"
 GAMESHEET_API_KEY:
 scraper_path: "/home/dhaval/hockey/calendar-scraper/scraper"
+GAMESHEET_CSV_PATH:

@@ -1,10 +1,14 @@
 package gamesheet
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -131,4 +135,72 @@ func FilterByIDs(seasons []Season, excludeIDs []int) []Season {
 		}
 	}
 	return filtered
+}
+
+func FetchSeasonsFromCSV(csvPath string) ([]Season, error) {
+	f, err := os.Open(csvPath)
+	if err != nil {
+		return nil, fmt.Errorf("gamesheet: failed to open csv: %w", err)
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	records, err := r.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("gamesheet: failed to read csv: %w", err)
+	}
+
+	if len(records) < 2 {
+		return nil, nil
+	}
+
+	// Parse date in format "May 3, 2026" to "2006-01-02"
+	parseDate := func(s string) (string, error) {
+		t, err := time.Parse("January 2, 2006", s)
+		if err != nil {
+			t, err = time.Parse("January 2, 2006", strings.TrimSpace(s))
+			if err != nil {
+				return "", err
+			}
+		}
+		return t.Format("2006-01-02"), nil
+	}
+
+	// Strip commas from number strings like "14,869" -> 14869
+	parseInt := func(s string) int {
+		cleaned := strings.ReplaceAll(s, ",", "")
+		n, _ := strconv.Atoi(cleaned)
+		return n
+	}
+
+	header := records[0] // league_title, league_id, season_title, season_id, sport, season_start_date, season_end_date, stats_year, stats_widget_games_url
+	_ = header
+
+	var seasons []Season
+	for _, row := range records[1:] {
+		if len(row) < 7 {
+			continue
+		}
+
+		start, err := parseDate(row[5])
+		if err != nil {
+			continue
+		}
+		end, err := parseDate(row[6])
+		if err != nil {
+			continue
+		}
+
+		s := Season{
+			ID:       parseInt(row[3]),
+			Title:    row[2],
+			LeagueID: parseInt(row[1]),
+			IsActive: true,
+			Start:    start,
+			End:      end,
+		}
+		seasons = append(seasons, s)
+	}
+
+	return seasons, nil
 }

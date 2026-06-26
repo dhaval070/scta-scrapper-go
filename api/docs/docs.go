@@ -169,7 +169,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Fetches all seasons from the Gamesheet API and filters out inactive or expired seasons",
+                "description": "Fetches seasons from the Gamesheet API or a CSV file, and filters out inactive or expired seasons",
                 "consumes": [
                     "application/json"
                 ],
@@ -181,6 +181,12 @@ const docTemplate = `{
                 ],
                 "summary": "Get active gamesheet seasons",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Source of seasons: api (default) or csv",
+                        "name": "source",
+                        "in": "query"
+                    },
                     {
                         "type": "boolean",
                         "description": "Exclude seasons already stored in the local gamesheet_seasons table",
@@ -195,6 +201,15 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/main.Season"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     },

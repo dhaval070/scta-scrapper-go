@@ -6,11 +6,12 @@ import (
 )
 
 type Config struct {
-	DB_DSN          string `mapstructure:"DB_DSN"`
-	Port            string `mapstructure:"port"`
-	Mode            string `mapstructure:"mode"`
-	ScraperPath     string `mapstructure:"scraper_path"`
-	GameSheetAPIKey string `mapstructure:"GAMESHEET_API_KEY"`
+	DB_DSN           string `mapstructure:"DB_DSN"`
+	Port             string `mapstructure:"port"`
+	Mode             string `mapstructure:"mode"`
+	ScraperPath      string `mapstructure:"scraper_path"`
+	GameSheetAPIKey  string `mapstructure:"GAMESHEET_API_KEY"`
+	GameSheetCSVPath string `mapstructure:"GAMESHEET_CSV_PATH"`
 }
 
 type SiteLoc struct {
