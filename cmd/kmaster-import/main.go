@@ -83,12 +83,12 @@ func main() {
 			}
 
 			record := KmasterVenue{
-				VenueName:   line[3],
-				City:        line[5],
-				RinkAddress: line[6],
-				PostalCode:  line[7],
-				ProvinceState: line[8],
-				Country:     line[9],
+				VenueName:         line[3],
+				City:              line[5],
+				RinkAddress:       line[6],
+				PostalCode:        line[7],
+				ProvinceState:     line[8],
+				Country:           line[9],
 				CompanyNameAlt1:   line[10],
 				CompanyNameAlt2:   line[11],
 				CompanyNameAlt3:   line[12],

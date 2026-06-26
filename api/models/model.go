@@ -206,6 +206,7 @@ type SitesConfigInput struct {
 	Enabled              *bool          `json:"enabled"`
 	ScrapeFrequencyHours *int32         `json:"scrape_frequency_hours"`
 	Notes                *string        `json:"notes"`
+	ReadinessStatus      *int32         `json:"readiness_status"`
 }
 
 type SitesConfigResponse struct {
@@ -223,6 +224,7 @@ type SitesConfigResponse struct {
 	ScrapingStatus       string         `json:"scraping_status"`
 	ScrapingStartedAt    *string        `json:"scraping_started_at"`
 	ScrapingError        *string        `json:"scraping_error"`
+	ReadinessStatus      int32          `json:"readiness_status"`
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 	GamesScraped         int32          `json:"games_scraped"`

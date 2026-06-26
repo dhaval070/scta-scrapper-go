@@ -13,8 +13,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// Season is an alias for gamesheet.Season used in swagger docs.
-type Season = gamesheet.Season
+// Season represents a gamesheet season used in swagger docs.
+type Season struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	LeagueID      int     `json:"leagueId"`
+	IsActive      bool    `json:"is_active"`
+	Start         string  `json:"start"`
+	End           string  `json:"end"`
+	Country       *string `json:"country"`
+	StateProvince *string `json:"state_province"`
+	AgeCategory   *string `json:"age_category"`
+	GameType      *string `json:"game_type"`
+}
 
 // getGamesheetSeasons returns active gamesheet seasons
 // @Summary Get active gamesheet seasons

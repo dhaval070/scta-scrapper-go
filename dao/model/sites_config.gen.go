@@ -27,9 +27,10 @@ type SitesConfig struct {
 	UpdatedAt            time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
 	GamesScraped         int32     `gorm:"column:games_scraped;not null" json:"games_scraped"`
 	GamesImported        int32     `gorm:"column:games_imported;not null" json:"games_imported"`
-	ScrapingStatus       string    `gorm:"column:scraping_status;default:idle;comment:Current scraping status" json:"scraping_status"` // Current scraping status
-	ScrapingStartedAt    time.Time `gorm:"column:scraping_started_at;comment:When scraping started" json:"scraping_started_at"`        // When scraping started
-	ScrapingError        string    `gorm:"column:scraping_error;comment:Error message if scraping failed" json:"scraping_error"`       // Error message if scraping failed
+	ScrapingStatus       string    `gorm:"column:scraping_status;default:idle;comment:Current scraping status" json:"scraping_status"`          // Current scraping status
+	ScrapingStartedAt    time.Time `gorm:"column:scraping_started_at;comment:When scraping started" json:"scraping_started_at"`                 // When scraping started
+	ScrapingError        string    `gorm:"column:scraping_error;comment:Error message if scraping failed" json:"scraping_error"`                // Error message if scraping failed
+	ReadinessStatus      int32     `gorm:"column:readiness_status;default:0;comment:0=pending, 1=in progress, 2=ready" json:"readiness_status"` // Side readiness status
 }
 
 // TableName SitesConfig's table name

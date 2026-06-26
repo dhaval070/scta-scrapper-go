@@ -69,6 +69,9 @@ definitions:
       last_scraped_at:
         description: From sites_config
         type: string
+      readiness_status:
+        description: 0=pending, 1=in progress, 2=ready
+        type: integer
       scrape_frequency:
         description: Frequency in hours
         type: integer
@@ -511,6 +514,8 @@ definitions:
         type: object
       parser_type:
         type: string
+      readiness_status:
+        type: integer
       scrape_frequency_hours:
         type: integer
       scraping_error:
@@ -1231,7 +1236,7 @@ paths:
         name: search
         type: string
       - description: Sort column (site_name, display_name, last_scraped_at, games_scraped,
-          games_imported)
+          games_imported, readiness_status)
         in: query
         name: sort
         type: string
@@ -1253,6 +1258,48 @@ paths:
           schema:
             type: object
       summary: List sites configurations
+      tags:
+      - SitesConfig
+  /sites-config/{id}/readiness:
+    put:
+      consumes:
+      - application/json
+      description: Updates the readiness status (0=pending, 1=in progress, 2=ready)
+        for a site configuration
+      parameters:
+      - description: Site Config ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Readiness status
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SitesConfigResponse'
+        "400":
+          description: Invalid readiness status
+          schema:
+            type: object
+        "404":
+          description: Site config not found
+          schema:
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update site readiness status
       tags:
       - SitesConfig
   /sites-config/{id}/toggle:

@@ -20,7 +20,7 @@ import (
 // @Produce json
 // @Param enabled query string false "Filter by enabled status (true/false)"
 // @Param search query string false "Search by site name or display name (partial match)"
-// @Param sort query string false "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported)"
+// @Param sort query string false "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported, readiness_status)"
 // @Param order query string false "Sort direction (asc, desc)"
 // @Success 200 {array} models.SitesConfigResponse
 // @Failure 500 {object} object "Internal server error"
@@ -45,11 +45,12 @@ func (app *App) getSitesConfig(c *gin.Context) {
 	}
 
 	allowedSorts := map[string]bool{
-		"site_name":       true,
-		"display_name":    true,
-		"last_scraped_at": true,
-		"games_scraped":   true,
-		"games_imported":  true,
+		"site_name":        true,
+		"display_name":     true,
+		"last_scraped_at":  true,
+		"games_scraped":    true,
+		"games_imported":   true,
+		"readiness_status": true,
 	}
 	if !allowedSorts[sort] {
 		sort = "site_name"
@@ -130,16 +131,38 @@ func (app *App) updateSitesConfig(c *gin.Context) {
 		return
 	}
 
-	updatedConfig := convertToSitesConfigModel(input)
-	updatedConfig.ID = sitesConfig.ID
-	updatedConfig.CreatedAt = sitesConfig.CreatedAt
+	sitesConfig.SiteName = input.SiteName
+	sitesConfig.BaseURL = input.BaseURL
+	sitesConfig.ParserType = input.ParserType
+	if input.DisplayName != nil {
+		sitesConfig.DisplayName = sql.NullString{String: *input.DisplayName, Valid: true}
+	}
+	if input.HomeTeam != nil {
+		sitesConfig.HomeTeam = sql.NullString{String: *input.HomeTeam, Valid: true}
+	}
+	if input.ParserConfig != nil {
+		pc := model.ParserConfig(input.ParserConfig)
+		sitesConfig.ParserConfig = &pc
+	}
+	if input.Enabled != nil {
+		sitesConfig.Enabled = sql.NullBool{Bool: *input.Enabled, Valid: true}
+	}
+	if input.ScrapeFrequencyHours != nil {
+		sitesConfig.ScrapeFrequencyHours = sql.NullInt32{Int32: *input.ScrapeFrequencyHours, Valid: true}
+	}
+	if input.Notes != nil {
+		sitesConfig.Notes = sql.NullString{String: *input.Notes, Valid: true}
+	}
+	if input.ReadinessStatus != nil {
+		sitesConfig.ReadinessStatus = *input.ReadinessStatus
+	}
 
-	if err := app.db.Save(&updatedConfig).Error; err != nil {
+	if err := app.db.Save(&sitesConfig).Error; err != nil {
 		sendError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, convertToSitesConfigResponse(updatedConfig))
+	c.JSON(http.StatusOK, convertToSitesConfigResponse(sitesConfig))
 }
 
 // deleteSitesConfig deletes a sites config record
@@ -205,6 +228,52 @@ func (app *App) toggleSitesConfigEnabled(c *gin.Context) {
 	c.JSON(http.StatusOK, convertToSitesConfigResponse(sitesConfig))
 }
 
+// updateSitesConfigReadinessStatus updates the readiness status of a site
+// @Summary Update site readiness status
+// @Description Updates the readiness status (0=pending, 1=in progress, 2=ready) for a site configuration
+// @Tags SitesConfig
+// @Accept json
+// @Produce json
+// @Param id path string true "Site Config ID"
+// @Param body body object true "Readiness status" {"readiness_status":2}
+// @Success 200 {object} models.SitesConfigResponse
+// @Failure 400 {object} object "Invalid readiness status"
+// @Failure 404 {object} object "Site config not found"
+// @Failure 500 {object} object "Internal server error"
+// @Security CookieAuth
+// @Router /sites-config/{id}/readiness [put]
+func (app *App) updateSitesConfigReadinessStatus(c *gin.Context) {
+	id := c.Param("id")
+
+	var input struct {
+		ReadinessStatus int `json:"readiness_status"`
+	}
+	if err := c.BindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+	if input.ReadinessStatus < 0 || input.ReadinessStatus > 2 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "readiness_status must be 0, 1, or 2"})
+		return
+	}
+
+	result := app.db.Model(&model.SitesConfig{}).
+		Where("id = ?", id).
+		Update("readiness_status", input.ReadinessStatus)
+	if result.Error != nil {
+		sendError(c, result.Error)
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Site config not found"})
+		return
+	}
+
+	var sitesConfig model.SitesConfig
+	app.db.First(&sitesConfig, id)
+	c.JSON(http.StatusOK, convertToSitesConfigResponse(sitesConfig))
+}
+
 // getParserTypes returns all available parser types
 func (app *App) getParserTypes(c *gin.Context) {
 	parserTypes := []string{
@@ -223,14 +292,15 @@ func (app *App) getParserTypes(c *gin.Context) {
 // Helper function to convert model to response
 func convertToSitesConfigResponse(sc model.SitesConfig) models.SitesConfigResponse {
 	response := models.SitesConfigResponse{
-		ID:            sc.ID,
-		SiteName:      sc.SiteName,
-		BaseURL:       sc.BaseURL,
-		ParserType:    sc.ParserType,
-		CreatedAt:     sc.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:     sc.UpdatedAt.Format("2006-01-02 15:04:05"),
-		GamesScraped:  sc.GamesScraped,
-		GamesImported: sc.GamesImported,
+		ID:              sc.ID,
+		SiteName:        sc.SiteName,
+		BaseURL:         sc.BaseURL,
+		ParserType:      sc.ParserType,
+		CreatedAt:       sc.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:       sc.UpdatedAt.Format("2006-01-02 15:04:05"),
+		GamesScraped:    sc.GamesScraped,
+		GamesImported:   sc.GamesImported,
+		ReadinessStatus: sc.ReadinessStatus,
 	}
 
 	if sc.DisplayName.Valid {
@@ -285,6 +355,9 @@ func convertToSitesConfigModel(input models.SitesConfigInput) model.SitesConfig 
 	}
 	if input.Notes != nil {
 		sitesConfig.Notes = sql.NullString{String: *input.Notes, Valid: true}
+	}
+	if input.ReadinessStatus != nil {
+		sitesConfig.ReadinessStatus = *input.ReadinessStatus
 	}
 
 	return sitesConfig

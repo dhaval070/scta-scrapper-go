@@ -40,6 +40,7 @@ type ScrapeStatus struct {
 	LastScrapedAt    *time.Time `json:"last_scraped_at"`     // From sites_config
 	ScrapeFrequency  int        `json:"scrape_frequency"`    // Frequency in hours
 	IsDueForScraping bool       `json:"is_due_for_scraping"` // Whether site is due for scraping
+	ReadinessStatus  int        `json:"readiness_status"`    // 0=pending, 1=in progress, 2=ready
 }
 
 // triggerScrape starts scraping for the specified site(s)
@@ -303,10 +304,11 @@ func (app *App) getScrapeStatus(c *gin.Context) {
 		ScrapingError        *string    `gorm:"column:scraping_error"`
 		LastScrapedAt        *time.Time `gorm:"column:last_scraped_at"`
 		ScrapeFrequencyHours int        `gorm:"column:scrape_frequency_hours"`
+		ReadinessStatus      int        `gorm:"column:readiness_status"`
 	}
 
 	err := app.db.Table("sites_config").
-		Select("site_name, scraping_status, scraping_started_at, scraping_error, last_scraped_at, scrape_frequency_hours").
+		Select("site_name, scraping_status, scraping_started_at, scraping_error, last_scraped_at, scrape_frequency_hours, readiness_status").
 		Where("site_name = ?", site).
 		First(&status).Error
 
@@ -348,6 +350,7 @@ func (app *App) getScrapeStatus(c *gin.Context) {
 		LastScrapedAt:    status.LastScrapedAt,
 		ScrapeFrequency:  status.ScrapeFrequencyHours,
 		IsDueForScraping: isDue,
+		ReadinessStatus:  status.ReadinessStatus,
 	})
 }
 
@@ -369,10 +372,11 @@ func (app *App) getAllScrapeStatus(c *gin.Context) {
 		ScrapingError        *string    `gorm:"column:scraping_error"`
 		LastScrapedAt        *time.Time `gorm:"column:last_scraped_at"`
 		ScrapeFrequencyHours int        `gorm:"column:scrape_frequency_hours"`
+		ReadinessStatus      int        `gorm:"column:readiness_status"`
 	}
 
 	err := app.db.Table("sites_config").
-		Select("site_name, scraping_status, scraping_started_at, scraping_error, last_scraped_at, scrape_frequency_hours").
+		Select("site_name, scraping_status, scraping_started_at, scraping_error, last_scraped_at, scrape_frequency_hours, readiness_status").
 		Order("site_name").
 		Find(&statuses).Error
 
@@ -412,6 +416,7 @@ func (app *App) getAllScrapeStatus(c *gin.Context) {
 			LastScrapedAt:    s.LastScrapedAt,
 			ScrapeFrequency:  s.ScrapeFrequencyHours,
 			IsDueForScraping: isDue,
+			ReadinessStatus:  s.ReadinessStatus,
 		})
 	}
 

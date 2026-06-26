@@ -144,6 +144,7 @@ func main() {
 	r.PUT("/sites-config/:id", app.updateSitesConfig)
 	r.DELETE("/sites-config/:id", app.deleteSitesConfig)
 	r.POST("/sites-config/:id/toggle", app.toggleSitesConfigEnabled)
+	r.PUT("/sites-config/:id/readiness", app.updateSitesConfigReadinessStatus)
 
 	// Scraping routes
 	r.POST("/scrape", app.triggerScrape)

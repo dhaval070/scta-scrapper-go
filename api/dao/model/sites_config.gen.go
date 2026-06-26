@@ -54,6 +54,7 @@ type SitesConfig struct {
 	UpdatedAt            time.Time      `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
 	GamesScraped         int32          `gorm:"column:games_scraped;default:0" json:"games_scraped"`
 	GamesImported        int32          `gorm:"column:games_imported;default:0" json:"games_imported"`
+	ReadinessStatus      int32          `gorm:"column:readiness_status;default:0" json:"readiness_status"`
 }
 
 // TableName SitesConfig's table name
