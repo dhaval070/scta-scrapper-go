@@ -369,6 +369,7 @@ func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, total i
 			Country:         v.Country,
 			ProvinceState:   v.ProvinceState,
 			City:            v.City,
+			PostalCode:      v.PostalCode,
 			LivebarnVenueID: v.LivebarnVenueID,
 			MhrVenueID:      v.MhrVenueID,
 		}

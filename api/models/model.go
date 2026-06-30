@@ -115,6 +115,7 @@ type KmasterVenueExportItem struct {
 	Country         string                      `json:"country"`
 	ProvinceState   string                      `json:"province_state"`
 	City            string                      `json:"city"`
+	PostalCode      string                      `json:"postal_code"`
 	LivebarnVenueID int                         `json:"livebarn_venue_id"`
 	MhrVenueID      int                         `json:"mhr_venue_id"`
 	Surfaces        []KmasterVenueExportSurface `json:"surfaces,omitempty"`
