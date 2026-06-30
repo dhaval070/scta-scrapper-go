@@ -115,7 +115,13 @@ func runClaimCron(cmd *cobra.Command, args []string) {
 	if eventID != "" {
 		log.Printf("Ad-hoc mode: looking up event_id=%s", eventID)
 		var ev eventRow
-		result := db.Raw("SELECT site, event_id, surface_id, datetime FROM events WHERE event_id = ?", eventID).Scan(&ev)
+		result := db.Raw(`
+			SELECT e.site, e.event_id, e.surface_id, e.datetime
+			FROM events e
+			INNER JOIN surfaces s ON e.surface_id = s.id
+			WHERE e.event_id = ?
+			  AND (s.status = 'Active' OR s.status = 'Initializing' OR s.status = 'No Action')
+		`, eventID).Scan(&ev)
 		if result.Error != nil {
 			log.Fatalf("Database query failed: %v", result.Error)
 		}
@@ -132,12 +138,12 @@ func runClaimCron(cmd *cobra.Command, args []string) {
 	} else {
 		log.Printf("Cron mode: querying events for %s", targetDate.Format("2006-01-02"))
 		result := db.Raw(`
-			SELECT site, event_id, surface_id, datetime
-			FROM events
-			WHERE site LIKE 'gs_%'
-			  AND surface_id IS NOT NULL
-			  AND surface_id != 0
-			  AND DATE(datetime) = ?
+			SELECT e.site, e.event_id, e.surface_id, e.datetime
+			FROM events e
+			INNER JOIN surfaces s ON e.surface_id = s.id
+			WHERE e.site LIKE 'gs_%'
+			  AND DATE(e.datetime) = ?
+			  AND (s.status = 'Active' OR s.status = 'Initializing' OR s.status = 'No Action')
 		`, targetDate.Format("2006-01-02")).Scan(&events)
 		if result.Error != nil {
 			log.Fatalf("Database query failed: %v", result.Error)

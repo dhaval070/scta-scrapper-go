@@ -68,7 +68,13 @@ func main() {
 	}
 
 	var event Event
-	result := db.Raw("SELECT site, event_id, surface_id, home_team, guest_team, datetime, location FROM events WHERE event_id = ?", *eventID).Scan(&event)
+	result := db.Raw(`
+		SELECT e.site, e.event_id, e.surface_id, e.home_team, e.guest_team, e.datetime, e.location
+		FROM events e
+		INNER JOIN surfaces s ON e.surface_id = s.id
+		WHERE e.event_id = ?
+		  AND (s.status = 'Active' OR s.status = 'Initializing' OR s.status = 'No Action')
+	`, *eventID).Scan(&event)
 	if result.Error != nil {
 		log.Fatalf("ERROR: database query failed: %v", result.Error)
 	}
