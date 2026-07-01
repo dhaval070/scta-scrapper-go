@@ -30,7 +30,7 @@ const docTemplate = `{
                         "CookieAuth": []
                     }
                 ],
-                "description": "Returns paginated list of events with optional filters for site, surface, date range, and claim status",
+                "description": "Returns paginated list of events with optional filters for site, surface, date range, and claim status. Includes surface status.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1582,6 +1582,9 @@ const docTemplate = `{
                 },
                 "surface_id": {
                     "type": "integer"
+                },
+                "surface_status": {
+                    "type": "string"
                 }
             }
         },
@@ -1642,6 +1645,9 @@ const docTemplate = `{
                 },
                 "mhr_venue_id": {
                     "type": "integer"
+                },
+                "postal_code": {
+                    "type": "string"
                 },
                 "province_state": {
                     "type": "string"

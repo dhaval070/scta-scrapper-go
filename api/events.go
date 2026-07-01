@@ -20,7 +20,7 @@ type UpdateEventInput struct {
 
 // getEvents returns paginated list of events with optional filters
 // @Summary Get paginated events
-// @Description Returns paginated list of events with optional filters for site, surface, date range, and claim status
+// @Description Returns paginated list of events with optional filters for site, surface, date range, and claim status. Includes surface status.
 // @Tags Events
 // @Accept json
 // @Produce json
@@ -60,8 +60,9 @@ func (app *App) getEvents(c *gin.Context) {
 	offset := (pageNum - 1) * perPageNum
 
 	baseQuery := app.db.Table("events").
-		Select("events.*, claim_api_log.status AS claim_status, claim_api_log.http_status_code AS claim_http_status_code, claim_api_log.error_message AS claim_error_message, claim_api_log.created_at AS claim_created_at, claim_api_log.updated_at AS claim_updated_at").
+		Select("events.*, claim_api_log.status AS claim_status, claim_api_log.http_status_code AS claim_http_status_code, claim_api_log.error_message AS claim_error_message, claim_api_log.created_at AS claim_created_at, claim_api_log.updated_at AS claim_updated_at, surfaces.status AS surface_status").
 		Joins("LEFT JOIN claim_api_log ON claim_api_log.event_id = events.event_id").
+		Joins("LEFT JOIN surfaces ON events.surface_id = surfaces.id").
 		Order("events.datetime DESC")
 
 	if site != "" {

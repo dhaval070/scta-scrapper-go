@@ -252,6 +252,7 @@ type EventWithLocation struct {
 
 type EventWithClaim struct {
 	model.Event
+	SurfaceStatus       *string    `json:"surface_status,omitempty"`
 	ClaimStatus         *int8      `json:"claim_status,omitempty"`
 	ClaimHTTPStatusCode *int       `json:"claim_http_status_code,omitempty"`
 	ClaimErrorMessage   *string    `json:"claim_error_message,omitempty"`
