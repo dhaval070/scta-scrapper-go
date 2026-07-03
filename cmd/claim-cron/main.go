@@ -236,7 +236,7 @@ func buildClaimGame(ev eventRow) claimGame {
 	if err != nil {
 		log.Printf("WARNING: failed to parse event_id '%s' as integer, using 0", ev.EventID)
 	}
-	broadcastURL := "https://livebarn.com/en/video/" + ev.EventID + "/" + ev.Datetime.Format("2006-01-02") + "/" + ev.Datetime.Format("15:04")
+	broadcastURL := "https://livebarn.com/en/video/" + strconv.Itoa(int(ev.SurfaceID)) + "/" + ev.Datetime.Format("2006-01-02") + "/" + ev.Datetime.Format("15:04")
 	return claimGame{
 		GameID:         gameID,
 		SurfaceID:      fmt.Sprintf("%d", ev.SurfaceID),

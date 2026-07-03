@@ -100,7 +100,7 @@ func main() {
 		log.Fatalf("ERROR: failed to parse event_id '%s' as integer: %v", event.EventID, err)
 	}
 	// https://livebarn.com/en/video/4424/2026-02-01/10:00
-	broadcastUrl := "https://livebarn.com/en/video/" + event.EventID + "/" + event.Datetime.Format("2006-01-02") + "/" + event.Datetime.Format("15:04")
+	broadcastUrl := "https://livebarn.com/en/video/" + strconv.Itoa(int(event.SurfaceID)) + "/" + event.Datetime.Format("2006-01-02") + "/" + event.Datetime.Format("15:04")
 
 	body := claimRequest{}
 	body.Data.Games = []claimGame{
