@@ -12,6 +12,29 @@ import (
 	"gorm.io/gorm"
 )
 
+// fetchLeagueNameMap returns a map of site_name -> league name from gamesheet_leagues
+func (app *App) fetchLeagueNameMap() map[string]string {
+	type siteLeagueName struct {
+		Site       string
+		LeagueName string
+	}
+
+	var results []siteLeagueName
+	app.db.Table("gamesheet_seasons").
+		Select("gamesheet_seasons.site, gamesheet_leagues.league_name").
+		Joins("left join gamesheet_leagues on gamesheet_seasons.league_id = gamesheet_leagues.id").
+		Where("gamesheet_seasons.site IS NOT NULL AND gamesheet_seasons.site != ''").
+		Scan(&results)
+
+	result := make(map[string]string)
+	for _, r := range results {
+		if _, exists := result[r.Site]; !exists {
+			result[r.Site] = r.LeagueName
+		}
+	}
+	return result
+}
+
 // getSitesConfig retrieves all sites config records
 // @Summary List sites configurations
 // @Description Returns all site configurations with optional enabled filter, text search, and sorting
@@ -67,9 +90,15 @@ func (app *App) getSitesConfig(c *gin.Context) {
 		return
 	}
 
+	leagueNames := app.fetchLeagueNameMap()
+
 	var response []models.SitesConfigResponse
 	for _, sc := range sitesConfigs {
-		response = append(response, convertToSitesConfigResponse(sc))
+		resp := convertToSitesConfigResponse(sc)
+		if name, ok := leagueNames[sc.SiteName]; ok {
+			resp.LeagueName = &name
+		}
+		response = append(response, resp)
 	}
 
 	c.JSON(http.StatusOK, response)

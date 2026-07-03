@@ -2012,6 +2012,9 @@ const docTemplate = `{
                 "last_scraped_at": {
                     "type": "string"
                 },
+                "league_name": {
+                    "type": "string"
+                },
                 "notes": {
                     "type": "string"
                 },

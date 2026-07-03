@@ -227,6 +227,7 @@ type SitesConfigResponse struct {
 	ScrapingStartedAt    *string        `json:"scraping_started_at"`
 	ScrapingError        *string        `json:"scraping_error"`
 	ReadinessStatus      int32          `json:"readiness_status"`
+	LeagueName           *string        `json:"league_name"`
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 	GamesScraped         int32          `json:"games_scraped"`

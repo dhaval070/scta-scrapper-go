@@ -511,6 +511,8 @@ definitions:
         type: integer
       last_scraped_at:
         type: string
+      league_name:
+        type: string
       notes:
         type: string
       parser_config:
