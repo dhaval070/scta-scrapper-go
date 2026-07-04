@@ -160,6 +160,7 @@ func (app *App) setMapping(c *gin.Context) {
 // @Produce json
 // @Param site query string false "Site name"
 // @Param location query string false "Filter locations starting with this value"
+// @Param tag query string false "Filter by tag name (exact match)"
 // @Param page query string false "Page number (default: 1)"
 // @Param perPage query string false "Items per page (default: 10, max: 100)"
 // @Success 200 {object} models.SiteLocResult
@@ -168,6 +169,7 @@ func (app *App) setMapping(c *gin.Context) {
 func (app *App) getSiteLoc(c *gin.Context) {
 	site := c.Query("site")
 	location := c.Query("location")
+	tagName := c.Query("tag")
 	page := c.DefaultQuery("page", "1")
 	perPage := c.DefaultQuery("perPage", "10")
 	var pageNum, perPageNum int
@@ -196,6 +198,18 @@ func (app *App) getSiteLoc(c *gin.Context) {
 		baseQuery = baseQuery.Where("location LIKE ?", location+"%")
 	}
 
+	if tagName != "" {
+		baseQuery = baseQuery.Where(`
+			EXISTS (
+				SELECT 1 FROM sites_location_tags slt
+				JOIN tags t ON t.id = slt.tag_id
+				WHERE slt.site = sites_locations.site
+				  AND slt.location = sites_locations.location
+				  AND t.name = ?
+			)
+		`, tagName)
+	}
+
 	if err := baseQuery.Count(&total).Error; err != nil {
 		sendError(c, err)
 		return
@@ -204,6 +218,52 @@ func (app *App) getSiteLoc(c *gin.Context) {
 	if err := baseQuery.Offset(offset).Limit(perPageNum).Find(&result).Error; err != nil {
 		sendError(c, err)
 		return
+	}
+
+	// Batch-load tags for all returned site locations
+	if len(result) > 0 {
+		var conditions []string
+		var args []any
+		for _, r := range result {
+			conditions = append(conditions, "(?, ?)")
+			args = append(args, r.Site, r.Location)
+		}
+
+		var tagRows []struct {
+			Site     string
+			Location string
+			ID       int32
+			Name     string
+			Color    string
+		}
+		app.db.Raw(fmt.Sprintf(`
+			SELECT slt.site, slt.location, t.id, t.name, t.color
+			FROM sites_location_tags slt
+			JOIN tags t ON t.id = slt.tag_id
+			WHERE (slt.site, slt.location) IN (%s)
+			ORDER BY t.name
+		`, strings.Join(conditions, ", ")), args...).Scan(&tagRows)
+
+		// Build lookup map
+		tagMap := make(map[string][]model.Tag)
+		for _, row := range tagRows {
+			key := row.Site + ":" + row.Location
+			tagMap[key] = append(tagMap[key], model.Tag{
+				ID:    row.ID,
+				Name:  row.Name,
+				Color: row.Color,
+			})
+		}
+
+		// Assign tags to each result
+		for i, r := range result {
+			key := r.Site + ":" + r.Location
+			if tags, ok := tagMap[key]; ok {
+				result[i].Tags = tags
+			} else {
+				result[i].Tags = []model.Tag{}
+			}
+		}
 	}
 
 	resp := models.SiteLocResult{

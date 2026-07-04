@@ -25,8 +25,9 @@ type SiteLoc struct {
 	ScrapingStatus    string         `gorm:"-" json:"scraping_status,omitempty"`
 	ScrapingStartedAt *time.Time     `gorm:"-" json:"scraping_started_at,omitempty"`
 	ScrapingError     *string        `gorm:"-" json:"scraping_error,omitempty"`
-	LiveBarnLocation  model.Location `gorm:"foreignKey:LocationID"`
-	LinkedSurface     model.Surface  `gorm:"foreignKey:SurfaceID"`
+	LiveBarnLocation  model.Location `gorm:"foreignKey:LocationID" json:"live_barn_location"`
+	LinkedSurface     model.Surface  `gorm:"foreignKey:SurfaceID" json:"linked_surface"`
+	Tags              []model.Tag    `gorm:"many2many:sites_location_tags;foreignKey:Site,Location;joinForeignKey:site,location;references:ID;joinReferences:tag_id" json:"tags"`
 }
 
 func (*SiteLoc) TableName() string {
@@ -302,4 +303,22 @@ type MhrLocation struct {
 
 func (MhrLocation) TableName() string {
 	return "mhr_locations"
+}
+
+// --- Tag types ---
+
+type CreateTagInput struct {
+	Name        string  `json:"name" binding:"required"`
+	Color       *string `json:"color"`
+	Description *string `json:"description"`
+}
+
+type UpdateTagInput struct {
+	Name        *string `json:"name"`
+	Color       *string `json:"color"`
+	Description *string `json:"description"`
+}
+
+type AddTagsToSiteLocationInput struct {
+	TagIDs []int32 `json:"tag_ids" binding:"required"`
 }

@@ -185,6 +185,41 @@ definitions:
       venue_id:
         type: integer
     type: object
+  model.Tag:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.AddTagsToSiteLocationInput:
+    properties:
+      tag_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - tag_ids
+    type: object
+  models.CreateTagInput:
+    properties:
+      color:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
   models.EventWithClaim:
     properties:
       claim_created_at:
@@ -451,9 +486,9 @@ definitions:
     properties:
       address:
         type: string
-      linkedSurface:
+      linked_surface:
         $ref: '#/definitions/model.Surface'
-      liveBarnLocation:
+      live_barn_location:
         $ref: '#/definitions/model.Location'
       location:
         type: string
@@ -473,6 +508,10 @@ definitions:
         type: string
       surface_id:
         type: integer
+      tags:
+        items:
+          $ref: '#/definitions/model.Tag'
+        type: array
     type: object
   models.SiteLocResult:
     properties:
@@ -533,6 +572,15 @@ definitions:
       site_name:
         type: string
       updated_at:
+        type: string
+    type: object
+  models.UpdateTagInput:
+    properties:
+      color:
+        type: string
+      description:
+        type: string
+      name:
         type: string
     type: object
 host: localhost:8000
@@ -1216,6 +1264,10 @@ paths:
         in: query
         name: location
         type: string
+      - description: Filter by tag name (exact match)
+        in: query
+        name: tag
+        type: string
       - description: 'Page number (default: 1)'
         in: query
         name: page
@@ -1236,6 +1288,102 @@ paths:
       summary: Get paginated site location mappings
       tags:
       - Mappings
+  /site-locations/{site}/{location}/tags:
+    get:
+      consumes:
+      - application/json
+      description: Returns all tags assigned to a specific site-location pair
+      parameters:
+      - description: Site name
+        in: path
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: path
+        name: location
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+      security:
+      - CookieAuth: []
+      summary: Get tags for a site location
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: Associates tags (by ID) with a specific site-location pair
+      parameters:
+      - description: Site name
+        in: path
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: path
+        name: location
+        required: true
+        type: string
+      - description: Tag IDs to add
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddTagsToSiteLocationInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+      security:
+      - CookieAuth: []
+      summary: Add tags to a site location
+      tags:
+      - Tags
+  /site-locations/{site}/{location}/tags/{tag_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an association between a tag and a site-location
+      parameters:
+      - description: Site name
+        in: path
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: path
+        name: location
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tag_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - CookieAuth: []
+      summary: Remove a tag from a site location
+      tags:
+      - Tags
   /sites-config:
     get:
       consumes:
@@ -1348,6 +1496,102 @@ paths:
       summary: Toggle site configuration enabled status
       tags:
       - SitesConfig
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Returns all tags, optionally filtered by name search
+      parameters:
+      - description: Search tags by name (partial match)
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+      security:
+      - CookieAuth: []
+      summary: List all tags
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: Creates a new tag with the given name, optional color and description
+      parameters:
+      - description: Tag details
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTagInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Tag'
+      security:
+      - CookieAuth: []
+      summary: Create a tag
+      tags:
+      - Tags
+  /tags/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a tag and removes all its associations (via CASCADE)
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      security:
+      - CookieAuth: []
+      summary: Delete a tag
+      tags:
+      - Tags
+    put:
+      consumes:
+      - application/json
+      description: Updates the name, color, or description of an existing tag
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Tag fields to update
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTagInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Tag'
+      security:
+      - CookieAuth: []
+      summary: Update a tag
+      tags:
+      - Tags
 schemes:
 - http
 - https

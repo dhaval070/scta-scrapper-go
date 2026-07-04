@@ -155,6 +155,15 @@ func main() {
 	r.GET("/gamesheet-seasons", app.getGamesheetSeasons)
 	r.POST("/gamesheet-seasons/import", app.importGamesheetSeasons)
 
+	// Tags CRUD routes
+	r.GET("/tags", app.listTags)
+	r.POST("/tags", app.createTag)
+	r.PUT("/tags/:id", app.updateTag)
+	r.DELETE("/tags/:id", app.deleteTag)
+	r.GET("/site-locations/:site/:location/tags", app.getSiteLocationTags)
+	r.POST("/site-locations/:site/:location/tags", app.addSiteLocationTags)
+	r.DELETE("/site-locations/:site/:location/tags/:tag_id", app.removeSiteLocationTag)
+
 	// Kmaster venue list CRUD routes
 	r.GET("/kmaster-venues", app.getKmasterVenues)
 	r.GET("/kmaster-venues/:id", app.getKmasterVenueByID)
