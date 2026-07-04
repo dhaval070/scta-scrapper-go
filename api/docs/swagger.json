@@ -1016,6 +1016,174 @@
                 }
             }
         },
+        "/site-location-tags": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns all tags assigned to a specific site-location pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get tags for a site location",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location name",
+                        "name": "location",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Tag"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing required query parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Associates tags (by ID) with a specific site-location pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Add tags to a site location",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location name",
+                        "name": "location",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Tag IDs to add",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddTagsToSiteLocationInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Tag"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Removes an association between a tag and a site-location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Remove a tag from a site location",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Location name",
+                        "name": "location",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Tag ID",
+                        "name": "tag_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Missing or invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/site-locations": {
             "get": {
                 "security": [
@@ -1072,155 +1240,6 @@
                         "schema": {
                             "$ref": "#/definitions/models.SiteLocResult"
                         }
-                    }
-                }
-            }
-        },
-        "/site-locations/{site}/{location}/tags": {
-            "get": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
-                "description": "Returns all tags assigned to a specific site-location pair",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "Get tags for a site location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Site name",
-                        "name": "site",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Location name",
-                        "name": "location",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Tag"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
-                "description": "Associates tags (by ID) with a specific site-location pair",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "Add tags to a site location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Site name",
-                        "name": "site",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Location name",
-                        "name": "location",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Tag IDs to add",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.AddTagsToSiteLocationInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Tag"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/site-locations/{site}/{location}/tags/{tag_id}": {
-            "delete": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
-                "description": "Removes an association between a tag and a site-location",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "Remove a tag from a site location",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Site name",
-                        "name": "site",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Location name",
-                        "name": "location",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Tag ID",
-                        "name": "tag_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     }
                 }
             }

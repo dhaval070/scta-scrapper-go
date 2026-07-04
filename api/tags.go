@@ -173,14 +173,20 @@ func (app *App) deleteTag(c *gin.Context) {
 // @Tags Tags
 // @Accept json
 // @Produce json
-// @Param site path string true "Site name"
-// @Param location path string true "Location name"
+// @Param site query string true "Site name"
+// @Param location query string true "Location name"
 // @Success 200 {array} model.Tag
+// @Failure 400 {object} map[string]interface{} "Missing required query parameters"
 // @Security CookieAuth
-// @Router /site-locations/{site}/{location}/tags [get]
+// @Router /site-location-tags [get]
 func (app *App) getSiteLocationTags(c *gin.Context) {
-	site := c.Param("site")
-	location := c.Param("location")
+	site := c.Query("site")
+	location := c.Query("location")
+
+	if site == "" || location == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site and location query parameters are required"})
+		return
+	}
 
 	var tags []model.Tag
 	if err := app.db.Model(&model.Tag{}).
@@ -201,19 +207,25 @@ func (app *App) getSiteLocationTags(c *gin.Context) {
 // @Tags Tags
 // @Accept json
 // @Produce json
-// @Param site path string true "Site name"
-// @Param location path string true "Location name"
+// @Param site query string true "Site name"
+// @Param location query string true "Location name"
 // @Param input body models.AddTagsToSiteLocationInput true "Tag IDs to add"
 // @Success 201 {array} model.Tag
+// @Failure 400 {object} map[string]interface{} "Missing or invalid parameters"
 // @Security CookieAuth
-// @Router /site-locations/{site}/{location}/tags [post]
+// @Router /site-location-tags [post]
 func (app *App) addSiteLocationTags(c *gin.Context) {
-	site := c.Param("site")
-	location := c.Param("location")
+	site := c.Query("site")
+	location := c.Query("location")
+
+	if site == "" || location == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site and location query parameters are required"})
+		return
+	}
 
 	var input models.AddTagsToSiteLocationInput
-	if err := c.BindJSON(&input); err != nil {
-		sendError(c, err)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -271,16 +283,23 @@ func (app *App) addSiteLocationTags(c *gin.Context) {
 // @Tags Tags
 // @Accept json
 // @Produce json
-// @Param site path string true "Site name"
-// @Param location path string true "Location name"
-// @Param tag_id path int true "Tag ID"
+// @Param site query string true "Site name"
+// @Param location query string true "Location name"
+// @Param tag_id query int true "Tag ID"
 // @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Missing or invalid parameters"
 // @Security CookieAuth
-// @Router /site-locations/{site}/{location}/tags/{tag_id} [delete]
+// @Router /site-location-tags [delete]
 func (app *App) removeSiteLocationTag(c *gin.Context) {
-	site := c.Param("site")
-	location := c.Param("location")
-	tagIDStr := c.Param("tag_id")
+	site := c.Query("site")
+	location := c.Query("location")
+	tagIDStr := c.Query("tag_id")
+
+	if site == "" || location == "" || tagIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site, location, and tag_id query parameters are required"})
+		return
+	}
+
 	tagID, err := strconv.Atoi(tagIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag id"})

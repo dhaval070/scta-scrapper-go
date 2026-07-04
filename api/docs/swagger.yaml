@@ -1249,6 +1249,116 @@ paths:
       summary: Get scraping status for a site
       tags:
       - Scraping
+  /site-location-tags:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an association between a tag and a site-location
+      parameters:
+      - description: Site name
+        in: query
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: query
+        name: location
+        required: true
+        type: string
+      - description: Tag ID
+        in: query
+        name: tag_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Missing or invalid parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Remove a tag from a site location
+      tags:
+      - Tags
+    get:
+      consumes:
+      - application/json
+      description: Returns all tags assigned to a specific site-location pair
+      parameters:
+      - description: Site name
+        in: query
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: query
+        name: location
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+        "400":
+          description: Missing required query parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get tags for a site location
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: Associates tags (by ID) with a specific site-location pair
+      parameters:
+      - description: Site name
+        in: query
+        name: site
+        required: true
+        type: string
+      - description: Location name
+        in: query
+        name: location
+        required: true
+        type: string
+      - description: Tag IDs to add
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddTagsToSiteLocationInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+        "400":
+          description: Missing or invalid parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Add tags to a site location
+      tags:
+      - Tags
   /site-locations:
     get:
       consumes:
@@ -1288,102 +1398,6 @@ paths:
       summary: Get paginated site location mappings
       tags:
       - Mappings
-  /site-locations/{site}/{location}/tags:
-    get:
-      consumes:
-      - application/json
-      description: Returns all tags assigned to a specific site-location pair
-      parameters:
-      - description: Site name
-        in: path
-        name: site
-        required: true
-        type: string
-      - description: Location name
-        in: path
-        name: location
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Tag'
-            type: array
-      security:
-      - CookieAuth: []
-      summary: Get tags for a site location
-      tags:
-      - Tags
-    post:
-      consumes:
-      - application/json
-      description: Associates tags (by ID) with a specific site-location pair
-      parameters:
-      - description: Site name
-        in: path
-        name: site
-        required: true
-        type: string
-      - description: Location name
-        in: path
-        name: location
-        required: true
-        type: string
-      - description: Tag IDs to add
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/models.AddTagsToSiteLocationInput'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            items:
-              $ref: '#/definitions/model.Tag'
-            type: array
-      security:
-      - CookieAuth: []
-      summary: Add tags to a site location
-      tags:
-      - Tags
-  /site-locations/{site}/{location}/tags/{tag_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Removes an association between a tag and a site-location
-      parameters:
-      - description: Site name
-        in: path
-        name: site
-        required: true
-        type: string
-      - description: Location name
-        in: path
-        name: location
-        required: true
-        type: string
-      - description: Tag ID
-        in: path
-        name: tag_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      security:
-      - CookieAuth: []
-      summary: Remove a tag from a site location
-      tags:
-      - Tags
   /sites-config:
     get:
       consumes:
