@@ -229,6 +229,7 @@ type SitesConfigResponse struct {
 	ScrapingError        *string        `json:"scraping_error"`
 	ReadinessStatus      int32          `json:"readiness_status"`
 	LeagueName           *string        `json:"league_name"`
+	Tags                 []model.Tag    `json:"tags"`
 	CreatedAt            string         `json:"created_at"`
 	UpdatedAt            string         `json:"updated_at"`
 	GamesScraped         int32          `json:"games_scraped"`
@@ -320,5 +321,9 @@ type UpdateTagInput struct {
 }
 
 type AddTagsToSiteLocationInput struct {
+	TagIDs []int32 `json:"tag_ids" binding:"required"`
+}
+
+type AddTagsToSiteInput struct {
 	TagIDs []int32 `json:"tag_ids" binding:"required"`
 }

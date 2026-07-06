@@ -321,3 +321,152 @@ func (app *App) removeSiteLocationTag(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+// getSiteTags returns tags for a specific site
+// @Summary Get tags for a site
+// @Description Returns all tags assigned to a specific site
+// @Tags Tags
+// @Accept json
+// @Produce json
+// @Param site_name query string true "Site name"
+// @Success 200 {array} model.Tag
+// @Failure 400 {object} map[string]interface{} "Missing required query parameters"
+// @Security CookieAuth
+// @Router /sites-tags [get]
+func (app *App) getSiteTags(c *gin.Context) {
+	siteName := c.Query("site_name")
+
+	if siteName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site_name query parameter is required"})
+		return
+	}
+
+	var tags []model.Tag
+	if err := app.db.Model(&model.Tag{}).
+		Joins("JOIN sites_tags ON sites_tags.tag_id = tags.id").
+		Where("sites_tags.site_name = ?", siteName).
+		Order("tags.name ASC").
+		Find(&tags).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, tags)
+}
+
+// addSiteTags adds tags to a site
+// @Summary Add tags to a site
+// @Description Associates tags (by ID) with a specific site
+// @Tags Tags
+// @Accept json
+// @Produce json
+// @Param site_name query string true "Site name"
+// @Param input body models.AddTagsToSiteInput true "Tag IDs to add"
+// @Success 201 {array} model.Tag
+// @Failure 400 {object} map[string]interface{} "Missing or invalid parameters"
+// @Security CookieAuth
+// @Router /sites-tags [post]
+func (app *App) addSiteTags(c *gin.Context) {
+	siteName := c.Query("site_name")
+
+	if siteName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site_name query parameter is required"})
+		return
+	}
+
+	var input models.AddTagsToSiteInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(input.TagIDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "tag_ids must not be empty"})
+		return
+	}
+
+	// Verify site exists
+	var count int64
+	if err := app.db.Model(&model.SitesConfig{}).
+		Where("site_name = ?", siteName).
+		Count(&count).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+	if count == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "site not found"})
+		return
+	}
+
+	// Verify all tags exist
+	var tagCount int64
+	if err := app.db.Model(&model.Tag{}).Where("id IN ?", input.TagIDs).Count(&tagCount).Error; err != nil {
+		sendError(c, err)
+		return
+	}
+	if tagCount != int64(len(input.TagIDs)) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "one or more tag_ids not found"})
+		return
+	}
+
+	// Insert join records, ignoring duplicates
+	for _, tagID := range input.TagIDs {
+		app.db.Exec(
+			"INSERT IGNORE INTO sites_tags (site_name, tag_id) VALUES (?, ?)",
+			siteName, tagID,
+		)
+	}
+
+	// Return updated tags
+	var tags []model.Tag
+	app.db.Model(&model.Tag{}).
+		Joins("JOIN sites_tags ON sites_tags.tag_id = tags.id").
+		Where("sites_tags.site_name = ?", siteName).
+		Order("tags.name ASC").
+		Find(&tags)
+
+	c.JSON(http.StatusCreated, tags)
+}
+
+// removeSiteTag removes a tag from a site
+// @Summary Remove a tag from a site
+// @Description Removes an association between a tag and a site
+// @Tags Tags
+// @Accept json
+// @Produce json
+// @Param site_name query string true "Site name"
+// @Param tag_id query int true "Tag ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]interface{} "Missing or invalid parameters"
+// @Security CookieAuth
+// @Router /sites-tags [delete]
+func (app *App) removeSiteTag(c *gin.Context) {
+	siteName := c.Query("site_name")
+	tagIDStr := c.Query("tag_id")
+
+	if siteName == "" || tagIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "site_name and tag_id query parameters are required"})
+		return
+	}
+
+	tagID, err := strconv.Atoi(tagIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag id"})
+		return
+	}
+
+	result := app.db.Exec(
+		"DELETE FROM sites_tags WHERE site_name = ? AND tag_id = ?",
+		siteName, tagID,
+	)
+	if result.Error != nil {
+		sendError(c, result.Error)
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "tag association not found"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

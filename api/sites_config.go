@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"surface-api/dao/model"
 	"surface-api/models"
 
@@ -37,12 +38,13 @@ func (app *App) fetchLeagueNameMap() map[string]string {
 
 // getSitesConfig retrieves all sites config records
 // @Summary List sites configurations
-// @Description Returns all site configurations with optional enabled filter, text search, and sorting
+// @Description Returns all site configurations with optional enabled filter, text search, tag filter, and sorting
 // @Tags SitesConfig
 // @Accept json
 // @Produce json
 // @Param enabled query string false "Filter by enabled status (true/false)"
 // @Param search query string false "Search by site name or display name (partial match)"
+// @Param tag query string false "Filter by tag name (exact match)"
 // @Param sort query string false "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported, readiness_status)"
 // @Param order query string false "Sort direction (asc, desc)"
 // @Success 200 {array} models.SitesConfigResponse
@@ -52,6 +54,7 @@ func (app *App) getSitesConfig(c *gin.Context) {
 	var sitesConfigs []model.SitesConfig
 
 	enabled := c.Query("enabled")
+	tagName := c.Query("tag")
 	sort := c.DefaultQuery("sort", "site_name")
 	order := c.DefaultQuery("order", "asc")
 	search := c.Query("search")
@@ -65,6 +68,17 @@ func (app *App) getSitesConfig(c *gin.Context) {
 	if search != "" {
 		like := "%" + search + "%"
 		query = query.Where("site_name LIKE ? OR display_name LIKE ?", like, like)
+	}
+
+	if tagName != "" {
+		query = query.Where(`
+			EXISTS (
+				SELECT 1 FROM sites_tags st
+				JOIN tags t ON t.id = st.tag_id
+				WHERE st.site_name = sites_config.site_name
+				  AND t.name = ?
+			)
+		`, tagName)
 	}
 
 	allowedSorts := map[string]bool{
@@ -92,12 +106,63 @@ func (app *App) getSitesConfig(c *gin.Context) {
 
 	leagueNames := app.fetchLeagueNameMap()
 
+	// Batch-load tags for all returned sites
+	if len(sitesConfigs) > 0 {
+		var conditions []string
+		var args []any
+		for _, sc := range sitesConfigs {
+			conditions = append(conditions, "?")
+			args = append(args, sc.SiteName)
+		}
+
+		var tagRows []struct {
+			SiteName string
+			ID       int32
+			Name     string
+			Color    string
+		}
+		app.db.Raw(fmt.Sprintf(`
+			SELECT st.site_name, t.id, t.name, t.color
+			FROM sites_tags st
+			JOIN tags t ON t.id = st.tag_id
+			WHERE st.site_name IN (%s)
+			ORDER BY t.name
+		`, strings.Join(conditions, ", ")), args...).Scan(&tagRows)
+
+		tagMap := make(map[string][]model.Tag)
+		for _, row := range tagRows {
+			tagMap[row.SiteName] = append(tagMap[row.SiteName], model.Tag{
+				ID:    row.ID,
+				Name:  row.Name,
+				Color: row.Color,
+			})
+		}
+
+		var response []models.SitesConfigResponse
+		for _, sc := range sitesConfigs {
+			resp := convertToSitesConfigResponse(sc)
+			if name, ok := leagueNames[sc.SiteName]; ok {
+				resp.LeagueName = &name
+			}
+			if tags, ok := tagMap[sc.SiteName]; ok {
+				resp.Tags = tags
+			} else {
+				resp.Tags = []model.Tag{}
+			}
+			response = append(response, resp)
+		}
+
+		c.JSON(http.StatusOK, response)
+		return
+	}
+
 	var response []models.SitesConfigResponse
 	for _, sc := range sitesConfigs {
 		resp := convertToSitesConfigResponse(sc)
 		if name, ok := leagueNames[sc.SiteName]; ok {
 			resp.LeagueName = &name
 		}
+		resp.Tags = []model.Tag{}
 		response = append(response, resp)
 	}
 

@@ -163,6 +163,9 @@ func main() {
 	r.GET("/site-location-tags", app.getSiteLocationTags)
 	r.POST("/site-location-tags", app.addSiteLocationTags)
 	r.DELETE("/site-location-tags", app.removeSiteLocationTag)
+	r.GET("/sites-tags", app.getSiteTags)
+	r.POST("/sites-tags", app.addSiteTags)
+	r.DELETE("/sites-tags", app.removeSiteTag)
 
 	// Kmaster venue list CRUD routes
 	r.GET("/kmaster-venues", app.getKmasterVenues)

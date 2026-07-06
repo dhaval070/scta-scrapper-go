@@ -1248,7 +1248,7 @@ const docTemplate = `{
         },
         "/sites-config": {
             "get": {
-                "description": "Returns all site configurations with optional enabled filter, text search, and sorting",
+                "description": "Returns all site configurations with optional enabled filter, text search, tag filter, and sorting",
                 "consumes": [
                     "application/json"
                 ],
@@ -1270,6 +1270,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Search by site name or display name (partial match)",
                         "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by tag name (exact match)",
+                        "name": "tag",
                         "in": "query"
                     },
                     {
@@ -1407,6 +1413,153 @@ const docTemplate = `{
                         "description": "Internal server error",
                         "schema": {
                             "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/sites-tags": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns all tags assigned to a specific site",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get tags for a site",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Tag"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing required query parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Associates tags (by ID) with a specific site",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Add tags to a site",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site_name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Tag IDs to add",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddTagsToSiteInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Tag"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Removes an association between a tag and a site",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Remove a tag from a site",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Site name",
+                        "name": "site_name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Tag ID",
+                        "name": "tag_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Missing or invalid parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -1865,6 +2018,20 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.AddTagsToSiteInput": {
+            "type": "object",
+            "required": [
+                "tag_ids"
+            ],
+            "properties": {
+                "tag_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
@@ -2430,6 +2597,12 @@ const docTemplate = `{
                 },
                 "site_name": {
                     "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Tag"
+                    }
                 },
                 "updated_at": {
                     "type": "string"

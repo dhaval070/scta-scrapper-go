@@ -200,6 +200,15 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.AddTagsToSiteInput:
+    properties:
+      tag_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - tag_ids
+    type: object
   models.AddTagsToSiteLocationInput:
     properties:
       tag_ids:
@@ -571,6 +580,10 @@ definitions:
         type: string
       site_name:
         type: string
+      tags:
+        items:
+          $ref: '#/definitions/model.Tag'
+        type: array
       updated_at:
         type: string
     type: object
@@ -1403,7 +1416,7 @@ paths:
       consumes:
       - application/json
       description: Returns all site configurations with optional enabled filter, text
-        search, and sorting
+        search, tag filter, and sorting
       parameters:
       - description: Filter by enabled status (true/false)
         in: query
@@ -1412,6 +1425,10 @@ paths:
       - description: Search by site name or display name (partial match)
         in: query
         name: search
+        type: string
+      - description: Filter by tag name (exact match)
+        in: query
+        name: tag
         type: string
       - description: Sort column (site_name, display_name, last_scraped_at, games_scraped,
           games_imported, readiness_status)
@@ -1510,6 +1527,101 @@ paths:
       summary: Toggle site configuration enabled status
       tags:
       - SitesConfig
+  /sites-tags:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an association between a tag and a site
+      parameters:
+      - description: Site name
+        in: query
+        name: site_name
+        required: true
+        type: string
+      - description: Tag ID
+        in: query
+        name: tag_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Missing or invalid parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Remove a tag from a site
+      tags:
+      - Tags
+    get:
+      consumes:
+      - application/json
+      description: Returns all tags assigned to a specific site
+      parameters:
+      - description: Site name
+        in: query
+        name: site_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+        "400":
+          description: Missing required query parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get tags for a site
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: Associates tags (by ID) with a specific site
+      parameters:
+      - description: Site name
+        in: query
+        name: site_name
+        required: true
+        type: string
+      - description: Tag IDs to add
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddTagsToSiteInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/model.Tag'
+            type: array
+        "400":
+          description: Missing or invalid parameters
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Add tags to a site
+      tags:
+      - Tags
   /tags:
     get:
       consumes:
