@@ -372,8 +372,12 @@ func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, total i
 			PostalCode:      v.PostalCode,
 			LivebarnVenueID: v.LivebarnVenueID,
 			MhrVenueID:      v.MhrVenueID,
-			Latitude:        v.Latitude,
-			Longitude:       v.Longitude,
+			Latitude: func() float64 {
+				if v.Latitude != nil { return *v.Latitude }; return 0
+			}(),
+			Longitude: func() float64 {
+				if v.Longitude != nil { return *v.Longitude }; return 0
+			}(),
 			UpdatedAt:       v.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
 		if loc, ok := locations[v.LivebarnVenueID]; ok {
@@ -459,8 +463,12 @@ func (app *App) writeKmasterVenueCSV(c *gin.Context, venues []model.KmasterVenue
 			v.StreamingPlatform,
 			v.PhoneNumber,
 			v.Website,
-			strconv.FormatFloat(v.Latitude, 'f', -1, 64),
-			strconv.FormatFloat(v.Longitude, 'f', -1, 64),
+			func() string {
+				if v.Latitude != nil { return strconv.FormatFloat(*v.Latitude, 'f', -1, 64) }; return ""
+			}(),
+			func() string {
+				if v.Longitude != nil { return strconv.FormatFloat(*v.Longitude, 'f', -1, 64) }; return ""
+			}(),
 			v.CreatedAt.Format("2006-01-02 15:04:05"),
 			v.UpdatedAt.Format("2006-01-02 15:04:05"),
 			strconv.FormatBool(livebarnMatch[v.LivebarnVenueID]),
@@ -499,8 +507,12 @@ func convertToKmasterVenueResponse(v model.KmasterVenueList, livebarnMatch bool,
 		StreamingPlatform:      v.StreamingPlatform,
 		PhoneNumber:            v.PhoneNumber,
 		Website:                v.Website,
-		Latitude:               v.Latitude,
-		Longitude:              v.Longitude,
+		Latitude: func() float64 {
+			if v.Latitude != nil { return *v.Latitude }; return 0
+		}(),
+		Longitude: func() float64 {
+			if v.Longitude != nil { return *v.Longitude }; return 0
+		}(),
 		CreatedAt:              v.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:              v.UpdatedAt.Format("2006-01-02 15:04:05"),
 		LivebarnVenueIDMatched: livebarnMatch,
@@ -527,10 +539,18 @@ func convertToKmasterVenueModel(input models.KmasterVenueListInput) model.Kmaste
 		Website:           input.Website,
 	}
 	if input.Latitude != nil {
-		v.Latitude = *input.Latitude
+		if *input.Latitude == 0 {
+			v.Latitude = nil
+		} else {
+			v.Latitude = input.Latitude
+		}
 	}
 	if input.Longitude != nil {
-		v.Longitude = *input.Longitude
+		if *input.Longitude == 0 {
+			v.Longitude = nil
+		} else {
+			v.Longitude = input.Longitude
+		}
 	}
 	if input.Validate != nil {
 		v.Validate = *input.Validate

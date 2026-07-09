@@ -310,8 +310,12 @@ definitions:
         type: string
       id:
         type: integer
+      latitude:
+        type: number
       livebarn_venue_id:
         type: integer
+      longitude:
+        type: number
       mhr_venue_id:
         type: integer
       postal_code:
@@ -322,6 +326,8 @@ definitions:
         items:
           $ref: '#/definitions/models.KmasterVenueExportSurface'
         type: array
+      updated_at:
+        type: string
       venue_name:
         type: string
     type: object
@@ -355,8 +361,12 @@ definitions:
         type: string
       country:
         type: string
+      latitude:
+        type: number
       livebarn_venue_id:
         type: integer
+      longitude:
+        type: number
       mhr_venue_id:
         type: integer
       parent_company:
@@ -402,10 +412,14 @@ definitions:
         type: string
       id:
         type: integer
+      latitude:
+        type: number
       livebarn_venue_id:
         type: integer
       livebarn_venue_id_matched:
         type: boolean
+      longitude:
+        type: number
       mhr_venue_id:
         type: integer
       mhr_venue_id_matched:

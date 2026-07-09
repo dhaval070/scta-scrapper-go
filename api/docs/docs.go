@@ -2189,8 +2189,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "latitude": {
+                    "type": "number"
+                },
                 "livebarn_venue_id": {
                     "type": "integer"
+                },
+                "longitude": {
+                    "type": "number"
                 },
                 "mhr_venue_id": {
                     "type": "integer"
@@ -2206,6 +2212,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.KmasterVenueExportSurface"
                     }
+                },
+                "updated_at": {
+                    "type": "string"
                 },
                 "venue_name": {
                     "type": "string"
@@ -2261,8 +2270,14 @@ const docTemplate = `{
                 "country": {
                     "type": "string"
                 },
+                "latitude": {
+                    "type": "number"
+                },
                 "livebarn_venue_id": {
                     "type": "integer"
+                },
+                "longitude": {
+                    "type": "number"
                 },
                 "mhr_venue_id": {
                     "type": "integer"
@@ -2329,11 +2344,17 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "latitude": {
+                    "type": "number"
+                },
                 "livebarn_venue_id": {
                     "type": "integer"
                 },
                 "livebarn_venue_id_matched": {
                     "type": "boolean"
+                },
+                "longitude": {
+                    "type": "number"
                 },
                 "mhr_venue_id": {
                     "type": "integer"
