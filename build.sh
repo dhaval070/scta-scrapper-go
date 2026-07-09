@@ -9,3 +9,4 @@ go build -o ./bin/agilex ./cmd/agilex
 go build -o ./bin/claim-api-test ./cmd/claim-api-test
 go build -o ./bin/claim-cron ./cmd/claim-cron
 go build ./cmd/scraper/
+go build -o ./bin/geocode-venues ./cmd/geocode-venues/

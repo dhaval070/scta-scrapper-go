@@ -25,6 +25,8 @@ type KmasterVenueList struct {
 	StreamingPlatform string    `gorm:"column:streaming_platform" json:"streaming_platform"`
 	PhoneNumber       string    `gorm:"column:phone_number" json:"phone_number"`
 	Website           string    `gorm:"column:website" json:"website"`
+	Latitude          float64   `gorm:"column:latitude" json:"latitude"`
+	Longitude         float64   `gorm:"column:longitude" json:"longitude"`
 	CreatedAt         time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt         time.Time `gorm:"column:updated_at;default:CURRENT_TIMESTAMP" json:"updated_at"`
 }

@@ -68,8 +68,10 @@ type KmasterVenueListInput struct {
 	VenueType         string `json:"venue_type"`
 	AccountStatus     string `json:"account_status"`
 	StreamingPlatform string `json:"streaming_platform"`
-	PhoneNumber       string `json:"phone_number"`
-	Website           string `json:"website"`
+	PhoneNumber       string   `json:"phone_number"`
+	Website           string   `json:"website"`
+	Latitude          *float64 `json:"latitude"`
+	Longitude         *float64 `json:"longitude"`
 }
 
 type KmasterVenueListResponse struct {
@@ -92,11 +94,13 @@ type KmasterVenueListResponse struct {
 	AccountStatus          string `json:"account_status"`
 	StreamingPlatform      string `json:"streaming_platform"`
 	PhoneNumber            string `json:"phone_number"`
-	Website                string `json:"website"`
-	CreatedAt              string `json:"created_at"`
-	UpdatedAt              string `json:"updated_at"`
-	LivebarnVenueIDMatched bool   `json:"livebarn_venue_id_matched"`
-	MhrVenueIDMatched      bool   `json:"mhr_venue_id_matched"`
+	Website                string  `json:"website"`
+	Latitude               float64 `json:"latitude"`
+	Longitude              float64 `json:"longitude"`
+	CreatedAt              string  `json:"created_at"`
+	UpdatedAt              string  `json:"updated_at"`
+	LivebarnVenueIDMatched bool    `json:"livebarn_venue_id_matched"`
+	MhrVenueIDMatched      bool    `json:"mhr_venue_id_matched"`
 }
 type KVenueResult struct {
 	Data    []KmasterVenueListResponse `json:"data"`
@@ -119,6 +123,9 @@ type KmasterVenueExportItem struct {
 	PostalCode      string                      `json:"postal_code"`
 	LivebarnVenueID int                         `json:"livebarn_venue_id"`
 	MhrVenueID      int                         `json:"mhr_venue_id"`
+	Latitude        float64                     `json:"latitude"`
+	Longitude       float64                     `json:"longitude"`
+	UpdatedAt       string                      `json:"updated_at"`
 	Surfaces        []KmasterVenueExportSurface `json:"surfaces,omitempty"`
 }
 
