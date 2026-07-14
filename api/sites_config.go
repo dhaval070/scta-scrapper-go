@@ -45,6 +45,7 @@ func (app *App) fetchLeagueNameMap() map[string]string {
 // @Param enabled query string false "Filter by enabled status (true/false)"
 // @Param search query string false "Search by site name or display name (partial match)"
 // @Param tag query string false "Filter by tag name (exact match)"
+// @Param has_upcoming query string false "Filter to sites with upcoming games (games_imported > 0) (true/false)"
 // @Param sort query string false "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported, readiness_status)"
 // @Param order query string false "Sort direction (asc, desc)"
 // @Success 200 {array} models.SitesConfigResponse
@@ -58,6 +59,7 @@ func (app *App) getSitesConfig(c *gin.Context) {
 	sort := c.DefaultQuery("sort", "site_name")
 	order := c.DefaultQuery("order", "asc")
 	search := c.Query("search")
+	hasUpcoming := c.Query("has_upcoming")
 
 	query := app.db.Model(&model.SitesConfig{})
 
@@ -79,6 +81,10 @@ func (app *App) getSitesConfig(c *gin.Context) {
 				  AND t.name = ?
 			)
 		`, tagName)
+	}
+
+	if hasUpcoming == "true" {
+		query = query.Where("games_imported > 0")
 	}
 
 	allowedSorts := map[string]bool{

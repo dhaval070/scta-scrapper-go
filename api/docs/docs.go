@@ -1280,6 +1280,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Filter to sites with upcoming games (games_imported \u003e 0) (true/false)",
+                        "name": "has_upcoming",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Sort column (site_name, display_name, last_scraped_at, games_scraped, games_imported, readiness_status)",
                         "name": "sort",
                         "in": "query"

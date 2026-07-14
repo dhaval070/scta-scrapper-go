@@ -1444,6 +1444,10 @@ paths:
         in: query
         name: tag
         type: string
+      - description: Filter to sites with upcoming games (games_imported > 0) (true/false)
+        in: query
+        name: has_upcoming
+        type: string
       - description: Sort column (site_name, display_name, last_scraped_at, games_scraped,
           games_imported, readiness_status)
         in: query
