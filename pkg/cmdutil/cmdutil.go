@@ -135,11 +135,6 @@ func WriteOutput(outfile string, result [][]string) error {
 // ImportEventsFromRows imports events from scraped rows to the database
 // Rows are expected to have 8 columns: [datetime, site, home, guest, location, division, event_id, address] (after normalization)
 func ImportEventsFromRows(repo *repository.Repository, site string, rows [][]string, cutoffDate time.Time) error {
-	// Reset games_imported to 0 to track current import count
-	if err := repo.DB.Exec(`UPDATE sites_config SET games_imported = 0 WHERE site_name = ?`, site).Error; err != nil {
-		log.Printf("database error: failed to reset games_imported for site %s: %v", site, err)
-	}
-
 	// Skip special importers - they already import events via their own binaries
 	if SpecialImporters[site] {
 		log.Printf("Skipping event import for %s (uses league-specific mapping table)", site)

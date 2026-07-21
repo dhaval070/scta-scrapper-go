@@ -286,6 +286,11 @@ type scraperResult struct {
 
 // processSite handles scraping and output for a single site
 func processSite(site *siteconfig.SiteConfig, loader *siteconfig.Loader, mm, yyyy int, flags *cmdutil.Flags, repo *repository.Repository, cutoffTime time.Time) (int, error) {
+	// Reset scraped and imported counts to 0 before processing this site
+	if err := repo.DB.Exec(`UPDATE sites_config SET games_scraped = 0, games_imported = 0 WHERE site_name = ?`, site.SiteName).Error; err != nil {
+		log.Printf("Warning: failed to reset counts for %s: %v", site.SiteName, err)
+	}
+
 	// Create scraper
 	s, err := scraper.New(site, loader)
 	if err != nil {

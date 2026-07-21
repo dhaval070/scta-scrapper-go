@@ -663,11 +663,6 @@ func (r *SiteRepository) RunMatchLocations() error {
 func (r *Repository) ImportEvents(site string, records []*model.Event, cutOffDate time.Time) error {
 	log.Println(site, ":importing events", site, cutOffDate)
 
-	// Reset games_imported to 0 to track current import count
-	if err := r.DB.Exec(`UPDATE sites_config SET games_imported = 0 WHERE site_name = ?`, site).Error; err != nil {
-		log.Printf("database error: failed to reset games_imported for site %s: %v", site, err)
-	}
-
 	// retry to avoid dead lock by multiple sites events import in parallel. that is done by run.sh line: ./bin/site-schedule -site $site -infile $f > $d1/$site.csv --import -cutoffdate $dt &
 	maxRetries := 3
 	for attempt := 1; attempt <= maxRetries; attempt++ {
