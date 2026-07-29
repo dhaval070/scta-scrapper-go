@@ -174,6 +174,9 @@ func main() {
 	r.PUT("/kmaster-venues/:id", app.updateKmasterVenue)
 	r.DELETE("/kmaster-venues/:id", app.deleteKmasterVenue)
 
+	// Spordle surface routes
+	r.GET("/spordle-surfaces", app.getSpordleSurfaces)
+
 	// API key-protected routes (registered before Swagger to keep Swagger under global auth)
 	apiGroup := r.Group("/v1")
 	apiGroup.Use(app.APIKeyMiddleware())

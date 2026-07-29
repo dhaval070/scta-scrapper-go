@@ -1571,6 +1571,96 @@ const docTemplate = `{
                 }
             }
         },
+        "/spordle-surfaces": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns a paginated list of surfaces from the spordle surfaces table",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "SpordleSurface"
+                ],
+                "summary": "List spordle surfaces",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default 10, max 100)",
+                        "name": "perPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by venue name (partial match)",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by venue city (exact match)",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by venue region/province (exact match)",
+                        "name": "region",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by venue country (exact match)",
+                        "name": "country",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by surface sport (partial match)",
+                        "name": "sport",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by surface type (exact match, e.g. Ice, Grass, Synthetic)",
+                        "name": "surfaceType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by surface size (exact match, e.g. XS, S, M, L, XL)",
+                        "name": "surfaceSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated spordle surface list",
+                        "schema": {
+                            "$ref": "#/definitions/models.SpordleSurfaceResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/tags": {
             "get": {
                 "security": [
@@ -2633,6 +2723,97 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.SpordleSurfaceResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "livebarn_surface_id": {
+                    "type": "string"
+                },
+                "number_of_games_coming": {
+                    "type": "integer"
+                },
+                "surface_alias": {
+                    "type": "string"
+                },
+                "surface_id": {
+                    "type": "integer"
+                },
+                "surface_name": {
+                    "type": "string"
+                },
+                "surface_size": {
+                    "type": "string"
+                },
+                "surface_sports": {
+                    "type": "string"
+                },
+                "surface_time_zone": {
+                    "type": "string"
+                },
+                "surface_type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "venue_address": {
+                    "type": "string"
+                },
+                "venue_alias": {
+                    "type": "string"
+                },
+                "venue_city": {
+                    "type": "string"
+                },
+                "venue_country": {
+                    "type": "string"
+                },
+                "venue_id": {
+                    "type": "string"
+                },
+                "venue_latitude": {
+                    "type": "number"
+                },
+                "venue_longitude": {
+                    "type": "number"
+                },
+                "venue_name": {
+                    "type": "string"
+                },
+                "venue_postal_code": {
+                    "type": "string"
+                },
+                "venue_region": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SpordleSurfaceResult": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SpordleSurfaceResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

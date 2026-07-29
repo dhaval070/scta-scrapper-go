@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -81,38 +82,38 @@ func main() {
 			}
 
 			record := SpordleSurface{
-				VenueID:         line[0],
-				VenueName:       line[1],
-				VenueAddress:    line[2],
-				VenueCity:       line[3],
-				VenueRegion:     line[4],
-				VenueCountry:    line[5],
-				VenueAlias:      line[6],
-				SurfaceID:       parseUint(line[10]),
-				SurfaceName:     line[11],
-				SurfaceAlias:    line[12],
-				SurfaceSports:   line[13],
-				SurfaceTimeZone: line[14],
-				SurfaceType:     line[15],
-				SurfaceSize:     line[16],
-				LivebarnSurfaceID: line[17],
+				VenueID:           strings.TrimSpace(line[0]),
+				VenueName:         strings.TrimSpace(line[1]),
+				VenueAddress:      strings.TrimSpace(line[2]),
+				VenueCity:         strings.TrimSpace(line[3]),
+				VenueRegion:       strings.TrimSpace(line[4]),
+				VenueCountry:      strings.TrimSpace(line[5]),
+				VenueAlias:        strings.TrimSpace(line[6]),
+				SurfaceID:         parseUint(strings.TrimSpace(line[10])),
+				SurfaceName:       strings.TrimSpace(line[11]),
+				SurfaceAlias:      strings.TrimSpace(line[12]),
+				SurfaceSports:     strings.TrimSpace(line[13]),
+				SurfaceTimeZone:   strings.TrimSpace(line[14]),
+				SurfaceType:       strings.TrimSpace(line[15]),
+				SurfaceSize:       strings.TrimSpace(line[16]),
+				LivebarnSurfaceID: strings.TrimSpace(line[17]),
 			}
 
-			if line[7] != "" {
-				v, err := strconv.ParseFloat(line[7], 64)
+			if strings.TrimSpace(line[7]) != "" {
+				v, err := strconv.ParseFloat(strings.TrimSpace(line[7]), 64)
 				if err == nil {
 					record.VenueLatitude = v
 				}
 			}
-			if line[8] != "" {
-				v, err := strconv.ParseFloat(line[8], 64)
+			if strings.TrimSpace(line[8]) != "" {
+				v, err := strconv.ParseFloat(strings.TrimSpace(line[8]), 64)
 				if err == nil {
 					record.VenueLongitude = v
 				}
 			}
-			record.VenuePostalCode = line[9]
-			if line[18] != "" {
-				v, err := strconv.Atoi(line[18])
+			record.VenuePostalCode = strings.TrimSpace(line[9])
+			if strings.TrimSpace(line[18]) != "" {
+				v, err := strconv.Atoi(strings.TrimSpace(line[18]))
 				if err == nil {
 					record.NumberOfGamesComing = v
 				}

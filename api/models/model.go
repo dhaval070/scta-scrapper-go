@@ -334,3 +334,35 @@ type AddTagsToSiteLocationInput struct {
 type AddTagsToSiteInput struct {
 	TagIDs []int32 `json:"tag_ids" binding:"required"`
 }
+
+type SpordleSurfaceResponse struct {
+	ID                  uint64  `json:"id"`
+	VenueID             string  `json:"venue_id"`
+	VenueName           string  `json:"venue_name"`
+	VenueAddress        string  `json:"venue_address"`
+	VenueCity           string  `json:"venue_city"`
+	VenueRegion         string  `json:"venue_region"`
+	VenueCountry        string  `json:"venue_country"`
+	VenueAlias          string  `json:"venue_alias"`
+	VenueLatitude       float64 `json:"venue_latitude"`
+	VenueLongitude      float64 `json:"venue_longitude"`
+	VenuePostalCode     string  `json:"venue_postal_code"`
+	SurfaceID           uint    `json:"surface_id"`
+	SurfaceName         string  `json:"surface_name"`
+	SurfaceAlias        string  `json:"surface_alias"`
+	SurfaceSports       string  `json:"surface_sports"`
+	SurfaceTimeZone     string  `json:"surface_time_zone"`
+	SurfaceType         string  `json:"surface_type"`
+	SurfaceSize         string  `json:"surface_size"`
+	LivebarnSurfaceID   string  `json:"livebarn_surface_id"`
+	NumberOfGamesComing int     `json:"number_of_games_coming"`
+	CreatedAt           string  `json:"created_at"`
+	UpdatedAt           string  `json:"updated_at"`
+}
+
+type SpordleSurfaceResult struct {
+	Data    []SpordleSurfaceResponse `json:"data"`
+	Page    int                      `json:"page"`
+	PerPage int                      `json:"perPage"`
+	Total   int64                    `json:"total"`
+}

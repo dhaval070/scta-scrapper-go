@@ -601,6 +601,66 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.SpordleSurfaceResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      livebarn_surface_id:
+        type: string
+      number_of_games_coming:
+        type: integer
+      surface_alias:
+        type: string
+      surface_id:
+        type: integer
+      surface_name:
+        type: string
+      surface_size:
+        type: string
+      surface_sports:
+        type: string
+      surface_time_zone:
+        type: string
+      surface_type:
+        type: string
+      updated_at:
+        type: string
+      venue_address:
+        type: string
+      venue_alias:
+        type: string
+      venue_city:
+        type: string
+      venue_country:
+        type: string
+      venue_id:
+        type: string
+      venue_latitude:
+        type: number
+      venue_longitude:
+        type: number
+      venue_name:
+        type: string
+      venue_postal_code:
+        type: string
+      venue_region:
+        type: string
+    type: object
+  models.SpordleSurfaceResult:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.SpordleSurfaceResponse'
+        type: array
+      page:
+        type: integer
+      perPage:
+        type: integer
+      total:
+        type: integer
+    type: object
   models.UpdateTagInput:
     properties:
       color:
@@ -1640,6 +1700,65 @@ paths:
       summary: Add tags to a site
       tags:
       - Tags
+  /spordle-surfaces:
+    get:
+      consumes:
+      - application/json
+      description: Returns a paginated list of surfaces from the spordle surfaces
+        table
+      parameters:
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Items per page (default 10, max 100)
+        in: query
+        name: perPage
+        type: integer
+      - description: Filter by venue name (partial match)
+        in: query
+        name: name
+        type: string
+      - description: Filter by venue city (exact match)
+        in: query
+        name: city
+        type: string
+      - description: Filter by venue region/province (exact match)
+        in: query
+        name: region
+        type: string
+      - description: Filter by venue country (exact match)
+        in: query
+        name: country
+        type: string
+      - description: Filter by surface sport (partial match)
+        in: query
+        name: sport
+        type: string
+      - description: Filter by surface type (exact match, e.g. Ice, Grass, Synthetic)
+        in: query
+        name: surfaceType
+        type: string
+      - description: Filter by surface size (exact match, e.g. XS, S, M, L, XL)
+        in: query
+        name: surfaceSize
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated spordle surface list
+          schema:
+            $ref: '#/definitions/models.SpordleSurfaceResult'
+        "500":
+          description: Internal server error
+          schema:
+            type: object
+      security:
+      - CookieAuth: []
+      summary: List spordle surfaces
+      tags:
+      - SpordleSurface
   /tags:
     get:
       consumes:
