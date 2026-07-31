@@ -282,6 +282,7 @@ func (app *App) updateKmasterVenue(c *gin.Context) {
 	updated := convertToKmasterVenueModel(input)
 	updated.ID = venue.ID
 	updated.CreatedAt = venue.CreatedAt
+	updated.SpordleVenueID = venue.SpordleVenueID
 
 	if err := app.db.Save(&updated).Error; err != nil {
 		sendError(c, err)
@@ -372,13 +373,20 @@ func (app *App) buildKmasterVenueExport(venues []model.KmasterVenueList, total i
 			PostalCode:      v.PostalCode,
 			LivebarnVenueID: v.LivebarnVenueID,
 			MhrVenueID:      v.MhrVenueID,
+			SpordleVenueID:  v.SpordleVenueID,
 			Latitude: func() float64 {
-				if v.Latitude != nil { return *v.Latitude }; return 0
+				if v.Latitude != nil {
+					return *v.Latitude
+				}
+				return 0
 			}(),
 			Longitude: func() float64 {
-				if v.Longitude != nil { return *v.Longitude }; return 0
+				if v.Longitude != nil {
+					return *v.Longitude
+				}
+				return 0
 			}(),
-			UpdatedAt:       v.UpdatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt: v.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
 		if loc, ok := locations[v.LivebarnVenueID]; ok {
 			for _, s := range loc.Surfaces {
@@ -464,10 +472,16 @@ func (app *App) writeKmasterVenueCSV(c *gin.Context, venues []model.KmasterVenue
 			v.PhoneNumber,
 			v.Website,
 			func() string {
-				if v.Latitude != nil { return strconv.FormatFloat(*v.Latitude, 'f', -1, 64) }; return ""
+				if v.Latitude != nil {
+					return strconv.FormatFloat(*v.Latitude, 'f', -1, 64)
+				}
+				return ""
 			}(),
 			func() string {
-				if v.Longitude != nil { return strconv.FormatFloat(*v.Longitude, 'f', -1, 64) }; return ""
+				if v.Longitude != nil {
+					return strconv.FormatFloat(*v.Longitude, 'f', -1, 64)
+				}
+				return ""
 			}(),
 			v.CreatedAt.Format("2006-01-02 15:04:05"),
 			v.UpdatedAt.Format("2006-01-02 15:04:05"),
@@ -487,31 +501,38 @@ func (app *App) writeKmasterVenueCSV(c *gin.Context, venues []model.KmasterVenue
 
 func convertToKmasterVenueResponse(v model.KmasterVenueList, livebarnMatch bool, mhrMatch bool) models.KmasterVenueListResponse {
 	return models.KmasterVenueListResponse{
-		ID:                     v.ID,
-		Validate:               v.Validate,
-		LivebarnVenueID:        v.LivebarnVenueID,
-		MhrVenueID:             v.MhrVenueID,
-		VenueName:              v.VenueName,
-		Surfaces:               v.Surfaces,
-		City:                   v.City,
-		RinkAddress:            v.RinkAddress,
-		PostalCode:             v.PostalCode,
-		ProvinceState:          v.ProvinceState,
-		Country:                v.Country,
-		CompanyNameAlt1:        v.CompanyNameAlt1,
-		CompanyNameAlt2:        v.CompanyNameAlt2,
-		CompanyNameAlt3:        v.CompanyNameAlt3,
-		ParentCompany:          v.ParentCompany,
-		VenueType:              v.VenueType,
-		AccountStatus:          v.AccountStatus,
-		StreamingPlatform:      v.StreamingPlatform,
-		PhoneNumber:            v.PhoneNumber,
-		Website:                v.Website,
+		ID:                v.ID,
+		Validate:          v.Validate,
+		LivebarnVenueID:   v.LivebarnVenueID,
+		MhrVenueID:        v.MhrVenueID,
+		SpordleVenueID:    v.SpordleVenueID,
+		VenueName:         v.VenueName,
+		Surfaces:          v.Surfaces,
+		City:              v.City,
+		RinkAddress:       v.RinkAddress,
+		PostalCode:        v.PostalCode,
+		ProvinceState:     v.ProvinceState,
+		Country:           v.Country,
+		CompanyNameAlt1:   v.CompanyNameAlt1,
+		CompanyNameAlt2:   v.CompanyNameAlt2,
+		CompanyNameAlt3:   v.CompanyNameAlt3,
+		ParentCompany:     v.ParentCompany,
+		VenueType:         v.VenueType,
+		AccountStatus:     v.AccountStatus,
+		StreamingPlatform: v.StreamingPlatform,
+		PhoneNumber:       v.PhoneNumber,
+		Website:           v.Website,
 		Latitude: func() float64 {
-			if v.Latitude != nil { return *v.Latitude }; return 0
+			if v.Latitude != nil {
+				return *v.Latitude
+			}
+			return 0
 		}(),
 		Longitude: func() float64 {
-			if v.Longitude != nil { return *v.Longitude }; return 0
+			if v.Longitude != nil {
+				return *v.Longitude
+			}
+			return 0
 		}(),
 		CreatedAt:              v.CreatedAt.Format("2006-01-02 15:04:05"),
 		UpdatedAt:              v.UpdatedAt.Format("2006-01-02 15:04:05"),

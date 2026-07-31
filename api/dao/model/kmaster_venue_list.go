@@ -9,6 +9,7 @@ type KmasterVenueList struct {
 	Validate          int8      `gorm:"column:validate;not null;default:0" json:"validate"`
 	LivebarnVenueID   int       `gorm:"column:livebarn_venue_id" json:"livebarn_venue_id"`
 	MhrVenueID        int       `gorm:"column:mhr_venue_id" json:"mhr_venue_id"`
+	SpordleVenueID    string    `gorm:"column:spordle_venue_id" json:"spordle_venue_id"`
 	VenueName         string    `gorm:"column:venue_name;not null" json:"venue_name"`
 	Surfaces          int       `gorm:"column:surfaces;not null;default:0" json:"surfaces"`
 	City              string    `gorm:"column:city" json:"city"`

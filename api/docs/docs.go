@@ -25,11 +25,6 @@ const docTemplate = `{
     "paths": {
         "/events": {
             "get": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
                 "description": "Returns paginated list of events with optional filters for site, surface, date range, and claim status. Includes surface status.",
                 "consumes": [
                     "application/json"
@@ -105,16 +100,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/events/{id}": {
-            "put": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/events/{id}": {
+            "put": {
                 "description": "Updates the surface_id (and location_id) for a single event or all future events at the same location",
                 "consumes": [
                     "application/json"
@@ -159,16 +154,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/gamesheet-seasons": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/gamesheet-seasons": {
+            "get": {
                 "description": "Fetches seasons from the Gamesheet API or a CSV file, and filters out inactive or expired seasons",
                 "consumes": [
                     "application/json"
@@ -222,16 +217,16 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            }
-        },
-        "/gamesheet-seasons/import": {
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/gamesheet-seasons/import": {
+            "post": {
                 "description": "Accepts an array of Season objects and inserts them into gamesheet_seasons and sites_config tables within a single transaction. Skips records that already exist.",
                 "consumes": [
                     "application/json"
@@ -285,16 +280,16 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            }
-        },
-        "/kmaster-venues": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/kmaster-venues": {
+            "get": {
                 "description": "Returns a paginated list of all venues from the kmaster venue list. Use export=json to download all records as a JSON file (limited fields + LiveBarn surfaces). Use export=csv to download all records as a CSV file (all fields). No pagination for exports.",
                 "consumes": [
                     "application/json"
@@ -363,14 +358,14 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "Creates a new venue record in the kmaster venue list",
                 "consumes": [
                     "application/json"
@@ -412,16 +407,16 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            }
-        },
-        "/kmaster-venues/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/kmaster-venues/{id}": {
+            "get": {
                 "description": "Returns a single venue record from the kmaster venue list",
                 "consumes": [
                     "application/json"
@@ -467,14 +462,14 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            },
-            "put": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "put": {
                 "description": "Updates an existing venue record in the kmaster venue list",
                 "consumes": [
                     "application/json"
@@ -529,14 +524,14 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "Deletes a venue record from the kmaster venue list",
                 "consumes": [
                     "application/json"
@@ -583,16 +578,16 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            }
-        },
-        "/locations/{id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/locations/{id}": {
+            "get": {
                 "description": "Returns a LiveBarn location with its associated surfaces",
                 "consumes": [
                     "application/json"
@@ -638,16 +633,16 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            }
-        },
-        "/mhr-lb-notes": {
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/mhr-lb-notes": {
+            "post": {
                 "description": "Updates the lb_notes field for a specific MHR location",
                 "consumes": [
                     "application/json"
@@ -678,16 +673,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/mhr-lb-notes/{mhr_id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/mhr-lb-notes/{mhr_id}": {
+            "get": {
                 "description": "Retrieves the lb_notes field for a specific MHR location",
                 "consumes": [
                     "application/json"
@@ -722,16 +717,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/mhr-locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/mhr-locations": {
+            "get": {
                 "description": "Returns paginated MHR location mappings with optional filters. Include export query parameter to download CSV.",
                 "consumes": [
                     "application/json"
@@ -800,16 +795,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.MHRLocResult"
                         }
                     }
-                }
-            }
-        },
-        "/mhr-locations/{mhr_id}": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/mhr-locations/{mhr_id}": {
+            "get": {
                 "description": "Returns a single MHR location with its LiveBarn location and surface associations",
                 "consumes": [
                     "application/json"
@@ -855,16 +850,16 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            }
-        },
-        "/scrape": {
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/scrape": {
+            "post": {
                 "description": "Starts scraping for specified site or all enabled sites. Sites already being scraped are skipped. Returns 409 only if ALL requested sites are already running.",
                 "consumes": [
                     "application/json"
@@ -920,16 +915,16 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            }
-        },
-        "/scrape/status": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/scrape/status": {
+            "get": {
                 "description": "Returns current scraping status for all configured sites",
                 "consumes": [
                     "application/json"
@@ -960,16 +955,16 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            }
-        },
-        "/scrape/status/{site}": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/scrape/status/{site}": {
+            "get": {
                 "description": "Returns current scraping status for the specified site",
                 "consumes": [
                     "application/json"
@@ -1015,16 +1010,16 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            }
-        },
-        "/site-location-tags": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/site-location-tags": {
+            "get": {
                 "description": "Returns all tags assigned to a specific site-location pair",
                 "consumes": [
                     "application/json"
@@ -1069,14 +1064,14 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "Associates tags (by ID) with a specific site-location pair",
                 "consumes": [
                     "application/json"
@@ -1130,14 +1125,14 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "Removes an association between a tag and a site-location",
                 "consumes": [
                     "application/json"
@@ -1183,16 +1178,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/site-locations": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/site-locations": {
+            "get": {
                 "description": "Returns paginated site location mappings for a given site with optional pagination parameters",
                 "consumes": [
                     "application/json"
@@ -1243,7 +1238,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.SiteLocResult"
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ]
             }
         },
         "/sites-config": {
@@ -1318,11 +1318,6 @@ const docTemplate = `{
         },
         "/sites-config/{id}/readiness": {
             "put": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
                 "description": "Updates the readiness status (0=pending, 1=in progress, 2=ready) for a site configuration",
                 "consumes": [
                     "application/json"
@@ -1377,7 +1372,12 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ]
             }
         },
         "/sites-config/{id}/toggle": {
@@ -1426,11 +1426,6 @@ const docTemplate = `{
         },
         "/sites-tags": {
             "get": {
-                "security": [
-                    {
-                        "CookieAuth": []
-                    }
-                ],
                 "description": "Returns all tags assigned to a specific site",
                 "consumes": [
                     "application/json"
@@ -1468,14 +1463,14 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "Associates tags (by ID) with a specific site",
                 "consumes": [
                     "application/json"
@@ -1522,14 +1517,14 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "Removes an association between a tag and a site",
                 "consumes": [
                     "application/json"
@@ -1568,16 +1563,16 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        },
-        "/spordle-surfaces": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/spordle-surfaces": {
+            "get": {
                 "description": "Returns a paginated list of surfaces from the spordle surfaces table",
                 "consumes": [
                     "application/json"
@@ -1658,16 +1653,16 @@ const docTemplate = `{
                             "type": "object"
                         }
                     }
-                }
-            }
-        },
-        "/tags": {
-            "get": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tags": {
+            "get": {
                 "description": "Returns all tags, optionally filtered by name search",
                 "consumes": [
                     "application/json"
@@ -1697,14 +1692,14 @@ const docTemplate = `{
                             }
                         }
                     }
-                }
-            },
-            "post": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "post": {
                 "description": "Creates a new tag with the given name, optional color and description",
                 "consumes": [
                     "application/json"
@@ -1734,16 +1729,16 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Tag"
                         }
                     }
-                }
-            }
-        },
-        "/tags/{id}": {
-            "put": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            }
+        },
+        "/tags/{id}": {
+            "put": {
                 "description": "Updates the name, color, or description of an existing tag",
                 "consumes": [
                     "application/json"
@@ -1780,14 +1775,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Tag"
                         }
                     }
-                }
-            },
-            "delete": {
+                },
                 "security": [
                     {
                         "CookieAuth": []
                     }
-                ],
+                ]
+            },
+            "delete": {
                 "description": "Deletes a tag and removes all its associations (via CASCADE)",
                 "consumes": [
                     "application/json"
@@ -1812,7 +1807,12 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ]
             }
         }
     },
@@ -2303,6 +2303,9 @@ const docTemplate = `{
                 "province_state": {
                     "type": "string"
                 },
+                "spordle_venue_id": {
+                    "type": "string"
+                },
                 "surfaces": {
                     "type": "array",
                     "items": {
@@ -2471,6 +2474,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rink_address": {
+                    "type": "string"
+                },
+                "spordle_venue_id": {
                     "type": "string"
                 },
                 "streaming_platform": {

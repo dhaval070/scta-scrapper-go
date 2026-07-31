@@ -51,23 +51,23 @@ type SiteLocResult struct {
 }
 
 type KmasterVenueListInput struct {
-	Validate          *int8  `json:"validate"`
-	LivebarnVenueID   *int   `json:"livebarn_venue_id"`
-	MhrVenueID        *int   `json:"mhr_venue_id"`
-	VenueName         string `json:"venue_name" binding:"required"`
-	Surfaces          *int   `json:"surfaces"`
-	City              string `json:"city"`
-	RinkAddress       string `json:"rink_address"`
-	PostalCode        string `json:"postal_code"`
-	ProvinceState     string `json:"province_state"`
-	Country           string `json:"country"`
-	CompanyNameAlt1   string `json:"company_name_alt1"`
-	CompanyNameAlt2   string `json:"company_name_alt2"`
-	CompanyNameAlt3   string `json:"company_name_alt3"`
-	ParentCompany     string `json:"parent_company"`
-	VenueType         string `json:"venue_type"`
-	AccountStatus     string `json:"account_status"`
-	StreamingPlatform string `json:"streaming_platform"`
+	Validate          *int8    `json:"validate"`
+	LivebarnVenueID   *int     `json:"livebarn_venue_id"`
+	MhrVenueID        *int     `json:"mhr_venue_id"`
+	VenueName         string   `json:"venue_name" binding:"required"`
+	Surfaces          *int     `json:"surfaces"`
+	City              string   `json:"city"`
+	RinkAddress       string   `json:"rink_address"`
+	PostalCode        string   `json:"postal_code"`
+	ProvinceState     string   `json:"province_state"`
+	Country           string   `json:"country"`
+	CompanyNameAlt1   string   `json:"company_name_alt1"`
+	CompanyNameAlt2   string   `json:"company_name_alt2"`
+	CompanyNameAlt3   string   `json:"company_name_alt3"`
+	ParentCompany     string   `json:"parent_company"`
+	VenueType         string   `json:"venue_type"`
+	AccountStatus     string   `json:"account_status"`
+	StreamingPlatform string   `json:"streaming_platform"`
 	PhoneNumber       string   `json:"phone_number"`
 	Website           string   `json:"website"`
 	Latitude          *float64 `json:"latitude"`
@@ -75,25 +75,26 @@ type KmasterVenueListInput struct {
 }
 
 type KmasterVenueListResponse struct {
-	ID                     uint64 `json:"id"`
-	Validate               int8   `json:"validate"`
-	LivebarnVenueID        int    `json:"livebarn_venue_id"`
-	MhrVenueID             int    `json:"mhr_venue_id"`
-	VenueName              string `json:"venue_name"`
-	Surfaces               int    `json:"surfaces"`
-	City                   string `json:"city"`
-	RinkAddress            string `json:"rink_address"`
-	PostalCode             string `json:"postal_code"`
-	ProvinceState          string `json:"province_state"`
-	Country                string `json:"country"`
-	CompanyNameAlt1        string `json:"company_name_alt1"`
-	CompanyNameAlt2        string `json:"company_name_alt2"`
-	CompanyNameAlt3        string `json:"company_name_alt3"`
-	ParentCompany          string `json:"parent_company"`
-	VenueType              string `json:"venue_type"`
-	AccountStatus          string `json:"account_status"`
-	StreamingPlatform      string `json:"streaming_platform"`
-	PhoneNumber            string `json:"phone_number"`
+	ID                     uint64  `json:"id"`
+	Validate               int8    `json:"validate"`
+	LivebarnVenueID        int     `json:"livebarn_venue_id"`
+	MhrVenueID             int     `json:"mhr_venue_id"`
+	SpordleVenueID         string  `json:"spordle_venue_id"`
+	VenueName              string  `json:"venue_name"`
+	Surfaces               int     `json:"surfaces"`
+	City                   string  `json:"city"`
+	RinkAddress            string  `json:"rink_address"`
+	PostalCode             string  `json:"postal_code"`
+	ProvinceState          string  `json:"province_state"`
+	Country                string  `json:"country"`
+	CompanyNameAlt1        string  `json:"company_name_alt1"`
+	CompanyNameAlt2        string  `json:"company_name_alt2"`
+	CompanyNameAlt3        string  `json:"company_name_alt3"`
+	ParentCompany          string  `json:"parent_company"`
+	VenueType              string  `json:"venue_type"`
+	AccountStatus          string  `json:"account_status"`
+	StreamingPlatform      string  `json:"streaming_platform"`
+	PhoneNumber            string  `json:"phone_number"`
 	Website                string  `json:"website"`
 	Latitude               float64 `json:"latitude"`
 	Longitude              float64 `json:"longitude"`
@@ -123,6 +124,7 @@ type KmasterVenueExportItem struct {
 	PostalCode      string                      `json:"postal_code"`
 	LivebarnVenueID int                         `json:"livebarn_venue_id"`
 	MhrVenueID      int                         `json:"mhr_venue_id"`
+	SpordleVenueID  string                      `json:"spordle_venue_id"`
 	Latitude        float64                     `json:"latitude"`
 	Longitude       float64                     `json:"longitude"`
 	UpdatedAt       string                      `json:"updated_at"`

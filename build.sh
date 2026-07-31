@@ -11,3 +11,4 @@ go build -o ./bin/claim-cron ./cmd/claim-cron
 go build ./cmd/scraper/
 go build -o ./bin/geocode-venues ./cmd/geocode-venues/
 go build -o ./bin/update-kmaster-venue-coords ./cmd/update-kmaster-venue-coords/
+go build -o ./bin/spordle-import ./cmd/spordle-import

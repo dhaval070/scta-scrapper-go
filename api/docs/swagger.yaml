@@ -322,6 +322,8 @@ definitions:
         type: string
       province_state:
         type: string
+      spordle_venue_id:
+        type: string
       surfaces:
         items:
           $ref: '#/definitions/models.KmasterVenueExportSurface'
@@ -433,6 +435,8 @@ definitions:
       province_state:
         type: string
       rink_address:
+        type: string
+      spordle_venue_id:
         type: string
       streaming_platform:
         type: string
