@@ -87,6 +87,7 @@ func (app *App) AuthMiddleware() gin.HandlerFunc {
 		url := c.Request.URL.String()
 		if !strings.HasPrefix(url, "/v1/") && url != "/swagger/" && url != "/login" && url != "/logout" {
 			if s.Get("username") == nil {
+				log.Println("url: ", url)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"error": "Session expired",
 				})
