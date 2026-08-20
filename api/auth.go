@@ -85,7 +85,7 @@ func (app *App) AuthMiddleware() gin.HandlerFunc {
 		defer s.SessionRelease(c.Writer)
 
 		url := c.Request.URL.String()
-		if !strings.HasPrefix(url, "/v1/") && url != "/swagger/" && url != "/login" && url != "/logout" {
+		if !strings.HasPrefix(url, "/v1/") && url != "/swagger/" && url != "/login" && url != "/logout" && url != "/session" {
 			if s.Get("username") == nil {
 				log.Println("url: ", url)
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
